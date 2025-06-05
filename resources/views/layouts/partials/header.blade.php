@@ -36,8 +36,6 @@
         </div>
 
         <div class="d-flex">
-            <!-- Search -->
-            @include('layouts.partials.header.search')
             
             <!-- Language -->
             @include('layouts.partials.header.language')
