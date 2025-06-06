@@ -23,7 +23,7 @@
                 </div>
                 <div class="col-auto">
                     <button type="button" class="btn btn-primary" wire:click="showCreateModal">
-                        <i data-eva="plus-outline" class="fill-white me-2"></i>
+                        <i class="mdi mdi-plus" class="fill-white me-2"></i>
                         Nouvelle Année
                     </button>
                 </div>
@@ -40,7 +40,7 @@
                                    class="form-control" 
                                    placeholder="Rechercher par année..." 
                                    wire:model.live.debounce.300ms="search">
-                            <i class="search-icon" data-eva="search-outline"></i>
+                            <i class="search-icon" class="mdi mdi-magnify"></i>
                         </div>
                     </div>
                 </div>
@@ -87,7 +87,7 @@
                                                 wire:click="showEditModal({{ $annee->id }})"
                                                 data-bs-toggle="tooltip" 
                                                 title="Modifier">
-                                            <i data-eva="edit-outline"></i>
+                                            <i class="mdi mdi-pencil"></i>
                                         </button>
 
                                         <!-- Bouton Activer (si pas active) -->
@@ -96,7 +96,7 @@
                                                     wire:click="activer({{ $annee->id }})"
                                                     data-bs-toggle="tooltip" 
                                                     title="Activer">
-                                                <i data-eva="checkmark-circle-outline"></i>
+                                                <i class="mdi mdi-check-circle"></i>
                                             </button>
                                         @endif
 
@@ -107,7 +107,7 @@
                                                     onclick="return confirm('Clôturer cette année et créer la suivante ?')"
                                                     data-bs-toggle="tooltip" 
                                                     title="Clôturer et créer suivante">
-                                                <i data-eva="archive-outline"></i>
+                                                <i class="mdi mdi-archive"></i>
                                             </button>
                                         @endif
 
@@ -117,7 +117,7 @@
                                                     wire:click="confirmDelete({{ $annee->id }})"
                                                     data-bs-toggle="tooltip" 
                                                     title="Supprimer">
-                                                <i data-eva="trash-outline"></i>
+                                                <i class="mdi mdi-delete"></i>
                                             </button>
                                         @endif
                                     </div>
@@ -126,7 +126,7 @@
                         @empty
                             <tr>
                                 <td colspan="5" class="text-center py-4">
-                                    <i data-eva="calendar-outline" data-eva-height="48" data-eva-width="48" class="fill-muted"></i>
+                                    <i class="fas fa-calendar-alt text-muted" style="font-size: 48px;"></i>
                                     <p class="text-muted mt-2 mb-0">Aucune année financière trouvée</p>
                                 </td>
                             </tr>

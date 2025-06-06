@@ -56,7 +56,7 @@
                 <li class="menu-title" data-key="t-budget">BUDGET</li>
 
                 <li>
-                    <a href="#" onclick="return false;">
+                    <a href="{{ route('budget.annees-financieres') }}">
                         <i class="icon nav-icon" data-eva="calendar-outline"></i>
                         <span class="menu-item" data-key="t-annees-financieres">Années Financières</span>
                     </a>
