@@ -12,7 +12,7 @@ class ValideDateAnneeFinanciere implements Rule
 
     public function __construct($type, $dateDebut = null)
     {
-        $this->type = $type; // 'debut' ou 'fin'
+        $this->type = $type; 
         $this->dateDebut = $dateDebut;
     }
 

@@ -16,6 +16,14 @@ class BudgetController extends Controller
     }
 
     /**
+     * Display années financières page.
+     */
+    public function anneesFinancieres()
+    {
+        return view('budget::annees-financieres');
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()
@@ -26,7 +34,10 @@ class BudgetController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request) {}
+    public function store(Request $request) 
+    {
+        // À implémenter si nécessaire
+    }
 
     /**
      * Show the specified resource.
@@ -47,10 +58,16 @@ class BudgetController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id) {}
+    public function update(Request $request, $id) 
+    {
+        // À implémenter si nécessaire
+    }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id) {}
+    public function destroy($id) 
+    {
+        // À implémenter si nécessaire
+    }
 }
