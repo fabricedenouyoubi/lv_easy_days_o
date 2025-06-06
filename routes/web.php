@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/dashboard', function () {
+Route::get('/', function () {
     return view('dashboard');
 })->name('dashboard');
 
@@ -26,3 +26,9 @@ Route::get('/admin/employees', function() { return 'Liste employés'; })->name('
 Route::get('/admin/employees/create', function() { return 'Ajouter employé'; })->name('admin.employees.create');
 Route::get('/admin/config/work-codes', function() { return 'Codes de travail'; })->name('admin.config.work-codes');
 Route::get('/admin/config/timesheet-settings', function() { return 'Paramètres feuilles'; })->name('admin.config.timesheet-settings');
+
+
+// Routes budget
+Route::get('/budget/annees-financieres', function() { 
+    return view('budget.annees-financieres'); 
+})->name('budget.annees-financieres');
