@@ -32,3 +32,13 @@ Route::get('/admin/config/timesheet-settings', function() { return 'Paramètres 
 Route::get('/budget/annees-financieres', function() { 
     return view('budget.annees-financieres'); 
 })->name('budget.annees-financieres');
+
+
+// Routes entreprise
+Route::get('/entreprise/presentation', function() { 
+    return view('entreprise.presentation'); 
+})->name('entreprise.presentation');
+
+Route::get('/entreprise/sites', function() { 
+    return view('entreprise.sites'); 
+})->name('entreprise.sites');
