@@ -69,9 +69,9 @@
                                 <div class="arrow-down"></div>
                             </a>
                             <div class="dropdown-menu" aria-labelledby="topnav-timesheet">
-                                <a href="{{ route('timesheet.create') }}" class="dropdown-item">Nouvelle Feuille</a>
-                                <a href="{{ route('timesheet.index') }}" class="dropdown-item">Mes Feuilles</a>
-                                <a href="{{ route('timesheet.pending') }}" class="dropdown-item">En Attente</a>
+                                <a href="#" onclick="return false;" class="dropdown-item">Nouvelle Feuille</a>
+                                <a href="#" onclick="return false;" class="dropdown-item">Mes Feuilles</a>
+                                <a href="#" onclick="return false;" class="dropdown-item">En Attente</a>
                             </div>
                         </li>
 
@@ -83,8 +83,8 @@
                                 <div class="arrow-down"></div>
                             </a>
                             <div class="dropdown-menu" aria-labelledby="topnav-validation">
-                                <a href="{{ route('timesheet.validation.pending') }}" class="dropdown-item">À Valider</a>
-                                <a href="{{ route('timesheet.validation.history') }}" class="dropdown-item">Historique</a>
+                                <a href="#" onclick="return false;" class="dropdown-item">À Valider</a>
+                                <a href="#" onclick="return false;" class="dropdown-item">Historique</a>
                             </div>
                         </li>
                         @endcan
@@ -96,8 +96,8 @@
                                 <div class="arrow-down"></div>
                             </a>
                             <div class="dropdown-menu" aria-labelledby="topnav-absences">
-                                <a href="{{ route('absence.request') }}" class="dropdown-item">Demander</a>
-                                <a href="{{ route('absence.my') }}" class="dropdown-item">Mes Absences</a>
+                                <a href="#" onclick="return false;" class="dropdown-item">Demander</a>
+                                <a href="#" onclick="return false;" class="dropdown-item">Mes Absences</a>
                             </div>
                         </li>
                     </ul>

@@ -23,7 +23,7 @@
                 </div>
                 <div class="col-auto">
                     <button type="button" class="btn btn-primary" wire:click="showCreateModal">
-                        <i data-eva="plus-outline" class="fill-white me-2"></i>
+                        <i class="mdi mdi-plus" class="fill-white me-2"></i>
                         Nouvelle Année
                     </button>
                 </div>
@@ -36,9 +36,11 @@
                 <div class="col-md-6">
                     <div class="search-box">
                         <div class="position-relative">
-                            <input type="text" class="form-control" placeholder="Rechercher par année..."
-                                wire:model.live.debounce.300ms="search">
-                            <i class="search-icon" data-eva="search-outline"></i>
+                            <input type="text" 
+                                   class="form-control" 
+                                   placeholder="Rechercher par année..." 
+                                   wire:model.live.debounce.300ms="search">
+                            <i class="search-icon" class="mdi mdi-magnify"></i>
                         </div>
                     </div>
                 </div>
@@ -61,14 +63,14 @@
                             <tr>
                                 <td>
                                     <strong>{{ $annee->libelle }}</strong>
-                                    @if ($annee->statut === 'ACTIF')
+                                    @if($annee->statut === 'ACTIF')
                                         <span class="badge bg-success ms-2">Actuel</span>
                                     @endif
                                 </td>
                                 <td>{{ $annee->debut->format('d/m/Y') }}</td>
                                 <td>{{ $annee->fin->format('d/m/Y') }}</td>
                                 <td>
-                                    @if ($annee->statut === 'ACTIF')
+                                    @if($annee->statut === 'ACTIF')
                                         <span class="badge bg-success">
                                             <i class="mdi mdi-check me-1"></i>Actif
                                         </span>
@@ -81,37 +83,41 @@
                                 <td>
                                     <div class="d-flex gap-2">
                                         <!-- Bouton Modifier -->
-                                        <button class="btn btn-sm btn-outline-primary"
-                                            wire:click="showEditModal({{ $annee->id }})" data-bs-toggle="tooltip"
-                                            title="Modifier" wire:ignore>
-                                            <i data-eva="edit-outline"></i>
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                wire:click="showEditModal({{ $annee->id }})"
+                                                data-bs-toggle="tooltip" 
+                                                title="Modifier">
+                                            <i class="mdi mdi-pencil"></i>
                                         </button>
 
                                         <!-- Bouton Activer (si pas active) -->
-                                        @if ($annee->statut !== 'ACTIF')
-                                            <button class="btn btn-sm btn-outline-success"
-                                                wire:click="activer({{ $annee->id }})" data-bs-toggle="tooltip"
-                                                title="Activer" wire:ignore>
-                                                <i data-eva="checkmark-circle-outline"></i>
+                                        @if($annee->statut !== 'ACTIF')
+                                            <button class="btn btn-sm btn-outline-success" 
+                                                    wire:click="activer({{ $annee->id }})"
+                                                    data-bs-toggle="tooltip" 
+                                                    title="Activer">
+                                                <i class="mdi mdi-check-circle"></i>
                                             </button>
                                         @endif
 
                                         <!-- Bouton Clôturer (si active) -->
-                                        @if ($annee->statut === 'ACTIF')
-                                            <button class="btn btn-sm btn-outline-warning"
-                                                wire:click="cloturerEtCreerSuivante({{ $annee->id }})"
-                                                onclick="return confirm('Clôturer cette année et créer la suivante ?')"
-                                                data-bs-toggle="tooltip" title="Clôturer et créer suivante" wire:ignore>
-                                                <i data-eva="archive-outline"></i>
+                                        @if($annee->statut === 'ACTIF')
+                                            <button class="btn btn-sm btn-outline-warning" 
+                                                    wire:click="cloturerEtCreerSuivante({{ $annee->id }})"
+                                                    onclick="return confirm('Clôturer cette année et créer la suivante ?')"
+                                                    data-bs-toggle="tooltip" 
+                                                    title="Clôturer et créer suivante">
+                                                <i class="mdi mdi-archive"></i>
                                             </button>
                                         @endif
 
                                         <!-- Bouton Supprimer (si pas active) -->
-                                        @if ($annee->statut !== 'ACTIF')
-                                            <button class="btn btn-sm btn-outline-danger"
-                                                wire:click="confirmDelete({{ $annee->id }})" data-bs-toggle="tooltip"
-                                                title="Supprimer" wire:ignore>
-                                                <i data-eva="trash-outline"></i>
+                                        @if($annee->statut !== 'ACTIF')
+                                            <button class="btn btn-sm btn-outline-danger" 
+                                                    wire:click="confirmDelete({{ $annee->id }})"
+                                                    data-bs-toggle="tooltip" 
+                                                    title="Supprimer">
+                                                <i class="mdi mdi-delete"></i>
                                             </button>
                                         @endif
                                     </div>
@@ -120,8 +126,7 @@
                         @empty
                             <tr>
                                 <td colspan="5" class="text-center py-4">
-                                    <i data-eva="calendar-outline" data-eva-height="48" data-eva-width="48"
-                                        class="fill-muted"></i>
+                                    <i class="fas fa-calendar-alt text-muted" style="font-size: 48px;"></i>
                                     <p class="text-muted mt-2 mb-0">Aucune année financière trouvée</p>
                                 </td>
                             </tr>
@@ -138,7 +143,7 @@
     </div>
 
     <!-- Modal Formulaire -->
-    @if ($showModal)
+    @if($showModal)
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -157,7 +162,7 @@
     @endif
 
     <!-- Modal Confirmation Suppression -->
-    @if ($confirmingDelete)
+    @if($confirmingDelete)
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
             <div class="modal-dialog modal-sm">
                 <div class="modal-content">
@@ -180,13 +185,13 @@
 </div>
 
 @push('scripts')
-    <script>
-        // Initialiser les tooltips
-        document.addEventListener('livewire:navigated', function() {
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
+<script>
+    // Initialiser les tooltips
+    document.addEventListener('livewire:navigated', function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
         });
-    </script>
+    });
+</script>
 @endpush

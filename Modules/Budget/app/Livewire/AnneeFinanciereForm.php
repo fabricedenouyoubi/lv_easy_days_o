@@ -61,7 +61,7 @@ class AnneeFinanciereForm extends Component
     public function mount($anneeId = null)
     {
         $this->anneeId = $anneeId;
-
+        
         if ($anneeId) {
             $this->loadAnnee();
         } else {
@@ -103,7 +103,7 @@ class AnneeFinanciereForm extends Component
                     'statut' => $this->statut,
                     'actif' => $this->actif,
                 ]);
-
+                
                 $this->dispatch('anneeFinanciereUpdated');
             } else {
                 // Création
@@ -113,7 +113,7 @@ class AnneeFinanciereForm extends Component
                     'statut' => $this->statut,
                     'actif' => $this->actif,
                 ]);
-
+                
                 $this->dispatch('anneeFinanciereCreated');
             }
 

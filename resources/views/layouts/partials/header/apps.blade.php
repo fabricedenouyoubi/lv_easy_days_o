@@ -17,13 +17,13 @@
         <div class="px-lg-2 pb-2">
             <div class="row g-0">
                 <div class="col">
-                    <a class="dropdown-icon-item" href="{{ route('timesheet.index') }}">
+                    <a class="dropdown-icon-item" href="#" onclick="return false;">
                         <i class="icon-sm" data-eva="clock-outline"></i>
                         <span>Feuilles</span>
                     </a>
                 </div>
                 <div class="col">
-                    <a class="dropdown-icon-item" href="{{ route('absence.my') }}">
+                    <a class="dropdown-icon-item" href="#" onclick="return false;">
                         <i class="icon-sm" data-eva="calendar-outline"></i>
                         <span>Absences</span>
                     </a>
