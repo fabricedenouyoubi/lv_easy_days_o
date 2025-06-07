@@ -29,6 +29,6 @@ Route::get('/admin/config/timesheet-settings', function() { return 'Paramètres 
 
 
 // Routes budget
-Route::get('/budget/annees-financieres', function() { 
-    return view('budget.annees-financieres'); 
-})->name('budget.annees-financieres');
+/* Route::get('/budget/annees-financieres', function() { 
+    return view('budget::annees-financieres'); 
+})->name('budget.annees-financieres'); */

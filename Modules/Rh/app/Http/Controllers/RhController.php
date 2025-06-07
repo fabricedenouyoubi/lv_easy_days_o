@@ -1,26 +1,18 @@
 <?php
 
-namespace Modules\Budget\Http\Controllers;
+namespace Modules\Rh\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class BudgetController extends Controller
+class RhController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        return view('budget::index');
-    }
-
-    /**
-     * Display années financières page.
-     */
-    public function anneesFinancieres()
-    {
-        return view('budget::annees-financieres');
+        return view('rh::index');
     }
 
     /**
@@ -28,23 +20,20 @@ class BudgetController extends Controller
      */
     public function create()
     {
-        return view('budget::create');
+        return view('rh::create');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request) 
-    {
-        // À implémenter si nécessaire
-    }
+    public function store(Request $request) {}
 
     /**
      * Show the specified resource.
      */
     public function show($id)
     {
-        return view('budget::show');
+        return view('rh::show');
     }
 
     /**
@@ -52,22 +41,16 @@ class BudgetController extends Controller
      */
     public function edit($id)
     {
-        return view('budget::edit');
+        return view('rh::edit');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id) 
-    {
-        // À implémenter si nécessaire
-    }
+    public function update(Request $request, $id) {}
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id) 
-    {
-        // À implémenter si nécessaire
-    }
+    public function destroy($id) {}
 }

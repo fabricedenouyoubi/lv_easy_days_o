@@ -5,7 +5,7 @@ namespace Modules\Budget\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Carbon\Carbon;
-// use Modules\Budget\Database\Factories\AnneeFinanciereFactory;
+use Modules\Budget\Database\Factories\AnneeFinanciereFactory;
 
 class AnneeFinanciere extends Model
 {

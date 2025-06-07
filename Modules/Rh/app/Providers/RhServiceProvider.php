@@ -1,23 +1,20 @@
 <?php
 
-namespace Modules\Budget\Providers;
+namespace Modules\Rh\Providers;
 
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Nwidart\Modules\Traits\PathNamespace;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use Livewire\Livewire;
-use Modules\Budget\Livewire\AnneeFinanciereForm;
-use Modules\Budget\Livewire\AnneeFinanciereList;
 
-class BudgetServiceProvider extends ServiceProvider
+class RhServiceProvider extends ServiceProvider
 {
     use PathNamespace;
 
-    protected string $name = 'Budget';
+    protected string $name = 'Rh';
 
-    protected string $nameLower = 'budget';
+    protected string $nameLower = 'rh';
 
     /**
      * Boot the application events.
@@ -30,9 +27,6 @@ class BudgetServiceProvider extends ServiceProvider
         $this->registerConfig();
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->name, 'database/migrations'));
-
-        // Enregistrement du composant Livewire
-        $this->registerLivewireComponents();
     }
 
     /**
@@ -62,18 +56,6 @@ class BudgetServiceProvider extends ServiceProvider
         //     $schedule->command('inspire')->hourly();
         // });
     }
-
-    /**
-     * Register Livewire components.
-     *
-     * @return void
-     */
-    protected function registerLivewireComponents()
-    {
-        Livewire::component('budget::annee-financiere-list', AnneeFinanciereList::class);
-        Livewire::component('budget::annee-financiere-form', AnneeFinanciereForm::class);
-    }
-
 
     /**
      * Register translations.
