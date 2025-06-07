@@ -48,7 +48,7 @@
             @endif
         </div>
         <div class="p-2 border-top d-grid">
-            <a class="btn btn-sm btn-link font-size-14 btn-block text-center" href="{{ route('notifications.index') }}">
+            <a class="btn btn-sm btn-link font-size-14 btn-block text-center" href="#" onclick="return false;">
                 <i class="uil-arrow-circle-right me-1"></i> <span>Voir plus...</span>
             </a>
         </div>
