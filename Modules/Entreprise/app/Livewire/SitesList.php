@@ -126,7 +126,7 @@ class SitesList extends Component
 
     public function render()
     {
-        return view('entreprise::livewire.site-list', [
+        return view('entreprise::livewire.sites-list', [
             'sites' => $this->sites,
             'detailSite' => $this->detailSite
         ]);

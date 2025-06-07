@@ -1,5 +1,5 @@
 <div>
-    <!-- Messages de feedback -->
+    {{-- Messages de feedback --}}
     @if (session()->has('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ session('success') }}
@@ -14,7 +14,7 @@
         </div>
     @endif
 
-    <!-- En-tête avec recherche et bouton créer -->
+    {{-- En-tête avec recherche et bouton créer --}}
     <div class="card">
         <div class="card-header">
             <div class="row align-items-center">
@@ -34,7 +34,7 @@
         </div>
 
         <div class="card-body">
-            <!-- Barre de recherche -->
+            {{-- Barre de recherche --}}
             <div class="row mb-3">
                 <div class="col-md-6">
                     <div class="search-box">
@@ -43,13 +43,12 @@
                                    class="form-control" 
                                    placeholder="Rechercher un site..." 
                                    wire:model.live.debounce.300ms="search">
-                            <i class="fas fa-search search-icon"></i>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Tableau des sites -->
+            {{-- Tableau des sites --}}
             <div class="table-responsive">
                 <table class="table table-nowrap align-middle">
                     <thead class="table-light">
@@ -102,7 +101,7 @@
                                 </td>
                                 <td>
                                     <div class="d-flex gap-2">
-                                        <!-- Bouton Détails -->
+                                        {{-- Bouton Détails --}}
                                         <button class="btn btn-sm btn-outline-info" 
                                                 wire:click="showDetailModal({{ $site->id }})"
                                                 data-bs-toggle="tooltip" 
@@ -110,7 +109,7 @@
                                             <i class="fas fa-eye"></i>
                                         </button>
 
-                                        <!-- Bouton Modifier -->
+                                        {{-- Bouton Modifier --}}
                                         <button class="btn btn-sm btn-outline-primary" 
                                                 wire:click="showEditModal({{ $site->id }})"
                                                 data-bs-toggle="tooltip" 
@@ -118,7 +117,7 @@
                                             <i class="fas fa-edit"></i>
                                         </button>
 
-                                        <!-- Bouton Supprimer -->
+                                        {{-- Bouton Supprimer --}}
                                         <button class="btn btn-sm btn-outline-danger" 
                                                 wire:click="confirmDelete({{ $site->id }})"
                                                 data-bs-toggle="tooltip" 
@@ -140,14 +139,14 @@
                 </table>
             </div>
 
-            <!-- Pagination -->
+            {{-- Pagination --}}
             <div class="mt-3">
                 {{ $sites->links() }}
             </div>
         </div>
     </div>
 
-    <!-- Modal Formulaire -->
+    {{-- Modal Formulaire --}}
     @if($showModal)
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
             <div class="modal-dialog modal-lg">
@@ -167,7 +166,7 @@
         </div>
     @endif
 
-    <!-- Modal Détail Site -->
+    {{-- Modal Détail Site --}}
     @if($showDetail && $detailSite)
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
             <div class="modal-dialog modal-lg">
@@ -253,7 +252,7 @@
         </div>
     @endif
 
-    <!-- Modal Confirmation Suppression -->
+    {{-- Modal Confirmation Suppression --}}
     @if($confirmingDelete)
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
             <div class="modal-dialog">
@@ -281,14 +280,15 @@
             </div>
         </div>
     @endif
-</div>
 
-<style>
-    .search-box .search-icon {
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #6c757d;
-    }
-</style>
+    {{-- CSS local --}}
+    <style>
+        .search-box .search-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+    </style>
+</div>
