@@ -33,7 +33,7 @@
         <div id="sidebar-menu">
             <!-- Left Menu Start -->
             <ul class="metismenu list-unstyled" id="side-menu">
-                
+
                 <!-- DASHBOARDS -->
                 <li>
                     <a href="#" onclick="return false;">
@@ -59,6 +59,13 @@
                     <a href="{{ route('budget.annees-financieres') }}">
                         <i class="icon nav-icon" data-eva="calendar-outline"></i>
                         <span class="menu-item" data-key="t-annees-financieres">Années Financières</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ route('rh.poste.list') }}">
+                        <i class="icon nav-icon" data-eva="people-outline"></i>
+                        <span class="menu-item" data-key="t-annees-financieres">Postes</span>
                     </a>
                 </li>
 
@@ -92,7 +99,8 @@
                         <span class="menu-item" data-key="t-configurations">Configurations</span>
                     </a>
                     <ul class="sub-menu" aria-expanded="false">
-                        <li><a href="#" onclick="return false;" data-key="t-feuilles-temps">Feuilles de temps</a></li>
+                        <li><a href="#" onclick="return false;" data-key="t-feuilles-temps">Feuilles de temps</a>
+                        </li>
                         <li><a href="#" onclick="return false;" data-key="t-code-travail">Code de travail</a></li>
                     </ul>
                 </li>
@@ -120,7 +128,9 @@
 
         <div class="p-3 px-4 sidebar-footer">
             <p class="mb-1 main-title">
-                <script>document.write(new Date().getFullYear())</script> &copy; Easy days Opérations.
+                <script>
+                    document.write(new Date().getFullYear())
+                </script> &copy; Easy days Opérations.
             </p>
             <p class="mb-0">GCS Technologie</p>
         </div>
