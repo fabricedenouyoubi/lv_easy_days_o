@@ -13,6 +13,7 @@ class AnneeFinanciereList extends Component
     public $search = '';
     public $showClotureModal = false;
     public $cloturingId = null;
+    public $generatingId = null; // Pour afficher un spinner pendant la génération
 
     protected $paginationTheme = 'bootstrap';
 
@@ -27,8 +28,37 @@ class AnneeFinanciereList extends Component
 
     public function voirFeuillesDeTemps($anneeId)
     {
-        // Rediriger vers la page des détails de l'année financière
-        return redirect()->route('budget.annee-details', ['annee' => $anneeId]);
+        try {
+            $this->generatingId = $anneeId; // Afficher le spinner
+            
+            $anneeFinanciere = AnneeFinanciere::findOrFail($anneeId);
+            
+            // Vérifier si le service de génération est disponible
+            if (class_exists('Modules\RhFeuilleDeTempsConfig\Services\FeuilleDeTempsGeneratorService')) {
+                $feuilleGenerator = app('Modules\RhFeuilleDeTempsConfig\Services\FeuilleDeTempsGeneratorService');
+                $jourFerieGenerator = app('Modules\RhFeuilleDeTempsConfig\Services\JourFerieGeneratorService');
+                
+                // Vérifier si les feuilles ont déjà été générées
+                if (!$feuilleGenerator->areFeuillesGenerated($anneeFinanciere)) {
+                    // Générer les jours fériés d'abord
+                    $jourFerieGenerator->generateJourFerie($anneeFinanciere);
+                    
+                    // Puis générer les feuilles de temps
+                    $feuilleGenerator->generateFeuillesDeTemps($anneeFinanciere);
+                    
+                    session()->flash('success', 'Feuilles de temps générées automatiquement pour l\'année ' . $anneeFinanciere->libelle);
+                }
+            }
+            
+            $this->generatingId = null; // Masquer le spinner
+            
+            // Rediriger vers la page des détails
+            return redirect()->route('budget.annee-details', ['annee' => $anneeId]);
+            
+        } catch (\Exception $e) {
+            $this->generatingId = null;
+            session()->flash('error', 'Erreur lors de la génération : ' . $e->getMessage());
+        }
     }
 
     public function confirmCloture($id)

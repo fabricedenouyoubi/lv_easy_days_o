@@ -44,7 +44,7 @@ class AnneeFinanciereService
 
             // 4. Générer les nouveaux jours fériés
             Log::info("Génération des nouveaux jours fériés...");
-            // $this->jourFerieGenerator->generateJourFerie($newAnneeFinanciere);
+            $this->jourFerieGenerator->generateJourFerie($newAnneeFinanciere);
 
             // 5. Générer les nouvelles feuilles de temps
             Log::info("Génération des nouvelles feuilles de temps...");
@@ -164,7 +164,7 @@ class AnneeFinanciereService
     public function getAnneeFinanciereStats(AnneeFinanciere $anneeFinanciere)
     {
         $feuilleStats = $this->feuilleDeTempsGenerator->getGenerationStats($anneeFinanciere);
-        //$ferieStats = $this->jourFerieGenerator->getGenerationStats($anneeFinanciere);
+        $ferieStats = $this->jourFerieGenerator->getGenerationStats($anneeFinanciere);
         
         $configStats = [
             'total_configurations' => ConfigurationCodeDeTravail::parAnneeFinanciere($anneeFinanciere->id)->count(),
@@ -176,8 +176,7 @@ class AnneeFinanciereService
                                                                    ->count()
         ];
 
-        // Deuxieme argement à remettre dans le tableau array_merge ", $ferieStats"
-        return array_merge($feuilleStats, $configStats);
+        return array_merge($feuilleStats, $ferieStats, $configStats);
     }
 
     /**

@@ -74,22 +74,37 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center gap-2">
-                                        <!-- Bouton Voir feuilles de temps -->
+                                        <!-- Bouton Voir feuilles de temps avec génération automatique -->
                                         <button class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-center rounded-3 shadow-sm" 
                                                 style="width: 38px; height: 38px; transition: all 0.2s ease;"
                                                 wire:click="voirFeuillesDeTemps({{ $annee->id }})"
+                                                wire:loading.attr="disabled"
+                                                wire:target="voirFeuillesDeTemps({{ $annee->id }})"
                                                 data-bs-toggle="tooltip" 
                                                 data-bs-placement="top"
-                                                title="Voir les feuilles de temps">
-                                            <i class="mdi mdi-file-table fs-5"></i>
+                                                title="Voir les feuilles de temps (génération automatique si nécessaire)">
+                                            
+                                            <!-- Icône normale -->
+                                            <i class="mdi mdi-file-table fs-5" 
+                                               wire:loading.remove 
+                                               wire:target="voirFeuillesDeTemps({{ $annee->id }})"></i>
+                                            
+                                            <!-- Spinner pendant la génération -->
+                                            <div wire:loading 
+                                                 wire:target="voirFeuillesDeTemps({{ $annee->id }})"
+                                                 class="spinner-border spinner-border-sm" 
+                                                 role="status"
+                                                 style="width: 16px; height: 16px;">
+                                                <span class="visually-hidden">Génération...</span>
+                                            </div>
                                         </button>
 
-                                        <!-- Bouton Clôturer (si active et avec permission) -->
+                                        <!-- Bouton Clôturer (temporairement désactivé) -->
                                         @if($annee->actif)
-                                            <button class="btn btn-danger btn-sm rounded-3 px-3 d-inline-flex align-items-center" 
-                                                    wire:click="confirmCloture({{ $annee->id }})"
+                                            <button class="btn btn-outline-warning btn-sm rounded-3 px-3 d-inline-flex align-items-center" 
+                                                    onclick="alert('Fonctionnalité de clôture disponible après implémentation de l\'authentification')"
                                                     data-bs-toggle="tooltip" 
-                                                    title="Clôturer l'année">
+                                                    title="Clôturer l'année (nécessite authentification)">
                                                 <i class="mdi mdi-close-circle-outline me-1"></i>
                                                 Clôturer
                                             </button>
@@ -116,42 +131,18 @@
         </div>
     </div>
 
-    <!-- Modal Confirmation Clôture -->
-    @if($showClotureModal)
-        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Clôturer une année financière existante</h5>
-                        <button type="button" class="btn-close" wire:click="cancelCloture"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="alert alert-warning">
-                            <strong>Êtes-vous sûr de vouloir clôturer cette année financière ?</strong>
-                        </div>
-                        <hr>
-                        <p>Cette décision va déclencher les opérations suivantes :</p>
-                        <ul>
-                            <li>Verrouiller les feuilles de temps de l'année financière courante</li>
-                            <li>Fermer l'année financière courante</li>
-                            <li>Générer une nouvelle année financière</li>
-                            <li>Générer de nouveaux jours fériés</li>
-                            <li>Transférer les codes de travail dans la nouvelle année financière</li>
-                            <li>Transférer les soldes de caisses de temps et vacances</li>
-                        </ul>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-warning" wire:click="cancelCloture">
-                            Annuler
-                        </button>
-                        <button type="button" class="btn btn-outline-danger" wire:click="cloturerEtCreerSuivante">
-                            Valider
-                        </button>
-                    </div>
-                </div>
+    <!-- Notification de génération en cours -->
+    <div wire:loading wire:target="voirFeuillesDeTemps" class="position-fixed top-0 start-50 translate-middle-x mt-3" style="z-index: 1060;">
+        <div class="alert alert-info d-flex align-items-center shadow-lg" role="alert">
+            <div class="spinner-border spinner-border-sm me-2" role="status">
+                <span class="visually-hidden">Chargement...</span>
+            </div>
+            <div>
+                <strong>Génération en cours...</strong><br>
+                <small>Création des feuilles de temps et jours fériés pour cette année financière.</small>
             </div>
         </div>
-    @endif
+    </div>
 </div>
 
 @push('scripts')
