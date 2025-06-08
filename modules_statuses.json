@@ -1,5 +1,6 @@
 {
     "Budget": true,
     "Entreprise": true,
-    "Rh": true
+    "Rh": true,
+    "RhFeuilleDeTempsConfig": true
 }

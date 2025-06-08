@@ -11,16 +11,12 @@ class AnneeFinanciereList extends Component
     use WithPagination;
 
     public $search = '';
-    public $showModal = false;
-    public $editingId = null;
-    public $confirmingDelete = false;
-    public $deletingId = null;
+    public $showClotureModal = false;
+    public $cloturingId = null;
 
     protected $paginationTheme = 'bootstrap';
 
     protected $listeners = [
-        'anneeFinanciereCreated' => 'handleAnneeFinanciereCreated',
-        'anneeFinanciereUpdated' => 'handleAnneeFinanciereUpdated',
         'refreshComponent' => '$refresh'
     ];
 
@@ -29,92 +25,36 @@ class AnneeFinanciereList extends Component
         $this->resetPage();
     }
 
-    public function showCreateModal()
+    public function voirFeuillesDeTemps($anneeId)
     {
-        $this->editingId = null;
-        $this->showModal = true;
+        // Rediriger vers la page des détails de l'année financière
+        return redirect()->route('budget.annee-details', ['annee' => $anneeId]);
     }
 
-    public function showEditModal($id)
+    public function confirmCloture($id)
     {
-        $this->editingId = $id;
-        $this->showModal = true;
+        $this->cloturingId = $id;
+        $this->showClotureModal = true;
     }
 
-    public function closeModal()
+    public function cancelCloture()
     {
-        $this->showModal = false;
-        $this->editingId = null;
+        $this->showClotureModal = false;
+        $this->cloturingId = null;
     }
 
-    public function confirmDelete($id)
-    {
-        $this->deletingId = $id;
-        $this->confirmingDelete = true;
-    }
-
-    public function cancelDelete()
-    {
-        $this->confirmingDelete = false;
-        $this->deletingId = null;
-    }
-
-    public function delete()
+    public function cloturerEtCreerSuivante()
     {
         try {
-            $annee = AnneeFinanciere::findOrFail($this->deletingId);
-            
-            // Vérifier si c'est l'année active
-            if ($annee->statut === AnneeFinanciere::STATUT_ACTIF) {
-                session()->flash('error', 'Impossible de supprimer l\'année financière active.');
-                $this->cancelDelete();
-                return;
-            }
-
-            $annee->delete();
-            
-            session()->flash('success', 'Année financière supprimée avec succès.');
-            $this->cancelDelete();
-        } catch (\Exception $e) {
-            session()->flash('error', 'Erreur lors de la suppression : ' . $e->getMessage());
-            $this->cancelDelete();
-        }
-    }
-
-    public function activer($id)
-    {
-        try {
-            $annee = AnneeFinanciere::findOrFail($id);
-            $annee->activer();
-            
-            session()->flash('success', 'Année financière activée avec succès.');
-        } catch (\Exception $e) {
-            session()->flash('error', 'Erreur lors de l\'activation : ' . $e->getMessage());
-        }
-    }
-
-    public function cloturerEtCreerSuivante($id)
-    {
-        try {
-            $annee = AnneeFinanciere::findOrFail($id);
+            $annee = AnneeFinanciere::findOrFail($this->cloturingId);
             $nouvelleAnnee = $annee->cloturerEtCreerSuivante();
             
             session()->flash('success', 'Année financière clôturée et nouvelle année créée : ' . $nouvelleAnnee->libelle);
+            $this->cancelCloture();
         } catch (\Exception $e) {
             session()->flash('error', 'Erreur lors de la clôture : ' . $e->getMessage());
+            $this->cancelCloture();
         }
-    }
-
-    public function handleAnneeFinanciereCreated()
-    {
-        $this->closeModal();
-        session()->flash('success', 'Année financière créée avec succès.');
-    }
-
-    public function handleAnneeFinanciereUpdated()
-    {
-        $this->closeModal();
-        session()->flash('success', 'Année financière modifiée avec succès.');
     }
 
     public function getAnneesProperty()

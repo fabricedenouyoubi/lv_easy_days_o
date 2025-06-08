@@ -13,13 +13,9 @@ class AnneeFinanciere extends Model
 
     protected $table = 'annee_financieres';
 
-    /**
-     * The attributes that are mass assignable.
-     */
     protected $fillable = [
         'debut',
         'fin',
-        'statut',
         'actif'
     ];
 
@@ -29,35 +25,25 @@ class AnneeFinanciere extends Model
         'actif' => 'boolean'
     ];
 
-    // Definition des constantes pour les statuts
-    const STATUT_ACTIF = 'ACTIF';
-    const STATUT_INACTIF = 'INACTIF';
-
-    public static function getStatuts(){
-        return [
-            self::STATUT_ACTIF => 'Actif',
-            self::STATUT_INACTIF => 'Inactif'
-        ];
-    }
-
-    // Scope pour l'annee active
+    // Scope pour l'année active
     public function scopeActif($query)
     {
-        return $query->where('statut', self::STATUT_ACTIF)->where('actif', true);
+        return $query->where('actif', true);
     }
 
-    // Scope pour l'annee inactives
+    // Scope pour les années inactives
     public function scopeInactif($query)
     {
-        return $query->where('statut', self::STATUT_INACTIF)->orWhere('actif', false);
+        return $query->where('actif', false);
     }
 
-    // Recuperer l'annee financiere active
-    public static function getAnneeActive(){
+    // Récupérer l'année financière active
+    public static function getAnneeActive()
+    {
         return self::actif()->first();
     }
 
-    // Vérifier les chevauchements de dates (Expirer de l'ancien projet django)
+    // Vérifier les chevauchements de dates
     public static function hasDateOverlap($debut, $fin, $excludeId = null)
     {
         $query = self::where(function ($q) use ($debut, $fin) {
@@ -72,26 +58,24 @@ class AnneeFinanciere extends Model
         return $query->exists();
     }
 
-    // Valider la date de debut
+    // Valider la date de début (1er avril)
     public static function isValideDateDebut($debut)
     {
         try {
             $date = Carbon::parse($debut);
-            // Doit commencer le 1er avril
             return $date->month == 4 && $date->day == 1;
         } catch (\Exception $e) {
             return false;
         }
     }
 
-    // Valider la date de fin
+    // Valider la date de fin (31 mars année suivante)
     public static function isValideDateFin($debut, $fin)
     {
         try {
             $dateDebut = Carbon::parse($debut);
             $dateFin = Carbon::parse($fin);
             
-            // Doit finir le 31 mars de l'année suivante
             return $dateFin->month == 3 && 
                    $dateFin->day == 31 && 
                    $dateFin->year == ($dateDebut->year + 1);
@@ -100,83 +84,120 @@ class AnneeFinanciere extends Model
         }
     }
 
-    // Methode pour cloturer une annee et creer la suivante
+    // Méthode pour clôturer une année et créer la suivante
     public function cloturerEtCreerSuivante()
     {
+        // Calculer les dates de la nouvelle année
         $anneeFin = $this->fin->year;
         $dateDebut = Carbon::create($anneeFin, 4, 1);
         $dateFin = Carbon::create($anneeFin + 1, 3, 31);
 
-        // Désactiver toutes les autres années
-        self::query()->update([
-            'statut' => self::STATUT_INACTIF,
-            'actif' => false
-        ]);
+        // 1. Désactiver toutes les feuilles de temps
+        if (class_exists('Modules\RhFeuilleDeTempsConfig\Models\FeuilleDeTemps')) {
+            //\Modules\RhFeuilleDeTempsConfig\Models\FeuilleDeTemps::query()->update(['actif' => false]);
+        }
 
-        // Créer la nouvelle année
-        return self::create([
+        // 2. Désactiver toutes les autres années
+        self::query()->update(['actif' => false]);
+
+        // 3. Créer la nouvelle année
+        $nouvelleAnnee = self::create([
             'debut' => $dateDebut,
             'fin' => $dateFin,
-            'statut' => self::STATUT_ACTIF,
             'actif' => true
         ]);
+
+        // 4. Déclencher la génération
+        $this->triggerAnneeFinanciereSignals($nouvelleAnnee);
+
+        return $nouvelleAnnee;
     }
-    // Activer cette annee - en cours  et desactiver les autres
+
+    // Déclencher les "signaux" de la nouvelle année
+    private function triggerAnneeFinanciereSignals($nouvelleAnnee)
+    {
+        // TODO: À implémenter lors de la création du module rh_feuille_de_temps_config
+        // - generateJourFerie($nouvelleAnnee)
+        // - generateFeuillesDeTemps($nouvelleAnnee)  
+        // - transfererCodeTravailVersNouvelleAnnee($nouvelleAnnee, $this)
+        // - updateAnneeFinanciereSessionData($nouvelleAnnee)
+    }
+
+    // Activer cette année et désactiver les autres
     public function activer()
     {
         // Désactiver toutes les autres
-        self::where('id', '!=', $this->id)->update([
-            'statut' => self::STATUT_INACTIF,
-            'actif' => false
-        ]);
+        self::where('id', '!=', $this->id)->update(['actif' => false]);
 
         // Activer celle-ci
-        $this->update([
-            'statut' => self::STATUT_ACTIF,
-            'actif' => true
-        ]);
+        $this->update(['actif' => true]);
 
         return $this;
     }
      
-    // Accesseur pour formater le libelle d'une annee financiere
-   public function getLibelleAttribute()
+    // Accesseur pour le libellé
+    public function getLibelleAttribute()
     {
         return $this->debut->format('Y') . ' - ' . $this->fin->format('Y');
     }
 
-    // Accesseur pour formate le statut
-    public function getStatutFormatteAttribute()
-    {
-        return self::getStatuts()[$this->statut] ?? $this->statut;
-    }
-
-    // Methode pour se rassurer qu'une seule annee est active
+    // Méthode pour s'assurer qu'une seule année est active
     public static function boot()
     {
         parent::boot();
 
         static::creating(function ($model) {
-            if ($model->statut === self::STATUT_ACTIF && $model->actif) {
-                // Désactiver toutes les autres années
-                self::query()->update([
-                    'statut' => self::STATUT_INACTIF,
-                    'actif' => false
-                ]);
+            if ($model->actif) {
+                self::query()->update(['actif' => false]);
             }
         });
 
         static::updating(function ($model) {
-            if ($model->statut === self::STATUT_ACTIF && $model->actif) {
-                // Désactiver toutes les autres années
-                self::where('id', '!=', $model->id)->update([
-                    'statut' => self::STATUT_INACTIF,
-                    'actif' => false
-                ]);
+            if ($model->actif) {
+                self::where('id', '!=', $model->id)->update(['actif' => false]);
             }
         });
     }
 
+    // Relation avec les feuilles de temps
+    public function feuillesDeTemps()
+    {
+        return $this->hasMany('Modules\RhFeuilleDeTempsConfig\Models\FeuilleDeTemps');
+    }
+
+    // Relation avec les configurations de codes de travail
+    public function configurationsCodeDeTravail()
+    {
+        return $this->hasMany('Modules\RhFeuilleDeTempsConfig\Models\ConfigurationCodeDeTravail');
+    }
+
+    // Méthode pour initialiser une nouvelle année avec tous les services
+    public function initialiserAnnee()
+    {
+        if (class_exists('Modules\RhFeuilleDeTempsConfig\Services\AnneeFinanciereService')) {
+            $service = app('Modules\RhFeuilleDeTempsConfig\Services\AnneeFinanciereService');
+            return $service->initialiserNouvelleAnnee($this);
+        }
+
+        return $this;
+    }
+
+    // Obtenir les statistiques de l'année
+    public function getStatistiques()
+    {
+        if (class_exists('Modules\RhFeuilleDeTempsConfig\Services\AnneeFinanciereService')) {
+            $service = app('Modules\RhFeuilleDeTempsConfig\Services\AnneeFinanciereService');
+            return $service->getAnneeFinanciereStats($this);
+        }
+
+        return [
+            'total_feuilles' => 0,
+            'feuilles_actives' => 0,
+            'semaines_de_paie' => 0,
+            'total_jours_feries' => 0,
+            'total_configurations' => 0
+        ];
+    }
     protected static function newFactory()
     {
         //return \Modules\Budget\Database\factories\AnneeFinanciereFactory::new();

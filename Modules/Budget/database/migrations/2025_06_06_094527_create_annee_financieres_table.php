@@ -13,16 +13,16 @@ return new class extends Migration
     {
         Schema::create('annee_financieres', function (Blueprint $table) {
             $table->id();
-            $table->date('debut')->comment('Date de début de l\'année financière');
-            $table->date('fin')->comment('Date de fin de l\'année financière');
-            $table->enum('statut', ['ACTIF', 'INACTIF'])->default('ACTIF')->comment('Statut de l\'année financière');
-            $table->boolean('actif')->default(true)->comment('Indicateur d\'activation');
+            $table->date('debut')->comment('Date de début de l\'année financière (1er avril)');
+            $table->date('fin')->comment('Date de fin de l\'année financière (31 mars)');
+            $table->boolean('actif')->default(true)->comment('Année financière active (une seule à la fois)');
+            
             // Index pour optimiser les requêtes
-            $table->index(['statut', 'actif']);
+            $table->index('actif');
             $table->index('debut');
-            $table->index('fin');
-            // Eviter les doublons
-            $table->unique(['debut', 'fin']);
+            $table->index('fin');       
+            // Éviter les doublons
+            $table->unique(['debut', 'fin']);        
             $table->timestamps();
         });
     }
