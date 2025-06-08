@@ -54,7 +54,6 @@ class FeuilleDeTempsGeneratorService
 
     /**
      * Obtenir le dimanche précédent
-     * Équivalent de get_previous_sunday de Django
      */
     private function getPreviousSunday(Carbon $currentDate)
     {

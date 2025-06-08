@@ -23,7 +23,6 @@ class JourFerieGeneratorService
 
     /**
      * Générer les jours fériés pour une année financière
-     * Équivalent de generate_jour_ferie de Django
      */
     public function generateJourFerie(AnneeFinanciere $anneeFinanciere)
     {

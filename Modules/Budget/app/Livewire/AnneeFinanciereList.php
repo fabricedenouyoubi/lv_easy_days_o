@@ -13,8 +13,7 @@ class AnneeFinanciereList extends Component
     public $search = '';
     public $showClotureModal = false;
     public $cloturingId = null;
-    public $generatingId = null; // Pour afficher un spinner pendant la génération
-
+    public $generatingId = null; 
     protected $paginationTheme = 'bootstrap';
 
     protected $listeners = [

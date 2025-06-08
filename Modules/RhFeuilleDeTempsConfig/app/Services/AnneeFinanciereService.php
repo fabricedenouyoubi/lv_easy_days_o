@@ -22,7 +22,6 @@ class AnneeFinanciereService
 
     /**
      * Processus complet de clôture d'année financière
-     * Équivalent de cloturer_annee_financiere de Django
      */
     public function cloturerAnneeFinanciere(AnneeFinanciere $oldAnneeFinanciere)
     {
@@ -82,7 +81,6 @@ class AnneeFinanciereService
 
     /**
      * Transférer les codes de travail vers la nouvelle année
-     * Équivalent de transferer_code_travail_vers_nouvelle_annee de Django
      */
     public function transfererCodeTravailVersNouvelleAnnee(
         AnneeFinanciere $newAnneeFinanciere,
@@ -109,7 +107,6 @@ class AnneeFinanciereService
 
     /**
      * Copier les données des anciennes valeurs
-     * Équivalent de copy_data_from_old_values de Django
      */
     private function copyDataFromOldValues($anciensCodeTravail, AnneeFinanciere $nouvelleAnnee)
     {
@@ -145,7 +142,6 @@ class AnneeFinanciereService
 
     /**
      * Mettre à jour les données de session de l'année financière
-     * Équivalent de update_annee_financiere_session_data de Django
      */
     public function updateAnneeFinanciereSessionData(AnneeFinanciere $annee)
     {

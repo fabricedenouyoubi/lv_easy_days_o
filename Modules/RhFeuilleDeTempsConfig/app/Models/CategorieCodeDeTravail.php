@@ -8,7 +8,7 @@ namespace Modules\RhFeuilleDeTempsConfig\Models;
 
 class CategorieCodeDeTravail
 {
-    // Constantes pour les catégories (équivalent Django)
+    // Constantes pour les catégories
     const HEURE_REGULIERE = 'HEURE_REGULIERE';
     const HEURE_SUPPLEMENTAIRE = 'HEURE_SUPPLEMENTAIRE';
     const CONGE = 'CONGE';
