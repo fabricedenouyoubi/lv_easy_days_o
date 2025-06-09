@@ -205,7 +205,7 @@
     </div>
 
     <!-- Statistiques rapides -->
-    <div class="row mt-4">
+    <div class="row mt-3">
         <div class="col-md-3">
             <div class="card border-0 shadow-sm">
                 <div class="card-body text-center">
@@ -231,22 +231,22 @@
         <div class="col-md-3">
             <div class="card border-0 shadow-sm">
                 <div class="card-body text-center">
-                    <div class="text-warning mb-2">
-                        <i class="mdi mdi-cash" style="font-size: 24px;"></i>
+                    <div class="text-danger mb-2">
+                        <i class="mdi mdi-close-circle" style="font-size: 24px;"></i>
                     </div>
-                    <h4 class="mb-1">{{ $feuilles->where('est_semaine_de_paie', true)->count() }}</h4>
-                    <p class="text-muted mb-0 small">Semaines de paie</p>
+                    <h4 class="mb-1">{{ $feuilles->where('actif', false)->count() }}</h4>
+                    <p class="text-muted mb-0 small">Feuilles non actives</p>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card border-0 shadow-sm">
                 <div class="card-body text-center">
-                    <div class="text-info mb-2">
-                        <i class="mdi mdi-calendar-range" style="font-size: 24px;"></i>
+                    <div class="text-warning mb-2">
+                        <i class="mdi mdi-cash" style="font-size: 24px;"></i>
                     </div>
-                    <h4 class="mb-1">{{ $anneeFinanciere->libelle }}</h4>
-                    <p class="text-muted mb-0 small">Année financière</p>
+                    <h4 class="mb-1">{{ $feuilles->where('est_semaine_de_paie', true)->count() }}</h4>
+                    <p class="text-muted mb-0 small">Semaines de paie</p>
                 </div>
             </div>
         </div>

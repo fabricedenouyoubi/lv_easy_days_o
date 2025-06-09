@@ -104,26 +104,12 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <small class="text-muted">
-                                <i class="fas fa-clock me-1"></i>
-                                Créé le {{ $entreprise->created_at->format('d/m/Y à H:i') }}
-                            </small>
-                        </div>
-                        <div class="col-md-6 text-end">
-                            <small class="text-muted">
-                                <i class="fas fa-edit me-1"></i>
-                                Modifié le {{ $entreprise->updated_at->format('d/m/Y à H:i') }}
-                            </small>
-                        </div>
-                    </div>
+                    
                 @else
                     <div class="text-center py-5">
                         <i class="fas fa-building fa-3x text-muted mb-3"></i>
                         <h5>Aucune entreprise configurée</h5>
-                        <p class="text-muted">Cliquez sur "Modifier" pour configurer les informations de votre entreprise.</p>
+                        <p class="text-muted">Cliquez sur "Modifier" pour entrer les informations de l'entreprise.</p>
                     </div>
                 @endif
             @endif

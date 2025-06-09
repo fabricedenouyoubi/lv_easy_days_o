@@ -82,7 +82,7 @@
                                                 wire:target="voirFeuillesDeTemps({{ $annee->id }})"
                                                 data-bs-toggle="tooltip" 
                                                 data-bs-placement="top"
-                                                title="Voir les feuilles de temps (génération automatique si nécessaire)">
+                                                title="Voir les feuilles de temps">
                                             
                                             <!-- Icône normale -->
                                             <i class="mdi mdi-file-table fs-5" 
@@ -104,7 +104,7 @@
                                             <button class="btn btn-outline-warning btn-sm rounded-3 px-3 d-inline-flex align-items-center" 
                                                     onclick="alert('Fonctionnalité de clôture disponible après implémentation de l\'authentification')"
                                                     data-bs-toggle="tooltip" 
-                                                    title="Clôturer l'année (nécessite authentification)">
+                                                    title="Clôturer l'année">
                                                 <i class="mdi mdi-close-circle-outline me-1"></i>
                                                 Clôturer
                                             </button>

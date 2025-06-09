@@ -121,7 +121,7 @@
                                id="telephone"
                                class="form-control @error('telephone') is-invalid @enderror" 
                                wire:model="telephone"
-                               placeholder="+237XXXXXXXXX">
+                               placeholder="+1 XXXXXXXXX">
                         @error('telephone')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -134,7 +134,7 @@
                                id="telephone_pro"
                                class="form-control @error('telephone_pro') is-invalid @enderror" 
                                wire:model="telephone_pro"
-                               placeholder="+237XXXXXXXXX">
+                               placeholder="+1 XXXXXXXXX">
                         @error('telephone_pro')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror

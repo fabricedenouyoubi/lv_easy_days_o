@@ -14,7 +14,7 @@
         </div>
     @endif
 
-    {{-- En-tête avec recherche et bouton créer --}}
+    {{-- En-tête avec recherche --}}
     <div class="card">
         <div class="card-header">
             <div class="row align-items-center">
@@ -34,15 +34,78 @@
         </div>
 
         <div class="card-body">
-            {{-- Barre de recherche --}}
+            {{-- Barre de recherche avec bouton filtrer --}}
             <div class="row mb-3">
                 <div class="col-md-6">
                     <div class="search-box">
-                        <div class="position-relative">
+                        <div class="input-group">
                             <input type="text" 
-                                   class="form-control" 
+                                   class="form-control @if($searchError) is-invalid @endif" 
                                    placeholder="Rechercher un site..." 
-                                   wire:model.live.debounce.300ms="search">
+                                   wire:model="search"
+                                   wire:keydown.enter="performSearch">
+                            
+                            {{-- Bouton Filtrer --}}
+                            <button type="button" 
+                                    class="btn btn-outline-primary" 
+                                    wire:click="performSearch"
+                                    wire:loading.attr="disabled"
+                                    wire:target="performSearch">
+                                <span wire:loading.remove wire:target="performSearch">
+                                    <i class="fas fa-search me-1"></i>
+                                    Filtrer
+                                </span>
+                                <span wire:loading wire:target="performSearch">
+                                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                                    Recherche...
+                                </span>
+                            </button>
+                            
+                            {{-- Bouton Effacer - visible seulement si une recherche est active --}}
+                            @if($searchTerm)
+                                <button type="button" 
+                                        class="btn btn-outline-secondary" 
+                                        wire:click="clearSearch"
+                                        title="Effacer la recherche">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            @endif
+                        </div>
+                        
+                        {{-- Message d'erreur de validation --}}
+                        @if($searchError)
+                            <div class="invalid-feedback d-block mt-1">
+                                <i class="fas fa-exclamation-circle me-1"></i>
+                                {{ $searchError }}
+                            </div>
+                        @endif
+                        
+                        {{-- Indicateur de recherche active --}}
+                        @if($searchTerm)
+                            <small class="text-muted mt-1 d-block">
+                                <i class="fas fa-filter me-1"></i>
+                                Filtré par : "<strong>{{ $searchTerm }}</strong>"
+                                <button type="button" 
+                                        class="btn btn-link btn-sm p-0 ms-1" 
+                                        wire:click="clearSearch">
+                                    (effacer)
+                                </button>
+                            </small>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            {{-- Spinner de recherche --}}
+            <div wire:loading wire:target="performSearch" class="position-relative">
+                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" 
+                     style="background: rgba(255,255,255,0.8); z-index: 10;">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Recherche en cours...</span>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">Recherche en cours...</small>
                         </div>
                     </div>
                 </div>
@@ -118,11 +181,11 @@
                                         </button>
 
                                         {{-- Bouton Supprimer --}}
-                                        <button class="btn btn-sm btn-outline-danger" 
+                                        <!-- <button class="btn btn-sm btn-outline-danger" 
                                                 wire:click="confirmDelete({{ $site->id }})"
                                                 data-bs-toggle="tooltip" 
                                                 title="Supprimer">
-                                            <i class="fas fa-trash"></i>
+                                            <i class="fas fa-trash"></i> -->
                                         </button>
                                     </div>
                                 </td>
@@ -131,7 +194,13 @@
                             <tr>
                                 <td colspan="4" class="text-center py-4">
                                     <i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i>
-                                    <p class="text-muted mb-0">Aucun site trouvé</p>
+                                    <p class="text-muted mb-0">
+                                        @if($searchTerm)
+                                            Aucun site trouvé pour "{{ $searchTerm }}"
+                                        @else
+                                            Aucun site trouvé
+                                        @endif
+                                    </p>
                                 </td>
                             </tr>
                         @endforelse
@@ -289,6 +358,10 @@
             top: 50%;
             transform: translateY(-50%);
             color: #6c757d;
+        }
+        .position-relative {
+            min-height: 200px;
+            margin-left: 500px;
         }
     </style>
 </div>
