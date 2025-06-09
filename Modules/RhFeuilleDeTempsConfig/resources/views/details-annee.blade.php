@@ -60,7 +60,7 @@
                             <div class="col-md-3">
                                 <div class="text-md-end mt-3 mt-md-0">
                                     <button class="btn btn-danger btn-sm rounded-3 px-3 d-inline-flex align-items-center"
-                                            onclick="alert('Fonctionnalité de clôture à venir')">
+                                            onclick="alert('Pas encore disppnible')">
                                         <i class="mdi mdi-close-circle-outline me-1"></i>
                                         Clôturer l'année
                                     </button>

@@ -99,16 +99,16 @@
                                             </div>
                                         </button>
 
-                                        <!-- Bouton Clôturer (temporairement désactivé) -->
-                                        @if($annee->actif)
-                                            <button class="btn btn-outline-warning btn-sm rounded-3 px-3 d-inline-flex align-items-center" 
-                                                    onclick="alert('Fonctionnalité de clôture disponible après implémentation de l\'authentification')"
+                                        <!-- Bouton Clôturer -->
+                                         @if($annee->actif)
+                                           <!-- <button class="btn btn-outline-warning btn-sm rounded-3 px-3 d-inline-flex align-items-center" 
+                                                    onclick="alert('Pas encore disponible')"
                                                     data-bs-toggle="tooltip" 
                                                     title="Clôturer l'année">
                                                 <i class="mdi mdi-close-circle-outline me-1"></i>
                                                 Clôturer
-                                            </button>
-                                        @endif
+                                            </button> -->
+                                        @endif 
                                     </div>
                                 </td>
                             </tr>
@@ -138,8 +138,8 @@
                 <span class="visually-hidden">Chargement...</span>
             </div>
             <div>
-                <strong>Génération en cours...</strong><br>
-                <small>Création des feuilles de temps et jours fériés pour cette année financière.</small>
+                <strong>En cours...</strong><br>
+                <!--<small>Création des semaines, et jours fériés pour cette année financière.</small>-->
             </div>
         </div>
     </div>

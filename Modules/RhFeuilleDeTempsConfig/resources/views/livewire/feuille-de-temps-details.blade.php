@@ -46,7 +46,7 @@
                                id="showOnlyActive" 
                                wire:model.live="showOnlyActive">
                         <label class="form-check-label" for="showOnlyActive">
-                            Feuilles actives seulement
+                            Semaines actives seulement
                         </label>
                     </div>
                 </div>
@@ -67,7 +67,7 @@
         <div class="card-header">
             <h5 class="card-title mb-0 d-flex align-items-center">
                 <i class="mdi mdi-file-table me-2"></i>
-                Feuilles de temps
+                Semaines de l'années
             </h5>
         </div>
         <div class="card-body p-0">
@@ -162,14 +162,6 @@
                                                 </button>
                                             </li>
                                             
-                                            <li><hr class="dropdown-divider"></li>
-                                            
-                                            <li>
-                                                <a class="dropdown-item" href="#" onclick="alert('Fonctionnalité à venir')">
-                                                    <i class="mdi mdi-eye text-info me-2"></i>
-                                                    Voir les heures
-                                                </a>
-                                            </li>
                                         </ul>
                                     </div>
                                 </td>
@@ -179,7 +171,7 @@
                                 <td colspan="6" class="text-center py-5">
                                     <div class="d-flex flex-column align-items-center">
                                         <i class="mdi mdi-file-table text-muted mb-3" style="font-size: 48px;"></i>
-                                        <h6 class="text-muted">Aucune feuille de temps trouvée</h6>
+                                        <h6 class="text-muted">Aucune semaine trouvée</h6>
                                         @if($search || $statusFilter !== 'all' || !$showOnlyActive)
                                             <p class="text-muted small mb-3">Essayez de modifier vos filtres</p>
                                             <button type="button" 
@@ -213,7 +205,7 @@
                         <i class="mdi mdi-file-table" style="font-size: 24px;"></i>
                     </div>
                     <h4 class="mb-1">{{ $feuilles->total() }}</h4>
-                    <p class="text-muted mb-0 small">Total feuilles</p>
+                    <p class="text-muted mb-0 small">Total semaines</p>
                 </div>
             </div>
         </div>
@@ -224,7 +216,7 @@
                         <i class="mdi mdi-check-circle" style="font-size: 24px;"></i>
                     </div>
                     <h4 class="mb-1">{{ $feuilles->where('actif', true)->count() }}</h4>
-                    <p class="text-muted mb-0 small">Feuilles actives</p>
+                    <p class="text-muted mb-0 small">Semaines actives</p>
                 </div>
             </div>
         </div>
@@ -235,7 +227,7 @@
                         <i class="mdi mdi-close-circle" style="font-size: 24px;"></i>
                     </div>
                     <h4 class="mb-1">{{ $feuilles->where('actif', false)->count() }}</h4>
-                    <p class="text-muted mb-0 small">Feuilles non actives</p>
+                    <p class="text-muted mb-0 small">Semaines non actives</p>
                 </div>
             </div>
         </div>

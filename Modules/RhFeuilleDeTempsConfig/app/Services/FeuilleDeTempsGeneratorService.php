@@ -9,7 +9,7 @@ use Modules\RhFeuilleDeTempsConfig\Models\FeuilleDeTemps;
 
 class FeuilleDeTempsGeneratorService
 {
-     /**
+    /**
      * Générer toutes les feuilles de temps pour une année financière
      */
     public function generateFeuillesDeTemps(AnneeFinanciere $anneeFinanciere)
@@ -19,7 +19,7 @@ class FeuilleDeTempsGeneratorService
             $weekNumber = 1;
 
             while ($currentDate->lte($anneeFinanciere->fin)) {
-                // Calculer le jour de la semaine avec dimanche comme jour 0 (système nord-américain)
+                // Calculer le jour de la semaine avec dimanche comme jour 0
                 $adjustedWeekday = ($currentDate->dayOfWeek + 1) % 7;
 
                 // Si ce n'est pas un dimanche, reculer au dimanche précédent
@@ -37,7 +37,7 @@ class FeuilleDeTempsGeneratorService
                     'numero_semaine' => $weekNumber,
                     'debut' => $currentDate->toDateString(),
                     'fin' => $endOfWeek->toDateString(),
-                    'actif' => true,
+                    'actif' => false,
                     'annee_financiere_id' => $anneeFinanciere->id,
                     'est_semaine_de_paie' => false
                 ]);
@@ -65,7 +65,6 @@ class FeuilleDeTempsGeneratorService
 
     /**
      * Désactiver toutes les feuilles de temps
-     * Utilisé lors de la clôture d'une année financière
      */
     public function deactivateAllFeuillesDeTemps()
     {
@@ -108,11 +107,12 @@ class FeuilleDeTempsGeneratorService
      */
     public function areFeuillesGenerated(AnneeFinanciere $anneeFinanciere)
     {
-        return FeuilleDeTemps::where('annee_financiere_id', $anneeFinanciere->id)->exists();
+        $count = FeuilleDeTemps::where('annee_financiere_id', $anneeFinanciere->id)->count();
+        return $count > 0;
     }
 
     /**
-     * Supprimer toutes les feuilles d'une année (pour régénération)
+     * Supprimer toutes les feuilles d'une année pour régénération - Si necessaire
      */
     public function deleteFeuillesForAnnee(AnneeFinanciere $anneeFinanciere)
     {
@@ -120,7 +120,7 @@ class FeuilleDeTempsGeneratorService
     }
 
     /**
-     * Régénérer les feuilles pour une année (supprime et recrée)
+     * Régénérer les feuilles pour une année - supprime et recrée
      */
     public function regenerateFeuillesDeTemps(AnneeFinanciere $anneeFinanciere)
     {
@@ -152,5 +152,4 @@ class FeuilleDeTempsGeneratorService
         return FeuilleDeTemps::where('id', $feuilleId)
                             ->update(['est_semaine_de_paie' => false]);
     }
-    public function handle() {}
 }

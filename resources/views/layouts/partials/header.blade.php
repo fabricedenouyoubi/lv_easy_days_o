@@ -46,9 +46,6 @@
             <!-- Notifications -->
             @include('layouts.partials.header.notifications')
             
-            <!-- Settings -->
-            @include('layouts.partials.header.settings')
-            
             <!-- User Profile -->
             @include('layouts.partials.header.user-profile')
         </div>

@@ -62,13 +62,8 @@
                     </a>
                 </li>
 
-                <li>
-                    <a href="{{ route('rh.poste.list') }}">
-                        <i class="icon nav-icon" data-eva="people-outline"></i>
-                        <span class="menu-item" data-key="t-annees-financieres">Postes</span>
-                    </a>
-                </li>
-
+                <!-- RH -->
+                <li class="menu-title" data-key="t-budget">RH</li>
                 <li>
                     <a href="#" onclick="return false;">
                         <i class="icon nav-icon" data-eva="people-outline"></i>

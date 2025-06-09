@@ -15,7 +15,7 @@ class FeuilleDeTempsDetails extends Component
     public $anneeFinanciere;
     public $search = '';
     public $statusFilter = 'all';
-    public $showOnlyActive = true;
+    public $showOnlyActive = false;
     
     protected $paginationTheme = 'bootstrap';
 
