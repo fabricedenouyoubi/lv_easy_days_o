@@ -138,7 +138,7 @@
                 <span class="visually-hidden">Chargement...</span>
             </div>
             <div>
-                <strong>En cours...</strong><br>
+                <strong>En cours de traitement...</strong><br>
                 <!--<small>Création des semaines, et jours fériés pour cette année financière.</small>-->
             </div>
         </div>

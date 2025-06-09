@@ -24,39 +24,44 @@
         </div>
         <div class="card-body">
             <div class="row align-items-end">
-                <div class="col-md-4">
-                    <label class="form-label">Rechercher</label>
-                    <input type="text" 
+                <div class="col-md-3">
+                    <label class="form-label">Date début</label>
+                    <input type="date" 
                            class="form-control" 
-                           placeholder="Numéro de semaine..." 
-                           wire:model.live.debounce.300ms="search">
+                           wire:model="dateDebut">
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Type de semaine</label>
-                    <select class="form-select" wire:model.live="statusFilter">
-                        <option value="all">Toutes les semaines</option>
-                        <option value="paie">Semaines de paie</option>
-                        <option value="normal">Semaines normales</option>
-                    </select>
+                    <label class="form-label">Date fin</label>
+                    <input type="date" 
+                           class="form-control" 
+                           wire:model="dateFin">
                 </div>
                 <div class="col-md-3">
                     <div class="form-check form-switch mt-2">
                         <input class="form-check-input" 
                                type="checkbox" 
                                id="showOnlyActive" 
-                               wire:model.live="showOnlyActive">
+                               wire:model="showOnlyActive">
                         <label class="form-check-label" for="showOnlyActive">
                             Semaines actives seulement
                         </label>
                     </div>
                 </div>
-                <div class="col-md-2">
-                    <button type="button" 
-                            class="btn btn-outline-secondary w-100" 
-                            wire:click="$set('search', ''); $set('statusFilter', 'all'); $set('showOnlyActive', true)">
-                        <i class="mdi mdi-refresh me-1"></i>
-                        Réinitialiser
-                    </button>
+                <div class="col-md-3">
+                    <div class="d-flex gap-2">
+                        <button type="button" 
+                                class="btn btn-primary flex-fill" 
+                                wire:click="applyFilters">
+                            <i class="mdi mdi-magnify me-1"></i>
+                            Filtrer
+                        </button>
+                        <button type="button" 
+                                class="btn btn-outline-secondary flex-fill" 
+                                wire:click="resetFilters">
+                            <i class="mdi mdi-refresh me-1"></i>
+                            Réinitialiser
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -172,11 +177,11 @@
                                     <div class="d-flex flex-column align-items-center">
                                         <i class="mdi mdi-file-table text-muted mb-3" style="font-size: 48px;"></i>
                                         <h6 class="text-muted">Aucune semaine trouvée</h6>
-                                        @if($search || $statusFilter !== 'all' || !$showOnlyActive)
+                                        @if($appliedDateDebut || $appliedDateFin || $appliedShowOnlyActive)
                                             <p class="text-muted small mb-3">Essayez de modifier vos filtres</p>
                                             <button type="button" 
                                                     class="btn btn-outline-primary btn-sm"
-                                                    wire:click="$set('search', ''); $set('statusFilter', 'all'); $set('showOnlyActive', false)">
+                                                    wire:click="resetFilters">
                                                 Réinitialiser les filtres
                                             </button>
                                         @endif

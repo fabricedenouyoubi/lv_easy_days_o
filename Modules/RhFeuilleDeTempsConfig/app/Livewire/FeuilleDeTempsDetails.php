@@ -13,9 +13,14 @@ class FeuilleDeTempsDetails extends Component
     use WithPagination;
 
     public $anneeFinanciere;
-    public $search = '';
-    public $statusFilter = 'all';
+    public $dateDebut = '';
+    public $dateFin = '';
     public $showOnlyActive = false;
+    
+    // Variables pour stocker les filtres appliqués
+    public $appliedDateDebut = '';
+    public $appliedDateFin = '';
+    public $appliedShowOnlyActive = false;
     
     protected $paginationTheme = 'bootstrap';
 
@@ -28,18 +33,27 @@ class FeuilleDeTempsDetails extends Component
         $this->anneeFinanciere = AnneeFinanciere::findOrFail($anneeFinanciereId);
     }
 
-    public function updatingSearch()
+    public function applyFilters()
     {
+        // Copier les valeurs des filtres vers les variables appliquées
+        $this->appliedDateDebut = $this->dateDebut;
+        $this->appliedDateFin = $this->dateFin;
+        $this->appliedShowOnlyActive = $this->showOnlyActive;
+        
+        // Réinitialiser la pagination
         $this->resetPage();
     }
 
-    public function updatingStatusFilter()
+    public function resetFilters()
     {
-        $this->resetPage();
-    }
-
-    public function updatingShowOnlyActive()
-    {
+        $this->dateDebut = '';
+        $this->dateFin = '';
+        $this->showOnlyActive = false;
+        
+        $this->appliedDateDebut = '';
+        $this->appliedDateFin = '';
+        $this->appliedShowOnlyActive = false;
+        
         $this->resetPage();
     }
 
@@ -83,18 +97,14 @@ class FeuilleDeTempsDetails extends Component
     public function getFeuillesProperty()
     {
         return FeuilleDeTemps::where('annee_financiere_id', $this->anneeFinanciere->id)
-            ->when($this->search, function ($query) {
-                $query->where('numero_semaine', 'like', '%' . $this->search . '%');
+            ->when($this->appliedDateDebut, function ($query) {
+                $query->where('debut', '>=', $this->appliedDateDebut);
             })
-            ->when($this->showOnlyActive, function ($query) {
+            ->when($this->appliedDateFin, function ($query) {
+                $query->where('fin', '<=', $this->appliedDateFin);
+            })
+            ->when($this->appliedShowOnlyActive, function ($query) {
                 $query->where('actif', true);
-            })
-            ->when($this->statusFilter !== 'all', function ($query) {
-                if ($this->statusFilter === 'paie') {
-                    $query->where('est_semaine_de_paie', true);
-                } elseif ($this->statusFilter === 'normal') {
-                    $query->where('est_semaine_de_paie', false);
-                }
             })
             ->orderBy('numero_semaine')
             ->paginate(20);
