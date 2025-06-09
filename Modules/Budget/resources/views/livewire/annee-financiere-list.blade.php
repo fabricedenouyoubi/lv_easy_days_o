@@ -24,6 +24,14 @@
                         Historique des Années Financières
                     </h4>
                 </div>
+
+                <div class="col-auto">
+                    <button type="button" class="btn btn-primary" wire:click="showCreateModal">
+                        <i class="mdi mdi-plus" class="fill-white me-2"></i>
+                        Nouvelle Année
+                    </button>
+                </div>
+
             </div>
         </div>
 
@@ -99,6 +107,16 @@
                                             </div>
                                         </button>
 
+                                        <!-- Bouton Activer - si pas active -->
+                                        @if($annee->statut !== 'ACTIF')
+                                            <button class="btn btn-sm btn-outline-success" 
+                                                    wire:click="activer({{ $annee->id }})"
+                                                    data-bs-toggle="tooltip" 
+                                                    title="Activer">
+                                                <i class="mdi mdi-check-circle fs-5"></i>
+                                            </button>
+                                        @endif
+
                                         <!-- Bouton Clôturer -->
                                          @if($annee->actif)
                                            <!-- <button class="btn btn-outline-warning btn-sm rounded-3 px-3 d-inline-flex align-items-center" 
@@ -143,6 +161,26 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal Formulaire -->
+    @if($showModal)
+        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            {{ $editingId ? 'Modifier' : 'Créer' }} une Année Financière
+                        </h5>
+                        <button type="button" class="btn-close" wire:click="closeModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <livewire:budget::annee-financiere-form :anneeId="$editingId" :key="$editingId" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
 </div>
 
 @push('scripts')

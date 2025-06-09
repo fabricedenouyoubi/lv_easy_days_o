@@ -13,12 +13,15 @@ class AnneeFinanciereList extends Component
     public $search = '';
     public $showClotureModal = false;
     public $cloturingId = null;
+    public $showModal = false;
+    public $editingId = null;
     // Pour afficher un spinner pendant la génération
     public $generatingId = null; 
 
     protected $paginationTheme = 'bootstrap';
 
     protected $listeners = [
+        'anneeFinanciereCreated' => 'handleAnneeFinanciereCreated',
         'refreshComponent' => '$refresh'
     ];
 
@@ -27,6 +30,13 @@ class AnneeFinanciereList extends Component
         $this->resetPage();
     }
 
+    public function showCreateModal()
+    {
+        $this->editingId = null;
+        $this->showModal = true;
+    }
+
+    
     public function voirFeuillesDeTemps($anneeId)
     {
         try {
@@ -67,6 +77,12 @@ class AnneeFinanciereList extends Component
         }
     }
 
+    public function closeModal()
+    {
+        $this->showModal = false;
+        $this->editingId = null;
+    }
+
     public function confirmCloture($id)
     {
         $this->cloturingId = $id;
@@ -77,6 +93,24 @@ class AnneeFinanciereList extends Component
     {
         $this->showClotureModal = false;
         $this->cloturingId = null;
+    }
+
+    public function activer($id)
+    {
+        try {
+            $annee = AnneeFinanciere::findOrFail($id);
+            $annee->activer();
+            
+            session()->flash('success', 'Année financière activée avec succès.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Erreur lors de l\'activation : ' . $e->getMessage());
+        }
+    }
+
+    public function handleAnneeFinanciereCreated()
+    {
+        $this->closeModal();
+        session()->flash('success', 'Année financière créée avec succès.');
     }
 
     public function cloturerEtCreerSuivante()
