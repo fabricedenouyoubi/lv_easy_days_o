@@ -51,15 +51,31 @@
                     <div class="d-flex gap-2">
                         <button type="button" 
                                 class="btn btn-primary flex-fill" 
-                                wire:click="applyFilters">
-                            <i class="mdi mdi-magnify me-1"></i>
-                            Filtrer
+                                wire:click="applyFilters"
+                                wire:loading.attr="disabled"
+                                wire:target="applyFilters">
+                            <span wire:loading.remove wire:target="applyFilters">
+                                <i class="mdi mdi-magnify me-1"></i>
+                                Filtrer
+                            </span>
+                            <span wire:loading wire:target="applyFilters">
+                                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                Filtrage...
+                            </span>
                         </button>
                         <button type="button" 
                                 class="btn btn-outline-secondary flex-fill" 
-                                wire:click="resetFilters">
-                            <i class="mdi mdi-refresh me-1"></i>
-                            Réinitialiser
+                                wire:click="resetFilters"
+                                wire:loading.attr="disabled"
+                                wire:target="resetFilters">
+                            <span wire:loading.remove wire:target="resetFilters">
+                                <i class="mdi mdi-refresh me-1"></i>
+                                Réinitialiser
+                            </span>
+                            <span wire:loading wire:target="resetFilters">
+                                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                Réinitialisation...
+                            </span>
                         </button>
                     </div>
                 </div>
