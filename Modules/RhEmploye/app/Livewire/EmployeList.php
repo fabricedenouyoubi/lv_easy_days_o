@@ -32,6 +32,7 @@ class EmployeList extends Component
 
     public function closeModal($val = null)
     {
+
         $val ? $this->showModal = $this->val : $this->showModal = false;
         $this->editingId = null;
     }

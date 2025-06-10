@@ -8,22 +8,32 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Modules\RhEmploye\Models\Employe;
+use Modules\RhEmploye\Models\HistoriqueGestionnaire;
+use Livewire\WithPagination;
 
 class EmployeDetails extends Component
 {
+    use WithPagination;
+
     public $employeId;
     public $employe;
     public $showInfoEdit = true;
     public $showModal = false;
+    public $showGestM = false;
 
     public $current_password;
     public $new_password;
     public $new_password_confirmation;
 
+    public $historique_gestionnaire;
+
+    protected $paginationTheme = 'bootstrap';
 
     protected $listeners = [
         'closeEditModal' => 'closeModal',
+        'closeGestModal' => 'closeGestModal',
         'employeUpdated' => 'handleEmployeUpdated',
+        'gestionnaireAjoute' => 'gestionnaireAjoute'
     ];
 
 
@@ -85,10 +95,28 @@ class EmployeDetails extends Component
         $val ? $this->showModal = $this->val : $this->showModal = !$this->showModal;
     }
 
+    public function showGestModal()
+    {
+        $this->showGestM = !$this->showGestM;
+    }
+
+
+    public function closeGestModal($val = null)
+    {
+        $val ? $this->showGestM = $this->val : $this->showGestM = !$this->showGestM;
+    }
+
+
     public function handleEmployeUpdated()
     {
         $this->closeModal();
         session()->flash('success', 'Les informations de l\'employé ont été modifiés avec succès.');
+    }
+
+    public function gestionnaireAjoute()
+    {
+        $this->closeGestModal();
+        session()->flash('success', 'Le nouveau gestionaire a été ajouté avec succès.');
     }
 
     public function changePassword()
@@ -110,8 +138,14 @@ class EmployeDetails extends Component
         $this->reset(['current_password', 'new_password', 'new_password_confirmation']);
     }
 
+    public function get_historique_gestionnaire()
+    {
+        return HistoriqueGestionnaire::with('gestionnaire')->where('employe_id', $this->employeId)->paginate(10);
+    }
+
     public function render()
     {
-        return view('rhemploye::livewire.employe-details');
+
+        return view('rhemploye::livewire.employe-details', ['gestionnaire_historique' => $this->get_historique_gestionnaire()]);
     }
 }

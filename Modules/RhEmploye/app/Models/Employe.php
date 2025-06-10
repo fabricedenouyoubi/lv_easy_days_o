@@ -71,7 +71,17 @@ class Employe extends Model
 
     public function employe_groups()
     {
-       return  User::with('groups')->findOrFail($this->user_id)->groups;
+        return  User::with('groups')->findOrFail($this->user_id)->groups;
+    }
+
+    public function historiques_gestionnaire_employe()
+    {
+        return $this->hasMany(HistoriqueGestionnaire::class, 'employe_id');
+    }
+
+    public function historiques_gestionnaire_gest()
+    {
+        return $this->hasMany(HistoriqueGestionnaire::class, 'gestionnaire_id');
     }
 
 

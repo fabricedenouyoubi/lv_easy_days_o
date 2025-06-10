@@ -25,6 +25,7 @@ class EmployeEditForm extends Component
     public $groups;
     public $groups_array;
     public $showModal = false;
+    public $groups_list;
 
 
     public function mount()
@@ -43,6 +44,7 @@ class EmployeEditForm extends Component
             $this->email = $employe->email();
             $this->groups = $employe->employe_groups()->pluck('id')->toArray();
         }
+        $this->groups_list = $this->get_groups();
     }
 
 
@@ -143,8 +145,6 @@ class EmployeEditForm extends Component
 
     public function render()
     {
-        return view('rhemploye::livewire.employe-edit-form', [
-            'groups_list' => $this->get_groups()
-        ]);
+        return view('rhemploye::livewire.employe-edit-form');
     }
 }

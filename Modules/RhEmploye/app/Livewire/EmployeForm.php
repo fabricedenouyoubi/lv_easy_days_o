@@ -22,6 +22,7 @@ class EmployeForm extends Component
     public $adresse_id;
     public $email;
     public $groups;
+    public $groups_list;
 
 
     protected function rules()
@@ -59,11 +60,16 @@ class EmployeForm extends Component
         ];
     }
 
+    public function mount()
+    {
+        $this->groups_list = $this->get_groups();
+    }
+
     public function generateMatricule()
     {
         $employeCount = Employe::count() + 1;
         $current_year = date('Y');
-        return 'EMP' . $current_year . '-00'. $employeCount;
+        return 'EMP' . $current_year . '-00' . $employeCount;
     }
 
     public function save()
@@ -116,8 +122,7 @@ class EmployeForm extends Component
     public function render()
     {
         return view(
-            'rhemploye::livewire.employe-form',
-            ['groups_list' => $this->get_groups()]
+            'rhemploye::livewire.employe-form'
         );
     }
 }
