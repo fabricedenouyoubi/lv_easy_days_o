@@ -1,0 +1,11 @@
+{
+    "name": "RhEmploye",
+    "alias": "rhemploye",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\RhEmploye\\Providers\\RhEmployeServiceProvider"
+    ],
+    "files": []
+}

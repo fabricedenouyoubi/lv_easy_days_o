@@ -1,0 +1,11 @@
+{
+    "name": "RhFeuilleDeTempsConfig",
+    "alias": "rhfeuilledetempsconfig",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\RhFeuilleDeTempsConfig\\Providers\\RhFeuilleDeTempsConfigServiceProvider"
+    ],
+    "files": []
+}
