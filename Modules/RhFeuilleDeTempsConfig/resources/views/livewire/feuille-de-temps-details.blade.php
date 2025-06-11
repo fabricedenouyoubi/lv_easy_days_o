@@ -25,13 +25,13 @@
         <div class="card-body">
             <div class="row align-items-end">
                 <div class="col-md-3">
-                    <label class="form-label">Date début</label>
+                    <label class="form-label">Date début :</label>
                     <input type="date" 
                            class="form-control" 
                            wire:model="dateDebut">
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Date fin</label>
+                    <label class="form-label">Date fin :</label>
                     <input type="date" 
                            class="form-control" 
                            wire:model="dateFin">
@@ -225,7 +225,7 @@
                     <div class="text-primary mb-2">
                         <i class="mdi mdi-file-table" style="font-size: 24px;"></i>
                     </div>
-                    <h4 class="mb-1">{{ $feuilles->total() }}</h4>
+                    <h4 class="mb-1">{{ $statistiques['total'] }}</h4>
                     <p class="text-muted mb-0 small">Total semaines</p>
                 </div>
             </div>
@@ -236,7 +236,7 @@
                     <div class="text-success mb-2">
                         <i class="mdi mdi-check-circle" style="font-size: 24px;"></i>
                     </div>
-                    <h4 class="mb-1">{{ $feuilles->where('actif', true)->count() }}</h4>
+                    <h4 class="mb-1">{{ $statistiques['actives'] }}</h4>
                     <p class="text-muted mb-0 small">Semaines actives</p>
                 </div>
             </div>
@@ -247,7 +247,7 @@
                     <div class="text-danger mb-2">
                         <i class="mdi mdi-close-circle" style="font-size: 24px;"></i>
                     </div>
-                    <h4 class="mb-1">{{ $feuilles->where('actif', false)->count() }}</h4>
+                    <h4 class="mb-1">{{ $statistiques['inactives'] }}</h4>
                     <p class="text-muted mb-0 small">Semaines non actives</p>
                 </div>
             </div>
@@ -258,7 +258,7 @@
                     <div class="text-warning mb-2">
                         <i class="mdi mdi-cash" style="font-size: 24px;"></i>
                     </div>
-                    <h4 class="mb-1">{{ $feuilles->where('est_semaine_de_paie', true)->count() }}</h4>
+                    <h4 class="mb-1">{{ $statistiques['semaines_paie'] }}</h4>
                     <p class="text-muted mb-0 small">Semaines de paie</p>
                 </div>
             </div>

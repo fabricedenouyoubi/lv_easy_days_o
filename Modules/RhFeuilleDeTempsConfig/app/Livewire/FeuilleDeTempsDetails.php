@@ -110,10 +110,30 @@ class FeuilleDeTempsDetails extends Component
             ->paginate(20);
     }
 
+    public function getStatistiquesProperty()
+    {
+        $query = FeuilleDeTemps::where('annee_financiere_id', $this->anneeFinanciere->id)
+            ->when($this->appliedDateDebut, function ($query) {
+                $query->where('debut', '>=', $this->appliedDateDebut);
+            })
+            ->when($this->appliedDateFin, function ($query) {
+                $query->where('fin', '<=', $this->appliedDateFin);
+            });
+
+        return [
+            'total' => $query->count(),
+            'actives' => $query->clone()->where('actif', true)->count(),
+            'inactives' => $query->clone()->where('actif', false)->count(),
+            'semaines_paie' => $query->clone()->where('est_semaine_de_paie', true)->count(),
+        ];
+    }
+
+
     public function render()
     {
         return view('rhfeuilledetempsconfig::livewire.feuille-de-temps-details', [
-            'feuilles' => $this->feuilles
+            'feuilles' => $this->feuilles,
+            'statistiques' => $this->statistiques
         ]);
     }
 }
