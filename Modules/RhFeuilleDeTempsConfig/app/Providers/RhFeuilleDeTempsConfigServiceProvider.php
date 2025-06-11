@@ -10,6 +10,8 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Modules\RhFeuilleDeTempsConfig\Livewire\CategoriesList;
 use Modules\RhFeuilleDeTempsConfig\Livewire\CategoriesForm;
+use Modules\RhFeuilleDeTempsConfig\Livewire\CodesTravailList;
+use Modules\RhFeuilleDeTempsConfig\Livewire\CodeTravailForm;
 
 class RhFeuilleDeTempsConfigServiceProvider extends ServiceProvider
 {
@@ -48,6 +50,9 @@ class RhFeuilleDeTempsConfigServiceProvider extends ServiceProvider
         // Composants pour les catégories
         Livewire::component('rh-config::categories-list', CategoriesList::class);
         Livewire::component('rh-config::categories-form', CategoriesForm::class);
+        // Composants pour les codes de travail
+        Livewire::component('rh-config::codes-travail-list', CodesTravailList::class);
+        Livewire::component('rh-config::code-travail-form', CodeTravailForm::class);
     }
 
     /**

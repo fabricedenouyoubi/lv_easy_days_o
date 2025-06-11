@@ -17,87 +17,85 @@
 
     {{-- Layout principal avec tableau à gauche et filtres à droite --}}
     <div class="row">
-        {{-- Colonne principale - Tableau des catégories --}}
+        {{-- Colonne principale - Tableau des codes de travail --}}
         <div class="col-lg-8">
             <div class="card">
                 <div class="card-header">
                     <div class="row align-items-center">
                         <div class="col">
                             <h4 class="card-title mb-0">
-                                <i class="fas fa-tags me-2"></i>
-                                Liste des Catégories
+                                <i class="fas fa-clipboard-list me-2"></i>
+                                Liste des codes de travail
                             </h4>
                         </div>
                         <div class="col-auto">
                             <button type="button" class="btn btn-primary" wire:click="showCreateModal">
                                 <i class="fas fa-plus me-2"></i>
-                                Nouvelle Catégorie
+                                Nouveau Code
                             </button>
                         </div>
                     </div>
                 </div>
 
                 <div class="card-body">
-                    {{-- Tableau des catégories --}}
+                    {{-- Tableau des codes de travail --}}
                     <div class="table-responsive">
                         <table class="table table-nowrap align-middle">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Intitulé</th>
-                                    <th>Configurable</th>
-                                    <th>Valeur Config</th>
-                                    <th>Actions</th>
+                                    <th>Code</th>
+                                    <th>Libellé</th>
+                                    <th>Catégorie</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($categories as $categorie)
+                                @forelse($codesTravail as $codeTravail)
                                     <tr>
                                         <td>
-                                            <strong>{{ $categorie->intitule }}</strong>
+                                            <code class="bg-light px-2 py-1 rounded">{{ $codeTravail->code }}</code>
                                         </td>
                                         <td>
-                                            @if($categorie->configurable)
-                                                <span class="badge bg-success">
-                                                    <i class="fas fa-check me-1"></i>Oui
-                                                </span>
-                                            @else
-                                                <span class="badge bg-secondary">
-                                                    <i class="fas fa-times me-1"></i>Non
-                                                </span>
-                                            @endif
+                                            <strong>{{ $codeTravail->libelle }}</strong>
                                         </td>
                                         <td>
-                                            @if($categorie->configurable && $categorie->valeur_config)
-                                                <span class="badge bg-info">{{ $categorie->valeur_config }}</span>
-                                            @else
-                                                <span class="text-muted">-</span>
-                                            @endif
+                                            <span class="badge bg-info">{{ $codeTravail->categorie->intitule }}</span>
                                         </td>
                                         <td>
                                             <div class="d-flex gap-2">
-                                                {{-- Bouton Détails --}}
+                                                {{-- Bouton Voir détails --}}
                                                 <button class="btn btn-sm btn-outline-info" 
-                                                        wire:click="showDetailModal({{ $categorie->id }})"
+                                                        wire:click="showDetailModal({{ $codeTravail->id }})"
                                                         data-bs-toggle="tooltip" 
                                                         title="Voir détails">
                                                     <i class="fas fa-eye"></i>
                                                 </button>
 
                                                 {{-- Bouton Modifier --}}
-                                                <button class="btn btn-sm btn-outline-primary" 
-                                                        wire:click="showEditModal({{ $categorie->id }})"
+                                                <button class="btn btn-sm btn-outline-success" 
+                                                        wire:click="showEditModal({{ $codeTravail->id }})"
                                                         data-bs-toggle="tooltip" 
                                                         title="Modifier">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
+
+                                                {{-- Bouton Configuration (conditionnel) --}}
+                                                @if($codeTravail->isConfigurable())
+                                                    <a href="{{ route('rhfeuilledetempsconfig.codes-travail.configure', $codeTravail->id) }}" 
+                                                       class="btn btn-sm btn-outline-primary"
+                                                       data-bs-toggle="tooltip" 
+                                                       title="Configuration">
+                                                        <i class="fas fa-cog"></i>
+                                                    </a>
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="text-center py-4">
-                                            <i class="fas fa-tags fa-3x text-muted mb-3"></i>
-                                            <p class="text-muted mb-0">Aucune catégorie trouvée</p>
+                                        <td colspan="4" class="text-center py-4">
+                                            <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                                            <p class="text-muted mb-0">Aucun code de travail trouvé</p>
                                         </td>
                                     </tr>
                                 @endforelse
@@ -107,7 +105,7 @@
 
                     {{-- Pagination --}}
                     <div class="mt-3">
-                        {{ $categories->links() }}
+                        {{ $codesTravail->links() }}
                     </div>
                 </div>
             </div>
@@ -123,24 +121,35 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    {{-- Filtre par intitulé --}}
+                    {{-- Filtre par code --}}
                     <div class="mb-3">
-                        <label for="search" class="form-label">Intitulé</label>
+                        <label for="searchCode" class="form-label">Code</label>
                         <input type="text" 
-                               id="search"
+                               id="searchCode"
                                class="form-control" 
-                               placeholder="Rechercher par intitulé..." 
-                               wire:model.defer="search">
+                               placeholder="Rechercher par code..." 
+                               wire:model.defer="searchCode">
                     </div>
 
-                    {{-- Filtre par configuration --}}
+                    {{-- Filtre par libellé du code --}}
                     <div class="mb-3">
-                        <label for="filterConfigurable" class="form-label">Type de configuration</label>
-                        <select id="filterConfigurable" 
+                        <label for="searchLibelle" class="form-label">Libellé du code</label>
+                        <input type="text" 
+                               id="searchLibelle"
+                               class="form-control" 
+                               placeholder="Rechercher par libellé..." 
+                               wire:model.defer="searchLibelle">
+                    </div>
+
+                    {{-- Filtre par catégorie --}}
+                    <div class="mb-3">
+                        <label for="filterCategorie" class="form-label">Catégorie</label>
+                        <select id="filterCategorie" 
                                 class="form-select" 
-                                wire:model.defer="filterConfigurable">
-                            @foreach($filterOptions as $value => $label)
-                                <option value="{{ $value }}">{{ $label }}</option>
+                                wire:model.defer="filterCategorie">
+                            <option value="">-- Toutes --</option>
+                            @foreach($categories as $categorie)
+                                <option value="{{ $categorie->id }}">{{ $categorie->intitule }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -187,44 +196,54 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">
-                            <i class="fas fa-tags me-2"></i>
-                            {{ $editingId ? 'Modifier la Catégorie' : 'Nouvelle Catégorie' }}
+                            <i class="fas fa-clipboard-list me-2"></i>
+                            {{ $editingId ? 'Modifier le Code de travail' : 'Nouveau Code de travail' }}
                         </h5>
                         <button type="button" class="btn-close" wire:click="closeModal"></button>
                     </div>
                     <div class="modal-body">
-                        <livewire:rh-config::categories-form :categorieId="$editingId" :key="$editingId" />
+                        <livewire:rh-config::code-travail-form :codeTravailId="$editingId" :key="$editingId" />
                     </div>
                 </div>
             </div>
         </div>
     @endif
 
-    {{-- Modal Détail Catégorie --}}
-    @if($showDetail && $detailCategorie)
+    {{-- Modal Détail Code de travail --}}
+    @if($showDetail && $detailCodeTravail)
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">
                             <i class="fas fa-info-circle me-2"></i>
-                            Détails de la Catégorie
+                            Détails du Code de travail
                         </h5>
                         <button type="button" class="btn-close" wire:click="closeDetailModal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="row">
-                            <div class="col-md-8">
-                                <h6><i class="fas fa-tag me-2"></i>Informations Générales</h6>
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-clipboard-list me-2"></i>Informations du Code</h6>
                                 <table class="table table-borderless">
                                     <tr>
-                                        <td><strong>Intitulé :</strong></td>
-                                        <td>{{ $detailCategorie->intitule }}</td>
+                                        <td><strong>Code :</strong></td>
+                                        <td><code class="bg-light px-2 py-1 rounded">{{ $detailCodeTravail->code }}</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Libellé :</strong></td>
+                                        <td>{{ $detailCodeTravail->libelle }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Catégorie :</strong></td>
+                                        <td>
+                                            <span class="badge bg-info">{{ $detailCodeTravail->categorie->intitule }}</span>
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td><strong>Configurable :</strong></td>
                                         <td>
-                                            @if($detailCategorie->configurable)
+                                            @if($detailCodeTravail->isConfigurable())
                                                 <span class="badge bg-success">
                                                     <i class="fas fa-check me-1"></i>Oui
                                                 </span>
@@ -235,25 +254,21 @@
                                             @endif
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td><strong>Valeur config :</strong></td>
-                                        <td>
-                                            @if($detailCategorie->configurable && $detailCategorie->valeur_config)
-                                                <span class="badge bg-info">{{ $detailCategorie->valeur_config }}</span>
-                                            @else
-                                                <span class="text-muted">Non applicable</span>
-                                            @endif
-                                        </td>
-                                    </tr>
                                 </table>
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" wire:click="closeDetailModal">Fermer</button>
-                        <button type="button" class="btn btn-primary" wire:click="showEditModal({{ $detailCategorie->id }})">
-                            <i class="fas fa-edit me-2"></i>Modifier
+                        <button type="button" class="btn btn-success" wire:click="showEditModal({{ $detailCodeTravail->id }})">
+                            <i class="fas fa-cog me-2"></i>Modifier
                         </button>
+                        @if($detailCodeTravail->isConfigurable())
+                            <a href="{{ route('rhfeuilledetempsconfig.codes-travail.configure', $detailCodeTravail->id) }}" 
+                               class="btn btn-primary">
+                                <i class="fas fa-sliders-h me-2"></i>Configuration
+                            </a>
+                        @endif
                     </div>
                 </div>
             </div>
