@@ -97,6 +97,7 @@
                         <li><a href="#" onclick="return false;" data-key="t-feuilles-temps">Feuilles de temps</a>
                         </li>
                         <li><a href="#" onclick="return false;" data-key="t-code-travail">Code de travail</a></li>
+                        <li><a href="#" onclick="return false;" data-key="t-categorie">Catégorie code</a></li>
                     </ul>
                 </li>
 

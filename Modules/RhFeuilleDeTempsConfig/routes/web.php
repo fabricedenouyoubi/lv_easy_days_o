@@ -1,13 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Modules\RhFeuilleDeTempsConfig\Http\Controllers\CategorieController;
 use Modules\RhFeuilleDeTempsConfig\Http\Controllers\RhFeuilleDeTempsConfigController;
 
-/* Route::middleware(['auth', 'verified'])->group(function () {
-    Route::resource('rhfeuilledetempsconfigs', RhFeuilleDeTempsConfigController::class)->names('rhfeuilledetempsconfig');
-}); */
 
 Route::prefix('rh-feuille-de-temps-config')->name('rhfeuilledetempsconfig.')->middleware('web')->group(function() {
-    //Route::get('/', [RhFeuilleDeTempsConfigController::class, 'index'])->name('index');
+    //Route pour la liste des semaines d'une année financière
     Route::get('/annee/{annee}/details', [RhFeuilleDeTempsConfigController::class, 'detailsAnnee'])->name('details-annee');
+
+    // Routes pour les catégories
+    Route::get('/categories', [CategorieController::class, 'categories'])->name('categories.categories');
 });
+
