@@ -182,7 +182,7 @@ class AnneeFinanciereService
     {
         return DB::transaction(function () use ($anneeFinanciere) {
             // Générer les jours fériés
-            //$this->jourFerieGenerator->generateJourFerie($anneeFinanciere);
+            $this->jourFerieGenerator->generateJourFerie($anneeFinanciere);
             
             // Générer les feuilles de temps
             $this->feuilleDeTempsGenerator->generateFeuillesDeTemps($anneeFinanciere);
