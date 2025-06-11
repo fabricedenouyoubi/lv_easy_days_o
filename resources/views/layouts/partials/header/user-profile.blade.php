@@ -13,32 +13,32 @@
             <p class="mb-0 font-size-11 text-muted">{{ auth()->user()->email ?? 'email@example.com' }}</p>
         </div>
         <a class="dropdown-item" href="#" onclick="return false;">
-            <i class="mdi mdi-account-circle text-muted font-size-16 align-middle me-1"></i> 
+            <i class="mdi mdi-account-circle text-muted font-size-16 align-middle me-1"></i>
             <span class="align-middle">Profil</span>
         </a>
         <a class="dropdown-item" href="#" onclick="return false;">
-            <i class="mdi mdi-clock-outline text-muted font-size-16 align-middle me-1"></i> 
+            <i class="mdi mdi-clock-outline text-muted font-size-16 align-middle me-1"></i>
             <span class="align-middle">Mes Feuilles</span>
         </a>
         <a class="dropdown-item" href="#" onclick="return false;">
-            <i class="mdi mdi-lifebuoy text-muted font-size-16 align-middle me-1"></i> 
+            <i class="mdi mdi-lifebuoy text-muted font-size-16 align-middle me-1"></i>
             <span class="align-middle">Aide</span>
         </a>
         <div class="dropdown-divider"></div>
         @if(auth()->user())
         <a class="dropdown-item" href="#">
-            <i class="mdi mdi-wallet text-muted font-size-16 align-middle me-1"></i> 
+            <i class="mdi mdi-wallet text-muted font-size-16 align-middle me-1"></i>
             <span class="align-middle">Heures ce mois : <b>152.5h</b></span>
         </a>
         @endif
         <a class="dropdown-item d-flex align-items-center" href="#" onclick="return false;">
-            <i class="mdi mdi-cog-outline text-muted font-size-16 align-middle me-1"></i> 
+            <i class="mdi mdi-cog-outline text-muted font-size-16 align-middle me-1"></i>
             <span class="align-middle">Paramètres</span>
         </a>
-        <form method="POST" action="#" onclick="return false;">
+        <form method="POST" action="{{ route('logout') }}">
             @csrf
             <button type="submit" class="dropdown-item">
-                <i class="mdi mdi-logout text-muted font-size-16 align-middle me-1"></i> 
+                <i class="mdi mdi-logout text-muted font-size-16 align-middle me-1"></i>
                 <span class="align-middle">Déconnexion</span>
             </button>
         </form>
