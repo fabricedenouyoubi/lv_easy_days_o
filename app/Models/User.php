@@ -54,4 +54,9 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Group::class);
     }
+
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'permission_user');
+    }
 }

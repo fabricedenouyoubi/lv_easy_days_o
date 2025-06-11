@@ -19,15 +19,15 @@
             <div class="card-header">
                 <div class="row align-items-center">
                     <div class="col">
-                        <h4 class="card-title mb-0">
-                            <i class="icon nav-icon" data-eva="people-outline"></i>
+                        <h4 class="card-title mb-0 d-flex align-items-center">
+                            <i class="mdi mdi-account-multiple fill-white me-2 fs-4"></i>
                             Liste des employés
                         </h4>
                     </div>
 
                     <div class="col-auto">
                         <button type="button" class="btn btn-primary btn-sm" wire:click="showCreateModal">
-                            <i class="mdi mdi-plus" class="fill-white me-2"></i>
+                            <i class="mdi mdi-plus fill-white me-2"></i>
                             Nouveau employé
                         </button>
                     </div>

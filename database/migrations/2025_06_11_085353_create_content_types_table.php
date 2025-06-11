@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('postes', function (Blueprint $table) {
+        Schema::create('content_types', function (Blueprint $table) {
             $table->id();
-            $table->string('libelle', 160);
-            $table->boolean('actif')->default(true);
-            $table->string('description', 160)->default("");
+            $table->string('app_label');
+            $table->string('model');
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('postes');
+        Schema::dropIfExists('content_types');
     }
 };
