@@ -36,7 +36,7 @@
 
                 <!-- DASHBOARDS -->
                 <li>
-                    <a href="#" onclick="return false;">
+                    <a href="{{ route('dashboard') }}">
                         <i class="icon nav-icon" data-eva="grid-outline"></i>
                         <span class="menu-item" data-key="t-dashboards">Dashboards</span>
                     </a>

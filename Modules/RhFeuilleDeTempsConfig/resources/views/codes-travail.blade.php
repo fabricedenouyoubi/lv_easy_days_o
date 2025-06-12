@@ -8,7 +8,7 @@
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Accueil</a></li>
-        <li class="breadcrumb-item">Ressources Humaines</li>
+        <li class="breadcrumb-item">Configurations RH</li>
         <li class="breadcrumb-item active" aria-current="page">Codes de travail</li>
     </ol>
 </nav>
