@@ -4,9 +4,14 @@ namespace Modules\RhFeuilleDeTempsConfig\Providers;
 
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 use Nwidart\Modules\Traits\PathNamespace;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use Modules\RhFeuilleDeTempsConfig\Livewire\CategoriesList;
+use Modules\RhFeuilleDeTempsConfig\Livewire\CategoriesForm;
+use Modules\RhFeuilleDeTempsConfig\Livewire\CodesTravailList;
+use Modules\RhFeuilleDeTempsConfig\Livewire\CodeTravailForm;
 
 class RhFeuilleDeTempsConfigServiceProvider extends ServiceProvider
 {
@@ -27,6 +32,9 @@ class RhFeuilleDeTempsConfigServiceProvider extends ServiceProvider
         $this->registerConfig();
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->name, 'database/migrations'));
+
+        // Enregistrer les composants Livewire
+        $this->registerLivewireComponents();
     }
 
     /**
@@ -36,6 +44,15 @@ class RhFeuilleDeTempsConfigServiceProvider extends ServiceProvider
     {
         $this->app->register(EventServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);
+    }
+    protected function registerLivewireComponents(): void
+    {
+        // Composants pour les catégories
+        Livewire::component('rh-config::categories-list', CategoriesList::class);
+        Livewire::component('rh-config::categories-form', CategoriesForm::class);
+        // Composants pour les codes de travail
+        Livewire::component('rh-config::codes-travail-list', CodesTravailList::class);
+        Livewire::component('rh-config::code-travail-form', CodeTravailForm::class);
     }
 
     /**

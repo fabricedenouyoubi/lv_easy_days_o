@@ -36,7 +36,7 @@
 
                 <!-- DASHBOARDS -->
                 <li>
-                    <a href="#" onclick="return false;">
+                    <a href="{{ route('dashboard') }}">
                         <i class="icon nav-icon" data-eva="grid-outline"></i>
                         <span class="menu-item" data-key="t-dashboards">Dashboards</span>
                     </a>
@@ -96,7 +96,8 @@
                     <ul class="sub-menu" aria-expanded="false">
                         <li><a href="#" onclick="return false;" data-key="t-feuilles-temps">Feuilles de temps</a>
                         </li>
-                        <li><a href="#" onclick="return false;" data-key="t-code-travail">Code de travail</a></li>
+                        <li><a href="{{ route('rhfeuilledetempsconfig.codes-travail.codetravails') }}" data-key="t-code-travail">Code de travail</a></li>
+                        <li><a href="{{ route('rhfeuilledetempsconfig.categories.categories') }}" data-key="t-categorie">Catégorie code</a></li>
                     </ul>
                 </li>
 
