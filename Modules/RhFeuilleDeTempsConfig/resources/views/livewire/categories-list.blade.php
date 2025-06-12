@@ -44,8 +44,8 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Intitulé</th>
-                                    <th>Configurable</th>
-                                    <th>Valeur Config</th>
+                                    <!--<th>Configurable</th>
+                                    <th>Valeur Config</th>-->
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -55,7 +55,7 @@
                                         <td>
                                             <strong>{{ $categorie->intitule }}</strong>
                                         </td>
-                                        <td>
+                                        <!-- <td>
                                             @if($categorie->configurable)
                                                 <span class="badge bg-success">
                                                     <i class="fas fa-check me-1"></i>Oui
@@ -72,7 +72,7 @@
                                             @else
                                                 <span class="text-muted">-</span>
                                             @endif
-                                        </td>
+                                        </td> -->
                                         <td>
                                             <div class="d-flex gap-2">
                                                 {{-- Bouton Détails --}}
