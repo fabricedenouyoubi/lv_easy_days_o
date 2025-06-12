@@ -1,7 +1,12 @@
 <div class="row">
+    @if (session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
     <div class="col-12 col-md-9">
         <div class="card-body row">
-
             <div class="table-responsive">
                 <div class="d-flex mb-2 gap-2 justify-content-between">
                     <div>
@@ -9,7 +14,7 @@
                         <button class="btn btn-sm btn-danger" wire:click="deselect_all">Tout déselectionner</button>
                     </div>
                     <div>
-                        <button class="btn btn-sm btn-success" wire:click="deselect_all">Enregistrer</button>
+                        <button class="btn btn-sm btn-success" wire:click="set_user_permission">Enregistrer</button>
                     </div>
                 </div>
                 <form>

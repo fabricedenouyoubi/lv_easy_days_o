@@ -1,4 +1,18 @@
 <div>
+    <!-- Messages de feedback -->
+    @if (session()->has('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    @if (session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
     <div class="row">
         <div class="card col col-md-9">
             <div class="card-header">
@@ -64,21 +78,21 @@
                                     </td>
                                     <td class="py-2">
                                         <div class="d-flex gap-2 justify-content-center">
+                                            <a class="btn btn-sm bg-gradient btn-primary" data-bs-toggle="tooltip"
+                                                data-bs-placement="top"
+                                                aria-label="Groupes" data-bs-original-title="Modifier le(s) groupe(s) de l'utilisateur">
+                                                <span class="mdi mdi-account"></span>
+                                            </a>
                                             <a class="btn btn-sm bg-gradient btn-warning" data-bs-toggle="tooltip"
                                                 data-bs-placement="top" aria-label="Permissions"
                                                 title="Permission de l'utilisateur"
                                                 wire:click="show_user_modal('{{ $utilisateur->name }}', {{ $utilisateur->id }})">
                                                 <span class="mdi mdi-cancel"></span>
                                             </a>
-                                            <a class="btn btn-sm bg-gradient btn-primary" data-bs-toggle="tooltip"
-                                                data-bs-placement="top" href="http://localhost:3000/rh/employe/1/detail"
-                                                aria-label="actionDetails" data-bs-original-title="actionDetails">
-                                                <span class="mdi mdi-account"></span>
-                                            </a>
                                             <a class="btn btn-sm bg-gradient btn-success" data-bs-toggle="tooltip"
-                                                data-bs-placement="top" aria-label="feuille de temps"
-                                                data-bs-original-title="feuille de temps">
-                                                <span class="mdi mdi-clock-outline"></span>
+                                                data-bs-placement="top" aria-label="Group_permission"
+                                                data-bs-original-title="Reinitialiser les permisions de groupe" wire:click="reset_group_permission({{ $utilisateur->id }})">
+                                                <span class="mdi mdi-refresh"></span>
                                             </a>
                                         </div>
                                     </td>

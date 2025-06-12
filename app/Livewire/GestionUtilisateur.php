@@ -62,10 +62,20 @@ class GestionUtilisateur extends Component
             ->paginate(10);
     }
 
+    public function reset_group_permission($userId)
+    {
+        $user = User::query()->with('groups')->where('id', $userId)->first();
+        $groups = $user->groups;
+        foreach ($groups as $group) {
+            $user->permissions()->sync($group->permissions->pluck('id')->toArray());
+        }
+        session()->flash('success', 'Permissions : ' . $user->name . ' réinitialisés avec succès.');
+    }
+
     public function handleUserPermissionUpdated($val = null)
     {
         $this->hide_user_modal();
-        session()->flash('success', 'Permission de'.$val.' mise à jour avec succès.');
+        session()->flash('success', 'Permissions : ' . $val . ' mises à jour avec succès.');
     }
 
     public function render()

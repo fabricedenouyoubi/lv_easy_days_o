@@ -46,11 +46,9 @@ class PermissionUtilisateur extends Component
 
     public function set_user_permission()
     {
-
-        dd($this->checkedPermissions);
         try {
             $user = User::query()->with('permissions')->where('id', $this->userId)->first();
-            $user->permissions->sync($this->checkedPermissions);
+            $user->permissions()->sync($this->checkedPermissions);
             $this->dispatch('userPermissionUpdated', $user->name);
         } catch (\Throwable $th) {
             $this->addError('error', 'Erreur de sauvegarde ' . $th->getMessage());
