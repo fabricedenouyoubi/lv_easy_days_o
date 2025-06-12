@@ -43,9 +43,7 @@
                         <table class="table table-nowrap align-middle">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Intitulé</th>
-                                    <!--<th>Configurable</th>
-                                    <th>Valeur Config</th>-->
+                                    <th>Intitulé catégorie</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -54,25 +52,7 @@
                                     <tr>
                                         <td>
                                             <strong>{{ $categorie->intitule }}</strong>
-                                        </td>
-                                        <!-- <td>
-                                            @if($categorie->configurable)
-                                                <span class="badge bg-success">
-                                                    <i class="fas fa-check me-1"></i>Oui
-                                                </span>
-                                            @else
-                                                <span class="badge bg-secondary">
-                                                    <i class="fas fa-times me-1"></i>Non
-                                                </span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if($categorie->configurable && $categorie->valeur_config)
-                                                <span class="badge bg-info">{{ $categorie->valeur_config }}</span>
-                                            @else
-                                                <span class="text-muted">-</span>
-                                            @endif
-                                        </td> -->
+                                        </td>                             
                                         <td>
                                             <div class="d-flex gap-2">
                                                 {{-- Bouton Détails --}}
