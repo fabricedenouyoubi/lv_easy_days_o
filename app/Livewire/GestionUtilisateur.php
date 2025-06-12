@@ -18,6 +18,9 @@ class GestionUtilisateur extends Component
     public $userId;
 
     protected $paginationTheme = 'bootstrap';
+    protected $listeners = [
+        'userPermissionUpdated' => 'handleUserPermissionUpdated',
+    ];
 
     public function resetFilter()
     {
@@ -57,6 +60,12 @@ class GestionUtilisateur extends Component
                 });
             })->orderBy('name', 'asc')
             ->paginate(10);
+    }
+
+    public function handleUserPermissionUpdated($val = null)
+    {
+        $this->hide_user_modal();
+        session()->flash('success', 'Permission de'.$val.' mise à jour avec succès.');
     }
 
     public function render()
