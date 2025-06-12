@@ -52,6 +52,7 @@ class EmployeList extends Component
     public function getEmployes()
     {
         return Employe::query()
+            ->with('gestionnaire')
             ->when(
                 $this->matricule_searched,
                 fn($query) =>

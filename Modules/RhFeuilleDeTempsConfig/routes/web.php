@@ -7,7 +7,7 @@ use Modules\RhFeuilleDeTempsConfig\Http\Controllers\RhFeuilleDeTempsConfigContro
     Route::resource('rhfeuilledetempsconfigs', RhFeuilleDeTempsConfigController::class)->names('rhfeuilledetempsconfig');
 }); */
 
-Route::prefix('rh-feuille-de-temps-config')->name('rhfeuilledetempsconfig.')->middleware('web')->group(function() {
+Route::prefix('rh-feuille-de-temps-config')->name('rhfeuilledetempsconfig.')->middleware(['web', 'auth'])->group(function() {
     //Route::get('/', [RhFeuilleDeTempsConfigController::class, 'index'])->name('index');
     Route::get('/annee/{annee}/details', [RhFeuilleDeTempsConfigController::class, 'detailsAnnee'])->name('details-annee');
 });

@@ -29,11 +29,9 @@
                                                             </div>
 
                                                             @if (session()->has('error'))
-                                                                <div class="alert alert-danger alert-dismissible fade show"
+                                                                <div class="alert alert-danger fade show text-justify"
                                                                     role="alert">
-                                                                    {{ session('error') }}
-                                                                    <button type="button" class="btn-close"
-                                                                        data-bs-dismiss="alert"></button>
+                                                                    <span>{{ session('error') }}</span>
                                                                 </div>
                                                             @endif
 

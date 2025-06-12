@@ -117,6 +117,24 @@
                     </a>
                 </li>
 
+                <!-- RAPPORT -->
+                <li class="menu-title" data-key="t-autorisations">Autorisation</li>
+
+                <li>
+                    <a href="javascript: void(0);" class="has-arrow">
+                        <i class="mdi mdi-cancel fs-4"></i>
+                        <span class="menu-item" data-key="t-gestion_autorisation">Gestion autorisations</span>
+                    </a>
+                    <ul class="sub-menu" aria-expanded="false">
+                        <li>
+                            <a href="{{ route('permission.index') }}"data-key="t-permissions">Permissions</a>
+                        </li>
+                        <li>
+                            <a href="{{ route('gestion_utilisateur.index') }}"data-key="t-utilisateurs">Utilisateurs</a>
+                        </li>
+                    </ul>
+                </li>
+
             </ul>
         </div>
         <!-- Sidebar -->

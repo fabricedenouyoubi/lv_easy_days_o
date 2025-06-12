@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Component;
@@ -58,6 +59,8 @@ class LoginForm extends Component
 
         if (Auth::attempt($credentials, $this->remember_me)) {
             session()->regenerate();
+            $now_date = Carbon::now()->format('Y-m-d\TH:i');
+            auth()->user()->update(['last_login' => $now_date]);
             return redirect()->intended(route('dashboard'));
         }
 

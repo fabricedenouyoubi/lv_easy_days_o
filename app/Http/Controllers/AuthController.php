@@ -7,10 +7,12 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    public function login(){
+    public function login()
+    {
         return view('auth.login-page');
     }
-        public function logout()
+
+    public function logout()
     {
         Auth::logout();
 
@@ -18,5 +20,10 @@ class AuthController extends Controller
         session()->regenerateToken();
 
         return redirect()->route('login');
+    }
+
+    public function index()
+    {
+        return view('dashboard');
     }
 }
