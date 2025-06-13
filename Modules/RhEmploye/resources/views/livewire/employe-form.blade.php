@@ -138,7 +138,7 @@
                     </g>
                 </g>
             </svg>
-            actionCancel
+            Annuler
         </button>
         <button type="submit" class="btn bg-gradient btn-primary">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
@@ -152,7 +152,7 @@
                     </g>
                 </g>
             </svg>
-            actionSave
+            Enregistrer
         </button>
     </div>
 </form>

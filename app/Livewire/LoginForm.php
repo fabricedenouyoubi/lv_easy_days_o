@@ -48,6 +48,7 @@ class LoginForm extends Component
         ];
     }
 
+    //--- fontion de connexion d'un utilisateur
     public function login()
     {
         $this->validate();

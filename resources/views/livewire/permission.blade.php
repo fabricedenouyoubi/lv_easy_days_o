@@ -40,7 +40,7 @@
                     </thead>
 
                     <tbody>
-                        @foreach ($permissions as $permission)
+                        @forelse ($permissions as $permission)
                             <tr class="odd">
                                 <td class="py-2">
                                     {{ $permission->name }}
@@ -54,7 +54,14 @@
                                     {{ $permission->codename }}
                                 </td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="3" class="text-center py-4">
+                                    <i class="mdi mdi-cancel h1 text-muted mb-3"></i>
+                                    <p class="text-muted mb-0">Aucune Permission trouvée</p>
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>

@@ -2,16 +2,16 @@
 
 namespace App\Livewire;
 
+use App\Models\Group;
 use App\Models\Permission;
-use App\Models\User;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-class PermissionUtilisateur extends Component
+class GroupPermission extends Component
 {
     use WithPagination;
-    public $userId;
-    public $userName;
+
+    public $groupId;
     public $name_searched;
     public $code_searched;
     public $type_searched;
@@ -19,11 +19,11 @@ class PermissionUtilisateur extends Component
 
     protected $paginationTheme = 'bootstrap';
 
-    //---  recuperation des permissions d'un utilisateur
-    public function get_user_permission()
+    //---  recuperation des permissions d'un groupe
+    public function get_group_permission()
     {
-        $user = User::query()->with('permissions')->where('id', $this->userId)->first();
-        return $user->permissions()->pluck('permission_id')->toArray();
+        $group = Group::query()->with('permissions')->where('id', $this->groupId)->first();
+        return $group->permissions()->pluck('permission_id')->toArray();
     }
 
     //---  recuperation de toutes les permissions
@@ -33,39 +33,47 @@ class PermissionUtilisateur extends Component
     }
 
     /*
-        - operation au montage du composant des permisions d'un utilisateur
-        - chargement des permission d'un utilisateur
+        - operation au montage du composant des permisions d'un groupe
+        - chargement des permission d'un groupe
     */
     public function mount()
     {
-        $this->checkedPermissions = $this->get_user_permission();
+        $this->checkedPermissions = $this->get_group_permission();
     }
 
-    /*     public function hide_user_modal()
-    {
-        $this->resetPage('permission');
-        $this->dispatch('resetPageNumber');
-    } */
-
-    //--- fonction de selection de toutes les permissions pour un utilisateur
+    //--- fonction de selection de toutes les permissions pour un groupe
     public function select_all()
     {
         $this->checkedPermissions = $this->get_all_permission();
     }
 
-    //--- fonction de selection de toutes les permissions pour un utilisateur
+    //--- fonction de selection de toutes les permissions pour un groupe;
     public function deselect_all()
     {
         $this->checkedPermissions = [];
     }
 
     //--- fontion de modification des permissions d'un utilisateur
-    public function set_user_permission()
+    public function set_group_permission()
     {
         try {
-            $user = User::query()->with('permissions')->where('id', $this->userId)->first();
-            $user->permissions()->sync($this->checkedPermissions);
-            $this->dispatch('userPermissionUpdated', $user->name);
+            //--- mise a jour des permission du groupe
+            $group = Group::query()->with('permissions')->where('id', $this->groupId)->first();
+            $group->permissions()->sync($this->checkedPermissions);
+
+            //--- mise a jour des permission des utilisateur group
+
+            $users = $group->users; //--- selection des utilisateurs du groupe
+
+            foreach ($users as $user) {
+                $goupes = $user->groups; //--- selection des groupes de l'utilisateur
+
+                foreach ($goupes as $groupe) {
+                    $user->permissions()->sync($groupe->permissions->pluck('id')->toArray()); //--- mise a jour des permission de l'utilisateur
+                }
+            }
+
+            $this->dispatch('groupPermissionUpdated', $group->name);
         } catch (\Throwable $th) {
             $this->addError('error', 'Erreur de sauvegarde ' . $th->getMessage());
         }
@@ -101,14 +109,9 @@ class PermissionUtilisateur extends Component
         $this->reset(['name_searched', 'code_searched', 'type_searched']);
     }
 
+
     public function render()
     {
-        //dd($this->checkedPermissions);
-        return view(
-            'livewire.permission-utilisateur',
-            [
-                'permissions' => $this->get_permission(),
-            ]
-        );
+        return view('livewire.group-permission', ['permissions' => $this->get_permission()]);
     }
 }

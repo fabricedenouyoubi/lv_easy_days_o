@@ -10,13 +10,11 @@
             <div class="table-responsive">
                 <div class="d-flex mb-2 gap-2 justify-content-between">
                     <div>
-                        <button class="btn btn-sm btn-secondary" wire:click="select_all"><span
-                                class="mdi mdi-check-all"></span> Tout selectionner</button>
+                        <button class="btn btn-sm btn-secondary" wire:click="select_all"><span class="mdi mdi-check-all"></span> Tout selectionner</button>
                         <button class="btn btn-sm btn-danger" wire:click="deselect_all"><span class="mdi mdi-tab-unselected"></span> Tout déselectionner</button>
                     </div>
                     <div>
-                        <button class="btn btn-sm btn-success" wire:click="set_user_permission">
-                            <span class="mdi mdi-content-save-all"></span> Enregistrer</button>
+                        <button class="btn btn-sm btn-success" wire:click="set_group_permission"><span class="mdi mdi-content-save-check"></span> Enregistrer</button>
                     </div>
                 </div>
                 <form>

@@ -16,6 +16,9 @@ Route::middleware('auth')->group(function () {
     Route::prefix('permissions')->name('permission.')->group(function () {
         Route::get('/', [AutorisationController::class, 'permission'])->name('index');
     });
+    Route::prefix('groupes')->name('group.')->group(function () {
+        Route::get('/', [AutorisationController::class, 'groupe'])->name('index');
+    });
     Route::prefix('utilisateurs')->name('gestion_utilisateur.')->group(function () {
         Route::get('/', [AutorisationController::class, 'gestion_utilisateur'])->name('index');
     });

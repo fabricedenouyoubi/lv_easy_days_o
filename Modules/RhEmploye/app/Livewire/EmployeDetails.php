@@ -29,6 +29,7 @@ class EmployeDetails extends Component
 
     protected $paginationTheme = 'bootstrap';
 
+    //--- ecouteur d'evenement venamt des composants enfants
     protected $listeners = [
         'closeEditModal' => 'closeModal',
         'closeGestModal' => 'closeGestModal',
@@ -37,12 +38,16 @@ class EmployeDetails extends Component
     ];
 
 
-
+    /*
+        - operation au montage du composant d'affichage des informations de l'employe
+        - chargement des employes et de leur gestionnaire
+    */
     public function mount()
     {
         $this->employe =  Employe::with('gestionnaire')->findOrFail($this->employeId);
     }
 
+    //--- Règles de validation pour la modification du mot de passe d'un employe
     public function rules()
     {
         return [
@@ -60,6 +65,7 @@ class EmployeDetails extends Component
         ];
     }
 
+    //--- Messages de validation pour la modification du mot de passe d'un employe
     public function messages()
     {
         return [
@@ -75,50 +81,57 @@ class EmployeDetails extends Component
         ];
     }
 
+    //--- fonction d'affichage de la partie des infos de l'employe
     public function toogle_info()
     {
         $this->showInfoEdit = true;
     }
 
+    //--- fonction d'affichage de la partie de la modification du mot de passe de l'employe
     public function toogle_pwd()
     {
         $this->showInfoEdit = false;
     }
 
+    //--- Affichage du formulaire de modification des infos d'un employe
     public function showEditModal()
     {
         $this->showModal = !$this->showModal;
     }
 
+    //--- fermeture du formulaire de modification des infos d'un employe
     public function closeModal($val = null)
     {
         $val ? $this->showModal = $this->val : $this->showModal = !$this->showModal;
     }
 
+    //--- Affichage du formulaire d'ajout d'un gestionnaire
     public function showGestModal()
     {
         $this->showGestM = !$this->showGestM;
     }
 
-
+    //--- fermeture du formulaire d'ajout d'un gestionnaire
     public function closeGestModal($val = null)
     {
         $val ? $this->showGestM = $this->val : $this->showGestM = !$this->showGestM;
     }
 
-
+    //--- fonction d'affichage du message de modification d'un employe
     public function handleEmployeUpdated()
     {
         $this->closeModal();
         session()->flash('success', 'Les informations de l\'employé ont été modifiés avec succès.');
     }
 
+    //--- fonction d'affichage du message d'ajout d'un employe
     public function gestionnaireAjoute()
     {
         $this->closeGestModal();
         session()->flash('success', 'Le nouveau gestionaire a été ajouté avec succès.');
     }
 
+    //---  fonction de modification du mot de passe
     public function changePassword()
     {
         $this->validate();
@@ -138,6 +151,7 @@ class EmployeDetails extends Component
         $this->reset(['current_password', 'new_password', 'new_password_confirmation']);
     }
 
+    //---  recuperation de l'historique des gestionnaires d'un employe
     public function get_historique_gestionnaire()
     {
         return HistoriqueGestionnaire::with('gestionnaire')->where('employe_id', $this->employeId)->paginate(10);

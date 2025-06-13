@@ -16,7 +16,10 @@ class HistoriqueGestionnaireForm extends Component
     public $gestionnaire;
     public $dateDebut;
 
-
+    /*
+        - operation au montage du composant de l'historique de gestionnaire d'un employe
+        - chargement des gestionnaires
+    */
     public function mount()
     {
         try {
@@ -33,7 +36,7 @@ class HistoriqueGestionnaireForm extends Component
         $this->dateDebut = Carbon::now()->format('Y-m-d\TH:i');
     }
 
-
+    //--- Règles de validation pour l'ajout de l'historique de gestionnaire d'un employe
     public function rules()
     {
         return [
@@ -48,6 +51,7 @@ class HistoriqueGestionnaireForm extends Component
         ];
     }
 
+    //--- Messages de validation pour l'ajout de l'historique de gestionnaire d'un employe
     public function messages()
     {
         return [
@@ -58,6 +62,7 @@ class HistoriqueGestionnaireForm extends Component
         ];
     }
 
+    //---fonction d'ajout de l'historique de gestionnaire d'un employe
     public function saveHist()
     {
         $this->validate();
@@ -82,9 +87,11 @@ class HistoriqueGestionnaireForm extends Component
         }
     }
 
+    //--- fermeture du formulaire de l'historique de gestionnaire d'un employe
     public function cancel()
     {
-        $this->dispatch('closeGestModal', false);
+        $this->gestionnaire = "";
+        $this->dateDebut = Carbon::now()->format('Y-m-d\TH:i');
     }
 
     public function render()

@@ -24,7 +24,7 @@ class EmployeForm extends Component
     public $groups;
     public $groups_list;
 
-
+    //--- Règles de validation pour l'ajout d'un employe
     protected function rules()
     {
         return [
@@ -40,6 +40,7 @@ class EmployeForm extends Component
         ];
     }
 
+    //--- Messages de validation pour l'ajout d'un employe
     protected function messages()
     {
         return [
@@ -60,11 +61,22 @@ class EmployeForm extends Component
         ];
     }
 
+    //--- recuperation des groupes
+    public function get_groups()
+    {
+        return Group::all();
+    }
+
+    /*
+        - operation au montage du composant d'ajout de l'employe
+        - chargement des groupes
+    */
     public function mount()
     {
         $this->groups_list = $this->get_groups();
     }
 
+    //--- fonction de generation du matricule d'un employé
     public function generateMatricule()
     {
         $employeCount = Employe::count() + 1;
@@ -72,6 +84,7 @@ class EmployeForm extends Component
         return 'EMP' . $current_year . '-00' . $employeCount;
     }
 
+    //---fonction d'ajout d'un employe
     public function save()
     {
         $this->validate();
@@ -84,6 +97,12 @@ class EmployeForm extends Component
             ]);
 
             $user->groups()->attach($this->groups);
+
+            //mise a jour des permission
+            $groups = $user->groups;
+            foreach ($groups as $group) {
+                $user->permissions()->attach($group->permissions->pluck('id')->toArray());
+            }
 
             if (!$this->matricule) {
                 $this->matricule = $this->generateMatricule();
@@ -109,16 +128,14 @@ class EmployeForm extends Component
         }
     }
 
+    //--- fermeture du formulaire d'ajout d'un employe
     public function cancel()
     {
-        $this->dispatch('showModal', false);
+        //$this->dispatch('showModal', false);
+        $this->reset(['matricule', 'nom', 'prenom', 'date_de_naissance', 'entreprise_id', 'gestionnaire_id', 'nombre_d_heure_semaine', 'adresse_id', 'email', 'groups']);
     }
 
-    public function get_groups()
-    {
-        return Group::all();
-    }
-
+    //--- chargement du formulaire d'ajout d'un employe
     public function render()
     {
         return view(

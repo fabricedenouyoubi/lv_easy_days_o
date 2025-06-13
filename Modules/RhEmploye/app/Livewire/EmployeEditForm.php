@@ -27,7 +27,16 @@ class EmployeEditForm extends Component
     public $showModal = false;
     public $groups_list;
 
+    //--- recuperation des groupes
+    public function get_groups()
+    {
+        return Group::all();
+    }
 
+    /*
+        - operation au montage du composant d'edition d'un employe
+        - chargement infos de l'employe
+    */
     public function mount()
     {
         if ($this->employeId) {
@@ -47,7 +56,7 @@ class EmployeEditForm extends Component
         $this->groups_list = $this->get_groups();
     }
 
-
+    //--- Règles de validation pour la modification  d'un employe
     protected function rules()
     {
         return [
@@ -72,6 +81,7 @@ class EmployeEditForm extends Component
         ];
     }
 
+    //--- Messages de validation pour la modification d'un employe
     protected function messages()
     {
         return [
@@ -92,7 +102,7 @@ class EmployeEditForm extends Component
         ];
     }
 
-
+    //--- fonction de generation du matricule d'un employé
     public function generateMatricule()
     {
         $employeCount = Employe::count() + 1;
@@ -100,6 +110,7 @@ class EmployeEditForm extends Component
         return 'EMP' . $current_year . '-00' . $employeCount;
     }
 
+    //---fonction de modification d'un employe
     public function save()
     {
         $this->validate();
@@ -109,12 +120,20 @@ class EmployeEditForm extends Component
             $employe = Employe::findOrFail($this->employeId);
             $user = User::findOrFail($employe->user_id);
 
+            //--- mise a jour coompte utilisateur
             $user->update([
                 'email' => $this->email,
                 'name' => $this->nom . ' ' . $this->prenom,
             ]);
 
+            //mise a jour des groupes
             $user->groups()->sync($this->groups);
+
+            //mise a jour des permission
+            $groups = $user->groups;
+            foreach ($groups as $group) {
+                $user->permissions()->sync($group->permissions->pluck('id')->toArray());
+            }
 
             $employe->update([
                 'matricule' => $this->matricule,
@@ -133,14 +152,24 @@ class EmployeEditForm extends Component
         }
     }
 
+    //--- fermeture du formulaire de modification d'un employe
     public function cancel()
     {
-        $this->dispatch('closeEditModal', false);
-    }
-
-    public function get_groups()
-    {
-        return Group::all();
+        if ($this->employeId) {
+            $employe = Employe::findOrFail($this->employeId);
+            $this->matricule = $employe->matricule;
+            $this->nom = $employe->nom;
+            $this->prenom = $employe->prenom;
+            $this->date_de_naissance = $employe->date_de_naissance;
+            $this->user_id = $employe->user_id;
+            $this->entreprise_id = $employe->entreprise_id;
+            $this->gestionnaire_id = $employe->gestionnaire_id;
+            $this->nombre_d_heure_semaine = $employe->nombre_d_heure_semaine;
+            $this->adresse_id = $employe->adresse_id;
+            $this->email = $employe->email();
+            $this->groups = $employe->employe_groups()->pluck('id')->toArray();
+        }
+        $this->groups_list = $this->get_groups();
     }
 
     public function render()

@@ -20,13 +20,16 @@ class GestionUtilisateur extends Component
     protected $paginationTheme = 'bootstrap';
     protected $listeners = [
         'userPermissionUpdated' => 'handleUserPermissionUpdated',
+        //'resetPageNumber' => 'handleresetPageNumber',
     ];
 
+    //--- fonction reinitialisation des champs de filtre des utilisateur
     public function resetFilter()
     {
         $this->reset(['email_searched', 'name_searched', 'groupe_searched']);
     }
 
+    //--- affichage du tableau des permissions d'un uilisateur
     public function show_user_modal($name, $id)
     {
         $this->userName = $name;
@@ -34,11 +37,18 @@ class GestionUtilisateur extends Component
         $this->userPermissionModal = true;
     }
 
+    //--- fermuture du tabaleau des permissions d'un uilisateur
     public function hide_user_modal()
     {
         $this->userPermissionModal = !$this->userPermissionModal;
     }
 
+    /*     public function handleresetPageNumber()
+    {
+        $this->userPermissionModal = !$this->userPermissionModal;
+    } */
+
+    //--- recuperation de la liste des utilisateurs
     public function get_utilisateurs()
     {
         return User::with('groups')
@@ -62,16 +72,21 @@ class GestionUtilisateur extends Component
             ->paginate(10);
     }
 
+    //--- fonction de reinitialisation des permisions de groupe d'un utilisateur
     public function reset_group_permission($userId)
     {
-        $user = User::query()->with('groups')->where('id', $userId)->first();
-        $groups = $user->groups;
-        foreach ($groups as $group) {
-            $user->permissions()->sync($group->permissions->pluck('id')->toArray());
+        try {
+            $user = User::query()->with('groups')->where('id', $userId)->first();
+            $groups = $user->groups;
+            foreach ($groups as $group) {
+                $user->permissions()->sync($group->permissions->pluck('id')->toArray());
+            }
+            session()->flash('success', 'Permissions : ' . $user->name . ' réinitialisés avec succès.');
+        } catch (\Throwable $th) {
         }
-        session()->flash('success', 'Permissions : ' . $user->name . ' réinitialisés avec succès.');
     }
 
+    //--- affichage du message de mis a jour des permission d'un utilisateur
     public function handleUserPermissionUpdated($val = null)
     {
         $this->hide_user_modal();

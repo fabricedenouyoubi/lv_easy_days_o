@@ -16,6 +16,7 @@ class Permission extends Component
 
     protected $paginationTheme = 'bootstrap';
 
+    //--- fonction de recuperation de toutes les permissions avec pagination et recherche
     public function get_permission()
     {
         return ModelsPermission::query()
@@ -39,6 +40,7 @@ class Permission extends Component
             })->paginate(10);
     }
 
+    //--- fonction reinitialisation des champs de filtre des permissions
     public function resetFilter()
     {
         $this->reset(['name_searched', 'code_searched']);

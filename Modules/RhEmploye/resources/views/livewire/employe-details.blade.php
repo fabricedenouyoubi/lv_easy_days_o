@@ -74,6 +74,7 @@
                     </div>
 
                     @if ($showInfoEdit)
+                        {{-- Affichage des info personnelles d'un employé --}}
                         <div id="profil-body" class="col-12 col-md-9">
                             <div class="card border-0 shadow-sm mb-4">
                                 <div class="card-header bg-transparent border-0 py-3">
@@ -83,11 +84,12 @@
                                             Informations personnelles
                                         </h5>
 
-                                        <a class="btn btn-outline-primary btn-sm rounded-3 px-3 d-flex align-items-center"
-                                            wire:click="showEditModal">
-                                            <i class="fa fa-edit me-2"></i> actionEdit
-                                        </a>
-
+                                        @if (auth()->user()->hasPermission('can_edit_employes'))
+                                            <a class="btn btn-outline-primary btn-sm rounded-3 px-3 d-flex align-items-center"
+                                                wire:click="showEditModal">
+                                                <i class="fa fa-edit me-2"></i> Modifier les informations de l'employé
+                                            </a>
+                                        @endif
                                     </div>
                                 </div>
                                 <div class="card-body pt-3 pb-3">
@@ -157,6 +159,7 @@
                             </div>
                         </div>
                     @else
+                        {{-- Formulaire de modification du mot de passe --}}
                         <div class="col-12 col-md-9">
                             <div class="card">
                                 <div class="card-header">
@@ -361,7 +364,7 @@
                     </div>
                 </div>
 
-                <!-- Gestionnaires -->
+                <!-- Tableau d'historique des gestionnaire d'un employé -->
                 <div id="gestionnaire-body">
                     <div class="card border-0 shadow-sm">
                         <div class="card-body p-0">
@@ -372,10 +375,13 @@
                                             <i class="fa fa-user-tie me-2 text-primary"></i>
                                             Historique des gestionnaires
                                         </h5>
-                                        <a class="btn btn-sm btn-outline-primary btn-sm rounded-3 px-3 d-flex align-items-center"
-                                            wire:click="showGestModal">
-                                            <i class="fa fa-user-plus me-2"></i> Assigner un gestionnaire
-                                        </a>
+
+                                        @if (auth()->user()->hasPermission('can_edit_gestionnaire_employe'))
+                                            <a class="btn btn-sm btn-outline-primary btn-sm rounded-3 px-3 d-flex align-items-center"
+                                                wire:click="showGestModal">
+                                                <i class="fa fa-user-plus me-2"></i> Assigner un gestionnaire
+                                            </a>
+                                        @endif
                                     </div>
                                 </div>
 
@@ -414,20 +420,28 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach ($gestionnaire_historique as $gestionnaire)
+                                                @forelse ($gestionnaire_historique as $gestionnaire)
                                                     <tr class="even">
                                                         <td class="py-2">
-                                                            {{  $gestionnaire->gestionnaire?->nom . ' ' . $gestionnaire->gestionnaire?->prenom}}
+                                                            {{ $gestionnaire->gestionnaire?->nom . ' ' . $gestionnaire->gestionnaire?->prenom }}
                                                         </td>
 
                                                         <td class="py-2">
-                                                            {{  $gestionnaire->date_debut}}
+                                                            {{ $gestionnaire->date_debut }}
                                                         </td>
                                                         <td class="py-2">
-                                                        {{  $gestionnaire->date_fin ?? '---'}}
+                                                            {{ $gestionnaire->date_fin ?? '---' }}
                                                         </td>
                                                     </tr>
-                                                @endforeach
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="3" class="text-center py-4">
+                                                            <i class="fa fa-user-tie me-2 h1 text-muted mb-3"></i>
+                                                            <p class="text-muted mb-0">Aucun historique de gestionnaire
+                                                                trouvé</p>
+                                                        </td>
+                                                    </tr>
+                                                @endforelse
                                             </tbody>
                                         </table>
                                         <div class="mt-2">
@@ -445,7 +459,7 @@
         </div>
     </div>
 
-    {{-- update user --}}
+    {{-- Formulaire de modificartion de l'utilisateur --}}
     @if ($showModal)
         <div class="modal d-block" style="background-color: rgba(0,0,0,0.5);" tabindex="-1">
             <div class="modal-dialog modal-md">
@@ -463,6 +477,7 @@
         </div>
     @endif
 
+    {{-- formulaire d'ajout d'un gestionnaire a un employé --}}
     @if ($showGestM)
         <div class="modal d-block" style="background-color: rgba(0,0,0,0.5);" tabindex="-1">
             <div class="modal-dialog modal-md">

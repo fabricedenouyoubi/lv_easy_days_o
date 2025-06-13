@@ -59,4 +59,9 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Permission::class, 'permission_user');
     }
+
+    public function hasPermission(string | null $permissionName = null)
+    {
+         return $this->permissions()->where('codename', $permissionName)->exists();
+    }
 }

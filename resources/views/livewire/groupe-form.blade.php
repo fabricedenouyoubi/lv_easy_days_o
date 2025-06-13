@@ -1,31 +1,18 @@
-<form wire:submit.prevent="saveHist">
-    <div id="div_id_gestionnaire" class="mb-3"> <label for="id_gestionnaire" class="form-label requiredField">
-            Nouveau gestionnaire<span class="asteriskField text-danger">*</span> </label> <select name="gestionnaire"
-            class="select form-select @error('gestionnaire')  is-invalid @enderror" id="id_gestionnaire"
-            wire:model="gestionnaire">
-            <option value="" selected="">---------</option>
-            @foreach ($gestionnaire_list as $gestionnaire)
-                <option value="{{ $gestionnaire->id }}">{{ $gestionnaire->name }}</option>
-            @endforeach
-        </select>
-        @error('gestionnaire')
+<form wire:submit.prevent="save">
+    <div id="name" class="mb-3"> <label for="name"
+            class="form-label requiredField @error('name')  is-invalid @enderror">
+            Nom du groupe<span class="asteriskField text-danger">*</span> </label> <input
+            type="text" name="name" class="datetimeinput form-control" id="name"
+            wire:model="name">
+        @error('name')
             <span class="text-danger">{{ $message }}</span>
         @enderror
     </div>
-    <div id="div_id_dateDebut" class="mb-3"> <label for="id_dateDebut"
-            class="form-label requiredField @error('dateDebut')  is-invalid @enderror">
-            Date de debut du nouveau gestionnaire<span class="asteriskField text-danger">*</span> </label> <input
-            type="datetime-local" name="dateDebut" class="datetimeinput form-control" id="id_dateDebut"
-            wire:model="dateDebut">
-        @error('dateDebut')
-            <span class="text-danger">{{ $message }}</span>
-        @enderror
-    </div>
-
 
     <div class="modal-footer">
-        <button type="button" class="btn btn-sm btn-danger" data-bs-dismiss="modal" wire:click="cancel">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+        <button type="button" class="btn btn-sm btn-danger" data-bs-dismiss="modal"
+            wire:click="cancel">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
                 class="eva eva-close-outline fill-white align-text-top me-1">
                 <g data-name="Layer 2">
                     <g data-name="close">
@@ -36,9 +23,8 @@
                     </g>
                 </g>
             </svg>Annuler</button>
-
         <button type="submit" class="btn btn-sm btn-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
                 class="eva eva-save-outline fill-white align-text-top me-1">
                 <g data-name="Layer 2">
                     <g data-name="save">

@@ -63,13 +63,15 @@
                 </li>
 
                 <!-- RH -->
-                <li class="menu-title" data-key="t-budget">RH</li>
-                <li>
-                    <a href="{{ route('rh-employe.list') }}">
-                        <i class="icon nav-icon" data-eva="people-outline"></i>
-                        <span class="menu-item" data-key="t-employes">Employés</span>
-                    </a>
-                </li>
+                @if (auth()->user()->hasPermission('can_manage_employes'))
+                    <li class="menu-title" data-key="t-budget">RH</li>
+                    <li>
+                        <a href="{{ route('rh-employe.list') }}">
+                            <i class="icon nav-icon" data-eva="people-outline"></i>
+                            <span class="menu-item" data-key="t-employes">Employés</span>
+                        </a>
+                    </li>
+                @endif
 
                 <!-- FEUILLES DE TEMPS -->
                 <li class="menu-title" data-key="t-feuilles-temps">FEUILLES DE TEMPS</li>
@@ -96,8 +98,10 @@
                     <ul class="sub-menu" aria-expanded="false">
                         <li><a href="#" onclick="return false;" data-key="t-feuilles-temps">Feuilles de temps</a>
                         </li>
-                        <li><a href="{{ route('rhfeuilledetempsconfig.codes-travail.codetravails') }}" data-key="t-code-travail">Code de travail</a></li>
-                        <li><a href="{{ route('rhfeuilledetempsconfig.categories.categories') }}" data-key="t-categorie">Catégorie code</a></li>
+                        <li><a href="{{ route('rhfeuilledetempsconfig.codes-travail.codetravails') }}"
+                                data-key="t-code-travail">Code de travail</a></li>
+                        <li><a href="{{ route('rhfeuilledetempsconfig.categories.categories') }}"
+                                data-key="t-categorie">Catégorie code</a></li>
                     </ul>
                 </li>
 
@@ -118,7 +122,7 @@
                     </a>
                 </li>
 
-                <!-- RAPPORT -->
+                <!-- Autorisation -->
                 <li class="menu-title" data-key="t-autorisations">Autorisation</li>
 
                 <li>
@@ -131,7 +135,11 @@
                             <a href="{{ route('permission.index') }}"data-key="t-permissions">Permissions</a>
                         </li>
                         <li>
-                            <a href="{{ route('gestion_utilisateur.index') }}"data-key="t-utilisateurs">Utilisateurs</a>
+                            <a href="{{ route('group.index') }}"data-key="t-groups">Groupes</a>
+                        </li>
+                        <li>
+                            <a
+                                href="{{ route('gestion_utilisateur.index') }}"data-key="t-utilisateurs">Utilisateurs</a>
                         </li>
                     </ul>
                 </li>

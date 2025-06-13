@@ -18,18 +18,21 @@ class EmployeList extends Component
     public $gestionnaire_searched;
 
     protected $paginationTheme = 'bootstrap';
+
+    //--- ecouteur d'evenement venamt des composants enfants [employe-form]
     protected $listeners = [
         'showModal' => 'closeModal',
         'employeCreated' => 'handleEmployeCreated',
     ];
 
-
+    //--- fonction d'affichage du formulaire d'un employe
     public function showCreateModal()
     {
         $this->editingId = null;
         $this->showModal = true;
     }
 
+    //--- fonction de fermeture du formulaire d'un employe
     public function closeModal($val = null)
     {
 
@@ -37,18 +40,20 @@ class EmployeList extends Component
         $this->editingId = null;
     }
 
+    //--- fonction d'affichage du message de creation d'un employe
     public function handleEmployeCreated()
     {
         $this->closeModal();
         session()->flash('success', 'Employe crée avec succès.');
     }
 
-
+    //--- reinitialisation des champs du formulaire d'ajout d'um employe
     public function resetFilter()
     {
         $this->reset(['matricule_searched', 'nom_searched', 'prenom_searched', 'gestionnaire_searched']);
     }
 
+    //-- recuperation de la liste des employes
     public function getEmployes()
     {
         return Employe::query()
@@ -71,10 +76,11 @@ class EmployeList extends Component
             ->when($this->gestionnaire_searched, function ($query) {
                 $query->where(function ($subQuery) {
                     $subQuery->whereHas('gestionnaire', function ($managerQuery) {
-                        $managerQuery->where('nom', 'like', '%' . $this->gestionnaire_searched . '%' );
+                        $managerQuery->where('nom', 'like', '%' . $this->gestionnaire_searched . '%');
                     });
                 });
             })
+            ->orderBy('nom', 'asc')
             ->paginate(10);
     }
 

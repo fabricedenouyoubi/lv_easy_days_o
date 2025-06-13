@@ -19,18 +19,20 @@
             <div class="card-header">
                 <div class="row align-items-center">
                     <div class="col">
-                        <h4 class="card-title mb-0">
-                            <i class="icon nav-icon" data-eva="people-outline"></i>
+                        <h4 class="card-title mb-0 d-flex align-items-center gap-2">
+                            <i class="mdi mdi-account-group fs-4"></i>
                             Liste des employés
                         </h4>
                     </div>
 
-                    <div class="col-auto">
-                        <button type="button" class="btn btn-primary btn-sm" wire:click="showCreateModal">
-                            <i class="mdi mdi-plus" class="fill-white me-2"></i>
-                            Nouveau employé
-                        </button>
-                    </div>
+                    @if (auth()->user()->hasPermission('can_add_employes'))
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-primary btn-sm" wire:click="showCreateModal">
+                                <i class="mdi mdi-plus" class="fill-white me-2"></i>
+                                Nouveau employé
+                            </button>
+                        </div>
+                    @endif
                 </div>
             </div>
             <div class="card-body row">
@@ -74,7 +76,7 @@
                         </thead>
 
                         <tbody>
-                            @foreach ($employes as $employe)
+                            @forelse ($employes as $employe)
                                 <tr class="odd" class="border-bottom">
                                     <td class="py-2">
                                         {{ $employe->matricule }}
@@ -89,15 +91,18 @@
                                     </td>
 
                                     <td class="py-2">
-                                        {{ $employe->gestionnaire?->nom  ?? '---'}}
+                                        {{ $employe->gestionnaire?->nom ?? '---' }}
                                     </td>
 
                                     <td class="py-2">
                                         <div class='d-flex gap-2 justify-content-center'>
-                                            <a class='btn btn-sm bg-gradient btn-primary' data-bs-toggle='tooltip'
-                                                data-bs-placement='top' title='actionDetails' href="{{ route('rh-employe.show', $employe->id) }}">
-                                                <span class="mdi mdi-account"></span>
-                                            </a>
+                                            @if (auth()->user()->hasPermission('can_view_details_employes'))
+                                                <a class='btn btn-sm bg-gradient btn-primary' data-bs-toggle='tooltip'
+                                                    data-bs-placement='top' title="Details de l'employe"
+                                                    href="{{ route('rh-employe.show', $employe->id) }}">
+                                                    <span class="mdi mdi-account"></span>
+                                                </a>
+                                            @endif
                                             <a class='btn btn-sm bg-gradient btn-success' data-bs-toggle='tooltip'
                                                 data-bs-placement='top' title='feuille de temps'>
                                                 <span class="mdi mdi-clock-outline"></span>
@@ -105,7 +110,14 @@
                                         </div>
                                     </td>
                                 </tr>
-                            @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="text-center py-4">
+                                        <i class="mdi mdi-account-group h1 text-muted mb-3"></i>
+                                        <p class="text-muted mb-0">Aucun employé trouvé</p>
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -137,7 +149,8 @@
                                 <div id="div_id_matricule" class="mb-3">
                                     <label for="id_matricule" class="form-label">Matricule</label>
                                     <input type="text" name="matricule" placeholder="Rechercher par matricule"
-                                        class="textinput form-control" id="id_matricule" wire:model="matricule_searched">
+                                        class="textinput form-control" id="id_matricule"
+                                        wire:model="matricule_searched">
                                 </div>
                             </div>
                         </div>
@@ -168,7 +181,8 @@
                                     </label>
                                     <input type="text"
                                         name="gestionnaire_search"placeholder="Rechercher par gestionnaire"
-                                        class="textinput form-control" id="id_gestionnaire_search" wire:model="gestionnaire_searched">
+                                        class="textinput form-control" id="id_gestionnaire_search"
+                                        wire:model="gestionnaire_searched">
                                 </div>
                             </div>
                         </div>
@@ -179,7 +193,7 @@
                                         <span class="mdi mdi-filter"></span>
                                         Filtrer
                                     </button>
-                                    <button type="button" class="btn btn-secondary btn-sm"  wire:click="resetFilter">
+                                    <button type="button" class="btn btn-secondary btn-sm" wire:click="resetFilter">
                                         <span class="mdi mdi-refresh"></span>
                                         Réinitialiser
                                     </button>
@@ -192,6 +206,7 @@
         </div>
     </div>
 
+    {{-- Formulaire d'ajout d'un employe --}}
     @if ($showModal)
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
             <div id="dialog-lg" class="modal-dialog modal-lg" role="document">
