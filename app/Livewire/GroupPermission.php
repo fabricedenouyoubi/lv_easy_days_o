@@ -62,15 +62,13 @@ class GroupPermission extends Component
             $group->permissions()->sync($this->checkedPermissions);
 
             //--- mise a jour des permission des utilisateur group
-
-            $users = $group->users; //--- selection des utilisateurs du groupe
-
-            foreach ($users as $user) {
-                $goupes = $user->groups; //--- selection des groupes de l'utilisateur
-
-                foreach ($goupes as $groupe) {
-                    $user->permissions()->sync($groupe->permissions->pluck('id')->toArray()); //--- mise a jour des permission de l'utilisateur
+            foreach ($group->users as $user) {
+                $groupPermisionsId = collect();
+                foreach ($user->groups as $group) {
+                    $groupPermisionsId = $groupPermisionsId->merge($group->permissions->pluck('id'));
                 }
+                $uniquePermissionId = $groupPermisionsId->unique()->toArray();
+                $user->permissions()->sync($uniquePermissionId);
             }
 
             $this->dispatch('groupPermissionUpdated', $group->name);

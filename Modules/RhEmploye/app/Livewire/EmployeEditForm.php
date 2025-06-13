@@ -126,14 +126,16 @@ class EmployeEditForm extends Component
                 'name' => $this->nom . ' ' . $this->prenom,
             ]);
 
-            //mise a jour des groupes
+            //--- mise a jour des groupes
             $user->groups()->sync($this->groups);
 
-            //mise a jour des permission
-            $groups = $user->groups;
-            foreach ($groups as $group) {
-                $user->permissions()->sync($group->permissions->pluck('id')->toArray());
+            //--- mise a jour des permission
+            $groupPermisionsId = collect();
+            foreach ($user->groups as $group) {
+                $groupPermisionsId = $groupPermisionsId->merge($group->permissions->pluck('id'));
             }
+            $uniquePermissionId = $groupPermisionsId->unique()->toArray();
+            $user->permissions()->sync($uniquePermissionId);
 
             $employe->update([
                 'matricule' => $this->matricule,

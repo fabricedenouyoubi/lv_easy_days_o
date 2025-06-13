@@ -98,11 +98,13 @@ class EmployeForm extends Component
 
             $user->groups()->attach($this->groups);
 
-            //mise a jour des permission
-            $groups = $user->groups;
-            foreach ($groups as $group) {
-                $user->permissions()->attach($group->permissions->pluck('id')->toArray());
+            //--- mise a jour des permission
+            $groupPermisionsId = collect();
+            foreach ($user->groups as $group) {
+                $groupPermisionsId = $groupPermisionsId->merge($group->permissions->pluck('id'));
             }
+            $uniquePermissionId = $groupPermisionsId->unique()->toArray();
+            $user->permissions()->sync($uniquePermissionId);
 
             if (!$this->matricule) {
                 $this->matricule = $this->generateMatricule();
