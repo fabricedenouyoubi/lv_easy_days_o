@@ -15,6 +15,7 @@ class GroupPermission extends Component
     public $name_searched;
     public $code_searched;
     public $type_searched;
+    public $load_save_permission = false;
     public $checkedPermissions = [];
 
     protected $paginationTheme = 'bootstrap';
@@ -57,6 +58,7 @@ class GroupPermission extends Component
     public function set_group_permission()
     {
         try {
+            $this->load_save_permission = true;
             //--- mise a jour des permission du groupe
             $group = Group::query()->with('permissions')->where('id', $this->groupId)->first();
             $group->permissions()->sync($this->checkedPermissions);
@@ -70,7 +72,7 @@ class GroupPermission extends Component
                 $uniquePermissionId = $groupPermisionsId->unique()->toArray();
                 $user->permissions()->sync($uniquePermissionId);
             }
-
+            $this->load_save_permission = false;
             $this->dispatch('groupPermissionUpdated', $group->name);
         } catch (\Throwable $th) {
             $this->addError('error', 'Erreur de sauvegarde ' . $th->getMessage());

@@ -11,3 +11,4 @@ Route::prefix('rh/employe/')->name('rh-employe.')->middleware(['web', 'auth'])->
     Route::get('', [RhEmployeController::class, 'index'])->name('list');
     Route::get('{employe}/detail', [RhEmployeController::class, 'show'])->name('show');
 });
+//
