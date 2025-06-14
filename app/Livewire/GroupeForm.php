@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Group;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
 class GroupeForm extends Component
@@ -19,6 +20,7 @@ class GroupeForm extends Component
     protected $messages = [
         'name.required' => 'Le nom du groupe est obligatoire. Veuillez le renseigner.',
         'name.min' => 'Le nom du groupe doit contenir au moins :min caractères.',
+
     ];
 
     //--- chargement du nom du groupe en cas de modification
@@ -37,10 +39,18 @@ class GroupeForm extends Component
 
         try {
             if ($this->groupId) {
+                if (Group::where('name', $this->name)->where('id', '!=', $this->groupId)->exists()) {
+                    $this->addError('name', 'Un groupe avec ce nom existe déjà.');
+                    return;
+                }
                 $group = Group::findOrFail($this->groupId);
                 $group->update(['name' => $this->name]);
                 $this->dispatch('groupUpdated');
             } else {
+                if (Group::where('name', $this->name)->exists()) {
+                    $this->addError('name', 'Un groupe avec ce nom existe déjà.');
+                    return;
+                }
                 $group = Group::create(['name' => $this->name]);
                 $this->dispatch('groupCreated');
             }
