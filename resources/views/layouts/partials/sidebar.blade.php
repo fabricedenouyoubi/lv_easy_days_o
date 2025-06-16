@@ -21,7 +21,7 @@
         </a>
     </div>
 
-    <button type="button" class="btn btn-sm px-3 header-item vertical-menu-btn topnav-hamburger">
+    <button type="button" class="btn btn-sm px-3 header-item vertical-menu-btn topnav-hamburger" disabled>
         <span class="hamburger-icon">
             <span></span>
             <span></span>
