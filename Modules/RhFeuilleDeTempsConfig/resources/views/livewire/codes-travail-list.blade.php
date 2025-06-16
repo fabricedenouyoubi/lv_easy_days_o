@@ -43,9 +43,9 @@
                         <table class="table table-nowrap align-middle">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Code</th>
-                                    <th>Libellé</th>
                                     <th>Catégorie</th>
+                                    <th>Libellé</th>
+                                    <th>Code</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -53,13 +53,13 @@
                                 @forelse($codesTravail as $codeTravail)
                                     <tr>
                                         <td>
-                                            <code class="bg-light px-2 py-1 rounded">{{ $codeTravail->code }}</code>
+                                            <span class="badge bg-info">{{ $codeTravail->categorie->intitule }}</span>
                                         </td>
                                         <td>
                                             <strong>{{ $codeTravail->libelle }}</strong>
                                         </td>
                                         <td>
-                                            <span class="badge bg-info">{{ $codeTravail->categorie->intitule }}</span>
+                                            <code class="bg-light px-2 py-1 rounded">{{ $codeTravail->code }}</code>
                                         </td>
                                         <td>
                                             <div class="d-flex gap-2">
@@ -81,7 +81,7 @@
 
                                                 {{-- Bouton Configuration (conditionnel) --}}
                                                 @if($codeTravail->isConfigurable())
-                                                    <a href="{{ route('rhfeuilledetempsconfig.codes-travail.configure', $codeTravail->id) }}" 
+                                                    <a href="{{ route('rhcodetravailcomportement.configure', $codeTravail->id) }}" 
                                                        class="btn btn-sm btn-outline-primary"
                                                        data-bs-toggle="tooltip" 
                                                        title="Configuration">
@@ -155,7 +155,7 @@
                     </div>
 
                     {{-- Boutons d'action --}}
-                    <div class="d-flex gap-3">
+                    <div class="d-grid gap-2">
                         <button type="button" 
                                 class="btn btn-primary" 
                                 wire:click="filter"
@@ -183,6 +183,14 @@
                                 Réinitialisation...
                             </span>
                         </button>
+                    </div>
+
+                    {{-- Informations sur les résultats --}}
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            {{ $codesTravail->total() }} code(s) de travail trouvé(s)
+                        </small>
                     </div>
                 </div>
             </div>
@@ -212,7 +220,7 @@
     {{-- Modal Détail Code de travail --}}
     @if($showDetail && $detailCodeTravail)
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">
@@ -256,6 +264,34 @@
                                     </tr>
                                 </table>
                             </div>
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-calendar me-2"></i>Dates</h6>
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td><strong>Créé le :</strong></td>
+                                        <td>{{ $detailCodeTravail->created_at->format('d/m/Y à H:i') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Modifié le :</strong></td>
+                                        <td>{{ $detailCodeTravail->updated_at->format('d/m/Y à H:i') }}</td>
+                                    </tr>
+                                </table>
+
+                                {{-- Configuration de la catégorie --}}
+                                @if($detailCodeTravail->categorie->configurable)
+                                    <h6><i class="fas fa-cog me-2"></i>Configuration</h6>
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>Type config :</strong></td>
+                                            <td>
+                                                <span class="badge bg-primary">
+                                                    {{ $detailCodeTravail->categorie->valeur_config }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                @endif
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -264,7 +300,7 @@
                             <i class="fas fa-cog me-2"></i>Modifier
                         </button>
                         @if($detailCodeTravail->isConfigurable())
-                            <a href="{{ route('rhfeuilledetempsconfig.codes-travail.configure', $detailCodeTravail->id) }}" 
+                            <a href="{{ route('rhcodetravailcomportement.configure', $detailCodeTravail->id) }}" 
                                class="btn btn-primary">
                                 <i class="fas fa-sliders-h me-2"></i>Configuration
                             </a>

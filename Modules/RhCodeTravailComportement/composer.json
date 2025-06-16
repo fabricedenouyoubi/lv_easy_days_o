@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/rhcodetravailcomportement",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\RhCodeTravailComportement\\": "app/",
+            "Modules\\RhCodeTravailComportement\\Database\\Factories\\": "database/factories/",
+            "Modules\\RhCodeTravailComportement\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\RhCodeTravailComportement\\Tests\\": "tests/"
+        }
+    }
+}

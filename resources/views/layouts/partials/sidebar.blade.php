@@ -1,22 +1,23 @@
 <div class="vertical-menu">
     <!-- LOGO -->
-    <div class="navbar-brand-box">
+    <div class="navbar-brand-box d-flex justify-content-center align-items-center">
         <a href="#" class="logo logo-dark">
             <span class="logo-sm">
-                <img src="{{ asset('assets/borex/images/logo-dark-sm.png') }}" alt="" height="22">
+                <img src="{{ asset('assets/borex/images/logo-gcs.png') }}" alt="" height="22">
             </span>
             <span class="logo-lg">
-                <img src="{{ asset('assets/borex/images/logo-dark.png') }}" alt="" height="22">
+                <img src="{{ asset('assets/borex/images/logo-gcs.png') }}" alt="" height="22">
             </span>
         </a>
 
         <a href="#" class="logo logo-light">
             <span class="logo-lg">
-                <img src="{{ asset('assets/borex/images/logo-light.png') }}" alt="" height="22">
+                <img src="{{ asset('assets/borex/images/logo-gcs.png') }}" alt="" height="22">
             </span>
             <span class="logo-sm">
-                <img src="{{ asset('assets/borex/images/logo-light-sm.png') }}" alt="" height="22">
+                <img src="{{ asset('assets/borex/images/logo-gcs.png') }}" alt="" height="22">
             </span>
+            <span class="menu-item text-white" >ChronoTemps</span>
         </a>
     </div>
 

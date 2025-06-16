@@ -1,0 +1,11 @@
+{
+    "name": "RhCodeTravailComportement",
+    "alias": "rhcodetravailcomportement",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\RhCodeTravailComportement\\Providers\\RhCodeTravailComportementServiceProvider"
+    ],
+    "files": []
+}

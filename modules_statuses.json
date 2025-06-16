@@ -2,5 +2,6 @@
     "Budget": true,
     "Entreprise": true,
     "RhFeuilleDeTempsConfig": true,
-    "RhEmploye": true
+    "RhEmploye": true,
+    "RhCodeTravailComportement": true
 }
