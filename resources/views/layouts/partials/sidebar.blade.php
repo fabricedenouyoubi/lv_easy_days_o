@@ -63,7 +63,6 @@
                 </li>
 
                 <!-- RH -->
-                @if (auth()->user()->hasPermission('can_manage_employes'))
                     <li class="menu-title" data-key="t-budget">RH</li>
                     <li>
                         <a href="{{ route('rh-employe.list') }}">
@@ -71,7 +70,6 @@
                             <span class="menu-item" data-key="t-employes">Employés</span>
                         </a>
                     </li>
-                @endif
 
                 <!-- FEUILLES DE TEMPS -->
                 <li class="menu-title" data-key="t-feuilles-temps">FEUILLES DE TEMPS</li>

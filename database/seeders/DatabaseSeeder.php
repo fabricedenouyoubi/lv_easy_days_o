@@ -25,15 +25,6 @@ class DatabaseSeeder extends Seeder
         $this->command->info("--- start seed GroupSeeder ---");
         $this->call(GroupSeeder::class);
 
-        $this->command->info("--- start seed ContentTypeSeeder ---");
-        $this->call(ContentTypeSeeder::class);
-
-        $this->command->info("--- start seed PermissionSeeder ---");
-        $this->call(PermissionSeeder::class);
-
-        $this->command->info("--- start seed GroupPermissionSeeder ---");
-        $this->call(GroupPermissionSeeder::class);
-
         $this->command->info("--- start seed UserSeeder ---");
         $this->call(UserSeeder::class);
 
@@ -42,10 +33,5 @@ class DatabaseSeeder extends Seeder
 
         $this->command->info("--- start seed EmployeSeeder ---");
         $this->call(EmployeSeeder::class);
-
-        $this->command->info("--- start seed PermissionUserSeeder ---");
-        $this->call(PermissionUserSeeder::class);
-
-
     }
 }
