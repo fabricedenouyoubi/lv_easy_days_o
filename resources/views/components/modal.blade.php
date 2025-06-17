@@ -1,35 +1,28 @@
 @if($show)
-    <div class="modal fade show d-block" 
+    <div class="modal-backdrop fade show" style="z-index: 1040;"></div>
+    <div class="modal fade show" 
          tabindex="-1" 
-         style="background-color: rgba(0,0,0,0.5);"
-         wire:key="modal-{{ uniqid() }}">
-        <div class="modal-dialog modal-{{ $size }}" role="document">
+         style="display: block; z-index: 1050;"
+         wire:key="modal-{{ $title }}-{{ now()->timestamp }}">
+        <div class="modal-dialog modal-{{ $size }}">
             <div class="modal-content">
-                {{-- Header --}}
-                @if($title)
-                    <div class="modal-header">
-                        <h5 class="modal-title d-flex align-items-center">
-                            @if($icon)
-                                <i class="{{ $icon }} me-2"></i>
-                            @endif
-                            {{ $title }}
-                        </h5>
-                        <button type="button" 
-                                class="btn-close" 
-                                wire:click="{{ $closeAction }}"
-                                aria-label="Close"></button>
-                    </div>
-                @endif
-
-                {{-- Body --}}
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        @if($icon)
+                            <i class="{{ $icon }} me-2"></i>
+                        @endif
+                        {{ $title }}
+                    </h5>
+                    <x-action-button 
+                        type="close"
+                        wire-click="{{ $closeAction }}" />
+                </div>
                 <div class="modal-body">
                     {{ $slot }}
                 </div>
-
-                {{-- Footer --}}
-                @if($showFooter && isset($footer))
+                @if($showFooter)
                     <div class="modal-footer">
-                        {{ $footer }}
+                        {{ $footer ?? '' }}
                     </div>
                 @endif
             </div>

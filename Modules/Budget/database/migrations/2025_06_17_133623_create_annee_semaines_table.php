@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('feuilles_de_temps', function (Blueprint $table) {
+        Schema::create('annee_semaines', function (Blueprint $table) {
             $table->id();
             $table->integer('numero_semaine')->comment('Numéro de semaine dans l\'année');
             $table->date('debut')->comment('Date de début de semaine (dimanche)');
@@ -35,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('feuilles_de_temps');
+        Schema::dropIfExists('annee_semaines');
     }
 };

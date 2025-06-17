@@ -14,27 +14,23 @@ class Modal extends Component
     public $size;
     public $closeAction;
     public $showFooter;
-    public $backdrop;
     /**
      * Create a new component instance.
      */
     public function __construct(
        $show = false,
-        $title = null,
+        $title = '',
         $icon = null,
-        $size = 'lg', // sm, lg, xl
+        $size = 'lg',
         $closeAction = 'closeModal',
-        $showFooter = true,
-        $backdrop = true
-    )
-    {
+        $showFooter = true
+    ) {
         $this->show = $show;
         $this->title = $title;
         $this->icon = $icon;
         $this->size = $size;
         $this->closeAction = $closeAction;
         $this->showFooter = $showFooter;
-        $this->backdrop = $backdrop;
     }
 
     /**

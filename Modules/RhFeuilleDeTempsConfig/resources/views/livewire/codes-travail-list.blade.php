@@ -118,8 +118,7 @@
         </div>
     </div>
 
-     {{-- Modal Formulaire --}}
-    @if($showModal)
+        @if($showModal)
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
@@ -128,7 +127,11 @@
                             <i class="fas fa-clipboard-list me-2"></i>
                             {{ $editingId ? 'Modifier le Code de travail' : 'Nouveau Code de travail' }}
                         </h5>
-                        <button type="button" class="btn-close" wire:click="closeModal"></button>
+                        {{-- Utilisation du composant pour le bouton de fermeture --}}
+                        <x-action-button 
+                            type="close"
+                            wire-click="closeModal"
+                            aria-label="Close" />
                     </div>
                     <div class="modal-body">
                         <livewire:rh-config::code-travail-form :codeTravailId="$editingId" :key="$editingId" />
@@ -148,7 +151,11 @@
                             <i class="fas fa-info-circle me-2"></i>
                             Détails du Code de travail
                         </h5>
-                        <button type="button" class="btn-close" wire:click="closeDetailModal"></button>
+                        {{-- Bouton de fermeture avec composant --}}
+                        <x-action-button 
+                            type="close"
+                            wire-click="closeDetailModal"
+                            aria-label="Close" />
                     </div>
                     <div class="modal-body">
                         <div class="row">
@@ -185,50 +192,27 @@
                                     </tr>
                                 </table>
                             </div>
-                            <div class="col-md-6">
-                                <h6><i class="fas fa-calendar me-2"></i>Dates</h6>
-                                <table class="table table-borderless">
-                                    <tr>
-                                        <td><strong>Créé le :</strong></td>
-                                        <td>{{ $detailCodeTravail->created_at->format('d/m/Y à H:i') }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Modifié le :</strong></td>
-                                        <td>{{ $detailCodeTravail->updated_at->format('d/m/Y à H:i') }}</td>
-                                    </tr>
-                                </table>
-
-                                {{-- Configuration de la catégorie --}}
-                                @if($detailCodeTravail->categorie->configurable)
-                                    <h6><i class="fas fa-cog me-2"></i>Configuration</h6>
-                                    <table class="table table-borderless">
-                                        <tr>
-                                            <td><strong>Type config :</strong></td>
-                                            <td>
-                                                <span class="badge bg-primary">
-                                                    {{ $detailCodeTravail->categorie->valeur_config }}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                @endif
-                            </div>
+                    
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" wire:click="closeDetailModal">Fermer</button>
-                        <button type="button" class="btn btn-success" wire:click="showEditModal({{ $detailCodeTravail->id }})">
-                            <i class="fas fa-cog me-2"></i>Modifier
-                        </button>
-                        @if($detailCodeTravail->isConfigurable())
-                            <a href="{{ route('rhfeuilledetempsconfig.configure', $detailCodeTravail->id) }}" 
-                               class="btn btn-primary">
-                                <i class="fas fa-sliders-h me-2"></i>Configuration
-                            </a>
-                        @endif
+                        {{-- Utilisation des composants pour les boutons du footer --}}
+                        <div class="d-flex gap-2">
+                            <x-action-button 
+                                type="secondary"
+                                text="Fermer"
+                                wire-click="closeDetailModal" />
+                            
+                            <x-action-button 
+                                type="success"
+                                icon="fas fa-edit"
+                                text="Modifier"
+                                wire-click="showEditModal({{ $detailCodeTravail->id }})" />
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     @endif
+
 </div>

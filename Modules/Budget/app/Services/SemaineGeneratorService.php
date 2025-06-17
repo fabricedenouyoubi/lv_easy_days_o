@@ -1,13 +1,13 @@
 <?php
 
-namespace Modules\RhFeuilleDeTempsConfig\Services;
+namespace Modules\Budget\Services;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Modules\Budget\Models\AnneeFinanciere;
-use Modules\RhFeuilleDeTempsConfig\Models\FeuilleDeTemps;
+use Modules\Budget\Models\SemaineAnnee;
 
-class FeuilleDeTempsGeneratorService
+class SemaineGeneratorService
 {
     /**
      * Générer toutes les feuilles de temps pour une année financière
@@ -33,7 +33,7 @@ class FeuilleDeTempsGeneratorService
                 $endOfWeek = $currentDate->copy()->addDays($daysUntilEndOfWeek);
 
                 // Créer la feuille de temps pour cette semaine
-                FeuilleDeTemps::create([
+                SemaineAnnee::create([
                     'numero_semaine' => $weekNumber,
                     'debut' => $currentDate->toDateString(),
                     'fin' => $endOfWeek->toDateString(),
@@ -68,7 +68,7 @@ class FeuilleDeTempsGeneratorService
      */
     public function deactivateAllFeuillesDeTemps()
     {
-        return FeuilleDeTemps::query()->update(['actif' => false]);
+        return SemaineAnnee::query()->update(['actif' => false]);
     }
 
     /**
@@ -76,7 +76,7 @@ class FeuilleDeTempsGeneratorService
      */
     public function activateFeuillesForAnnee(AnneeFinanciere $anneeFinanciere)
     {
-        return FeuilleDeTemps::where('annee_financiere_id', $anneeFinanciere->id)
+        return SemaineAnnee::where('annee_financiere_id', $anneeFinanciere->id)
                             ->update(['actif' => true]);
     }
 
@@ -85,11 +85,11 @@ class FeuilleDeTempsGeneratorService
      */
     public function getGenerationStats(AnneeFinanciere $anneeFinanciere)
     {
-        $totalFeuilles = FeuilleDeTemps::where('annee_financiere_id', $anneeFinanciere->id)->count();
-        $feuillesActives = FeuilleDeTemps::where('annee_financiere_id', $anneeFinanciere->id)
+        $totalFeuilles = SemaineAnnee::where('annee_financiere_id', $anneeFinanciere->id)->count();
+        $feuillesActives = SemaineAnnee::where('annee_financiere_id', $anneeFinanciere->id)
                                         ->where('actif', true)
                                         ->count();
-        $semainesDePaie = FeuilleDeTemps::where('annee_financiere_id', $anneeFinanciere->id)
+        $semainesDePaie = SemaineAnnee::where('annee_financiere_id', $anneeFinanciere->id)
                                        ->where('est_semaine_de_paie', true)
                                        ->count();
 
@@ -107,7 +107,7 @@ class FeuilleDeTempsGeneratorService
      */
     public function areFeuillesGenerated(AnneeFinanciere $anneeFinanciere)
     {
-        $count = FeuilleDeTemps::where('annee_financiere_id', $anneeFinanciere->id)->count();
+        $count = SemaineAnnee::where('annee_financiere_id', $anneeFinanciere->id)->count();
         return $count > 0;
     }
 
@@ -116,7 +116,7 @@ class FeuilleDeTempsGeneratorService
      */
     public function deleteFeuillesForAnnee(AnneeFinanciere $anneeFinanciere)
     {
-        return FeuilleDeTemps::where('annee_financiere_id', $anneeFinanciere->id)->delete();
+        return SemaineAnnee::where('annee_financiere_id', $anneeFinanciere->id)->delete();
     }
 
     /**
@@ -140,16 +140,16 @@ class FeuilleDeTempsGeneratorService
      */
     public function markAsSemaineDePaie($feuilleId)
     {
-        return FeuilleDeTemps::where('id', $feuilleId)
+        return SemaineAnnee::where('id', $feuilleId)
                             ->update(['est_semaine_de_paie' => true]);
     }
 
     /**
-     * Démarquer une semaine comme semaine de paie
+     * Démarquer une semaine comme semaine de non paie
      */
     public function unmarkAsSemaineDePaie($feuilleId)
     {
-        return FeuilleDeTemps::where('id', $feuilleId)
+        return SemaineAnnee::where('id', $feuilleId)
                             ->update(['est_semaine_de_paie' => false]);
     }
 }

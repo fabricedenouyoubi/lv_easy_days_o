@@ -23,29 +23,7 @@ class BudgetController extends Controller
     {
         return view('budget::annees-financieres');
     }
-
-    /**
-     * Afficher les détails d'une année financière
-     */
-    public function detailsAnnee($anneeId)
-    {
-        try {
-            $anneeFinanciere = AnneeFinanciere::findOrFail($anneeId);
-            
-            // Rediriger vers le module RhFeuilleDeTempsConfig si disponible
-            if (class_exists('Modules\RhFeuilleDeTempsConfig\Http\Controllers\RhFeuilleDeTempsConfigController')) {
-                return redirect()->route('rhfeuilledetempsconfig.details-annee', ['annee' => $anneeId]);
-            }
-            
-            // Fallback si le module n'est pas disponible
-            return view('budget::details-annee', [
-                'anneeFinanciere' => $anneeFinanciere
-            ]);
-        } catch (\Exception $e) {
-            return redirect()->route('budget.annees-financieres')
-                           ->with('error', 'Année financière introuvable.');
-        }
-    }
+    
     /**
      * Show the form for creating a new resource.
      */
