@@ -2,11 +2,11 @@
 
 namespace Modules\Rh\Livewire\Employe;
 
-use App\Models\Group;
 use App\Models\User;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
-use Modules\RhEmploye\Models\Employe;
+use Modules\Rh\Models\Employe\Employe;
+use Spatie\Permission\Models\Role;
 
 class EmployeEdit extends Component
 {
@@ -29,7 +29,7 @@ class EmployeEdit extends Component
     //--- recuperation des groupes
     public function get_groups()
     {
-        return Group::all();
+        return Role::all();
     }
 
     /*
@@ -50,7 +50,8 @@ class EmployeEdit extends Component
             $this->nombre_d_heure_semaine = $employe->nombre_d_heure_semaine;
             $this->adresse_id = $employe->adresse_id;
             $this->email = $employe->email();
-            $this->groups = $employe->employe_groups()->pluck('id')->toArray();
+            //--- $this->groups = $employe->employe_groups()->pluck('id')->toArray();
+            $this->groups = $employe->employe_groups()->pluck('name')->toArray();
         }
         $this->groups_list = $this->get_groups();
     }
@@ -119,11 +120,13 @@ class EmployeEdit extends Component
             $employe = Employe::findOrFail($this->employeId);
             $user = User::findOrFail($employe->user_id);
 
-            //--- mise a jour coompte utilisateur
+            //--- mise a jour compte utilisateur
             $user->update([
                 'email' => $this->email,
                 'name' => $this->nom . ' ' . $this->prenom,
             ]);
+
+            $user->syncRoles($this->groups);
 
             $employe->update([
                 'matricule' => $this->matricule,

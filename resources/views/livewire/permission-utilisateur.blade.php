@@ -8,17 +8,18 @@
     <div class="col-12 col-md-9">
         <div class="card-body row">
             <div class="table-responsive">
-                <div class="d-flex mb-2 gap-2 justify-content-between">
+                {{-- <div class="d-flex mb-2 gap-2 justify-content-between">
                     <div>
                         <button class="btn btn-sm btn-secondary" wire:click="select_all"><span
                                 class="mdi mdi-check-all"></span> Tout selectionner</button>
-                        <button class="btn btn-sm btn-danger" wire:click="deselect_all"><span class="mdi mdi-tab-unselected"></span> Tout déselectionner</button>
+                        <button class="btn btn-sm btn-danger" wire:click="deselect_all"><span
+                                class="mdi mdi-tab-unselected"></span> Tout déselectionner</button>
                     </div>
                     <div>
                         <button class="btn btn-sm btn-success" wire:click="set_user_permission">
                             <span class="mdi mdi-content-save-all"></span> Enregistrer</button>
                     </div>
-                </div>
+                </div> --}}
                 <form>
                     <table class="table table-nowrap align-middle table-hover align-middle table-nowrap mb-0"
                         aria-describedby="Liste des permissions">
@@ -36,18 +37,11 @@
                                     </a>
                                 </th>
 
-                                <th class="orderable" scope="col">
-                                    <a class="text-decoration-none text-dark d-flex align-items-center">
-                                        <span class="me-1">Code</span>
-                                    </a>
-                                </th>
-
-
-                                <th class="orderable" scope="col">
+                                {{-- <th class="orderable" scope="col">
                                     <a class="text-decoration-none text-dark d-flex align-items-center">
                                         <span class="me-1">Attribué</span>
                                     </a>
-                                </th>
+                                </th> --}}
                             </tr>
                         </thead>
 
@@ -59,19 +53,14 @@
                                     </td>
 
                                     <td class="py-2">
-                                        {{ $permission->contentType?->app_label }}
+                                        {{ $permission->module }}
                                     </td>
-
-                                    <td class="py-2">
-                                        {{ $permission->codename }}
-                                    </td>
-
-                                    <td class="py-2">
+                                    {{-- <td class="py-2">
                                         <div class="form-check">
                                             <input class="" type="checkbox" id="element_{{ $permission->id }}"
                                                 value="{{ $permission->id }}" wire:model.live="checkedPermissions">
                                         </div>
-                                    </td>
+                                    </td> --}}
                                 </tr>
                             @endforeach
                         </tbody>
@@ -115,15 +104,6 @@
                                 <label for="type" class="form-label"> Type de la permission</label>
                                 <input type="text" name="nom" placeholder="Rechercher par type"
                                     class="textinput form-control" id="type" wire:model="type_searched">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12 mb-3">
-                            <div id="div_id_nom" class="mb-3">
-                                <label for="code" class="form-label"> Code de la permission</label>
-                                <input type="text" name="nom" placeholder="Rechercher par code"
-                                    class="textinput form-control" id="code" wire:model="code_searched">
                             </div>
                         </div>
                     </div>

@@ -38,9 +38,9 @@ class Employe extends Model
     ];
 
 
-    public function user(): HasOne
+    public function user(): BelongsTo
     {
-        return $this->hasOne(User::class);
+        return $this->belongsTo(User::class);
     }
 
     public function entreprise(): BelongsTo
@@ -70,7 +70,8 @@ class Employe extends Model
 
     public function employe_groups()
     {
-        return  User::with('groups')->findOrFail($this->user_id)->groups;
+        $user = User::with('roles')->findOrFail($this->user_id);
+        return $user->roles;
     }
 
     public function historiques_gestionnaire_employe()

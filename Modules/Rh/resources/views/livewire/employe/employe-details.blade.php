@@ -464,7 +464,7 @@
                             wire:click="showEditModal"></button>
                     </div>
                     <div class="modal-body">
-                        <livewire:rhemploye::employe-edit-form :employeId='$employe->id' />
+                        <livewire:rh::employe.employe-edit :employeId='$employe->id' />
                     </div>
                 </div>
             </div>
@@ -482,7 +482,7 @@
                             wire:click="closeGestModal"></button>
                     </div>
                     <div class="modal-body">
-                        <livewire:rhemploye::historique-gestionnaire-form :employeId='$employe->id' />
+                        <livewire:rh::employe.historique-gestionnaire-form :employeId='$employe->id' />
                     </div>
                 </div>
             </div>

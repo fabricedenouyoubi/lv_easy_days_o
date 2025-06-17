@@ -2,10 +2,10 @@
 
 namespace App\Livewire;
 
-use App\Models\Permission;
 use App\Models\User;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Spatie\Permission\Models\Permission;
 
 class PermissionUtilisateur extends Component
 {
@@ -13,7 +13,6 @@ class PermissionUtilisateur extends Component
     public $userId;
     public $userName;
     public $name_searched;
-    public $code_searched;
     public $type_searched;
     public $checkedPermissions = [];
 
@@ -74,25 +73,19 @@ class PermissionUtilisateur extends Component
     //--- fonction de recuperation de toutes les permissions avec pagination et recherche
     public function get_permission()
     {
-        return Permission::query()
-            ->with('contentType')
-            ->when(
-                $this->name_searched,
-                fn($query) =>
-                $query->where('name', 'like', '%' . $this->name_searched . '%')
-            )
-            ->when(
-                $this->code_searched,
-                fn($query) =>
-                $query->where('codename', 'like', '%' . $this->code_searched . '%')
-            )
+        $user = User::findOrFail($this->userId);
+
+        // Obtenir toutes les permissions via les rôles de l'utilisateur (avec Eloquent)
+        return $permissions = Permission::whereHas('roles', function ($query) use ($user) {
+            $query->whereIn('roles.id', $user->roles->pluck('id'));
+        })
+            ->when($this->name_searched, function ($query) {
+                $query->where('name', 'like', '%' . $this->name_searched . '%');
+            })
             ->when($this->type_searched, function ($query) {
-                $query->where(function ($subQuery) {
-                    $subQuery->whereHas('contentType', function ($Query) {
-                        $Query->where('app_label', 'like', '%' . $this->type_searched . '%');
-                    });
-                });
-            })->paginate(10, ['*'], 'permission');
+                $query->where('module', 'like', '%' . $this->type_searched . '%');
+            })
+            ->paginate(10, ['*'], 'permission');
     }
 
     //--- fonction reinitialisation des champs de filtre des permissions

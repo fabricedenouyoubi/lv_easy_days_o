@@ -212,7 +212,7 @@
                             wire:click="closeModal"></button>
                     </div>
                     <div class="modal-body">
-                        <livewire:rhemploye::employe-form />
+                        <livewire:rh::employe.employe-form />
                     </div>
                 </div>
             </div>

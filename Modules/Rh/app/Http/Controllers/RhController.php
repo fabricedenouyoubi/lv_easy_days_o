@@ -15,8 +15,8 @@ class RhController extends Controller
         return view('rh::employe.index');
     }
 
-    public function employe_details()
+    public function employe_details($employeId)
     {
-
+        return view('rh::employe.show', ['id' => $employeId]);
     }
 }

@@ -15,6 +15,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        //app()['cache']->forget('spatie.permission.cache');
 
         $user1 = User::create([
             'password' => 'password',
@@ -75,5 +76,8 @@ class UserSeeder extends Seeder
             'is_active' => true,
             'name' => 'Tremblay Elisabeth',
         ]);
+
+        $user1->assignRole('ADMIN');
+        $user1->assignRole('GESTIONNAIRE');
     }
 }

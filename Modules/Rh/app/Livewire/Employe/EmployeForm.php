@@ -2,11 +2,11 @@
 
 namespace Modules\Rh\Livewire\Employe;
 
-use App\Models\Group;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Livewire\Component;
-use Modules\RhEmploye\Models\Employe;
+use Modules\Rh\Models\Employe\Employe;
+use Spatie\Permission\Models\Role;
 
 class EmployeForm extends Component
 {
@@ -63,7 +63,7 @@ class EmployeForm extends Component
     //--- recuperation des groupes
     public function get_groups()
     {
-        return Group::all();
+        return Role::all();
     }
 
     /*
@@ -95,6 +95,8 @@ class EmployeForm extends Component
                 'name' => $this->nom . ' ' . $this->prenom,
             ]);
 
+            $user->syncRoles($this->groups);
+
             if (!$this->matricule) {
                 $this->matricule = $this->generateMatricule();
             }
@@ -114,7 +116,7 @@ class EmployeForm extends Component
 
             $this->dispatch('employeCreated');
         } catch (\Throwable $th) {
-
+            dd($th->getMessage());
             session()->flash('error', 'Erreur lors de la sauvegarde : ' . $th->getMessage());
         }
     }

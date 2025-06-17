@@ -109,7 +109,7 @@
                 <select name="group" class="form-select form-select-sm @error('groups') is-invalid @enderror"
                     id="id_group" multiple wire:model="groups">
                     @foreach ($groups_list as $group)
-                        <option value="{{ $group->id }}">{{ $group->name }}</option>
+                        <option value="{{ $group->name }}">{{ $group->name }}</option>
                     @endforeach
                 </select>
                 <div id="id_group_helptext" class="form-text">Groupes d'accès</div>

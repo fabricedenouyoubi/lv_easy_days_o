@@ -6,7 +6,7 @@ use App\Models\Group;
 use Carbon\Carbon;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Modules\RhEmploye\Models\Employe;
+use Modules\Rh\Models\Employe\Employe;
 
 class EmployeSeeder extends Seeder
 {

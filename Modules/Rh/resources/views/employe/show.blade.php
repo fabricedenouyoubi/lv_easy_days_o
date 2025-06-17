@@ -6,7 +6,7 @@
 @section('content')
 <div class="row">
     <div class="col-12">
-        <livewire:rh.employe::employe-details :employeId='$id'/>
+        <livewire:rh::employe.employe-details :employeId='$id'/>
     </div>
 </div>
 @endsection

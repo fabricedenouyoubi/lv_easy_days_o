@@ -66,7 +66,7 @@
             class="form-select form-select-sm selectmultiple @error('groups') is-invalid @enderror"
             style="height: 100px;">
             @foreach ($groups_list as $group)
-                <option value="{{ $group->id }}">{{ $group->name }}</option>
+                <option value="{{ $group->name }}">{{ $group->name }}</option>
             @endforeach
         </select>
         <div class="form-text">Groupes d'accès</div>

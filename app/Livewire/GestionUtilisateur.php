@@ -72,24 +72,6 @@ class GestionUtilisateur extends Component
             ->paginate(10);
     }
 
-    //--- fonction de reinitialisation des permisions de groupe d'un utilisateur
-    public function reset_group_permission($userId)
-    {
-        try {
-            $user = User::query()->with('groups.permissions')->where('id', $userId)->first();
-            $groupPermisionsId = collect();
-            foreach ($user->groups as $group) {
-               $groupPermisionsId = $groupPermisionsId->merge($group->permissions->pluck('id'));
-            }
-            $uniquePermissionId = $groupPermisionsId->unique()->toArray();
-            $user->permissions()->sync($uniquePermissionId);
-
-            session()->flash('success', 'Les permissions de ' . $user->name . ' ont été mises à jour à partir de ses groupes.');
-        } catch (\Exception $e) {
-            session()->flash('error', 'Une erreur est survenue lors de la mise à jour des permissions. de l\'utilisateurm'. $user->name);
-        }
-    }
-
     //--- affichage du message de mis a jour des permission d'un utilisateur
     public function handleUserPermissionUpdated($val = null)
     {

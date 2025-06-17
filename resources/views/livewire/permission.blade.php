@@ -29,13 +29,6 @@
                                     <span class="me-1">Type de permission</span>
                                 </a>
                             </th>
-
-                            <th class="orderable" scope="col">
-                                <a class="text-decoration-none text-dark d-flex align-items-center">
-                                    <span class="me-1">Code</span>
-                                </a>
-
-                            </th>
                         </tr>
                     </thead>
 
@@ -47,11 +40,7 @@
                                 </td>
 
                                 <td class="py-2">
-                                    {{ $permission->contentType?->app_label }}
-                                </td>
-
-                                <td class="py-2">
-                                    {{ $permission->codename }}
+                                    {{ $permission->module }}
                                 </td>
                             </tr>
                         @empty
@@ -103,15 +92,6 @@
                                 <label for="type" class="form-label"> Type de la permission</label>
                                 <input type="text" name="nom" placeholder="Rechercher par type"
                                     class="textinput form-control" id="type" wire:model="type_searched">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12 mb-3">
-                            <div id="div_id_nom" class="mb-3">
-                                <label for="code" class="form-label"> Code de la permission</label>
-                                <input type="text" name="nom" placeholder="Rechercher par code"
-                                    class="textinput form-control" id="code" wire:model="code_searched">
                             </div>
                         </div>
                     </div>

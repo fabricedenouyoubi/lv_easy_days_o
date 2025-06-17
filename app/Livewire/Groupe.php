@@ -2,9 +2,9 @@
 
 namespace App\Livewire;
 
-use App\Models\Group;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Spatie\Permission\Models\Role;
 
 class Groupe extends Component
 {
@@ -30,7 +30,7 @@ class Groupe extends Component
     //--- recupeartion de la liste des goupes
     public function get_groupes()
     {
-        return Group::query()
+        return Role::query()
             ->when(
                 $this->name_searched,
                 fn($query) =>

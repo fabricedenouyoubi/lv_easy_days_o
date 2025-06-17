@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Group;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
+use Spatie\Permission\Models\Role;
 
 class GroupeForm extends Component
 {
@@ -27,7 +28,7 @@ class GroupeForm extends Component
     public function mount()
     {
         if ($this->groupId) {
-            $group = Group::findOrFail($this->groupId);
+            $group = Role::findOrFail($this->groupId);
             $this->name = $group->name;
         }
     }
@@ -39,19 +40,19 @@ class GroupeForm extends Component
 
         try {
             if ($this->groupId) {
-                if (Group::where('name', $this->name)->where('id', '!=', $this->groupId)->exists()) {
+                if (Role::where('name', $this->name)->where('id', '!=', $this->groupId)->exists()) {
                     $this->addError('name', 'Un groupe avec ce nom existe déjà.');
                     return;
                 }
-                $group = Group::findOrFail($this->groupId);
+                $group = Role::findOrFail($this->groupId);
                 $group->update(['name' => $this->name]);
                 $this->dispatch('groupUpdated');
             } else {
-                if (Group::where('name', $this->name)->exists()) {
+                if (Role::where('name', $this->name)->exists()) {
                     $this->addError('name', 'Un groupe avec ce nom existe déjà.');
                     return;
                 }
-                $group = Group::create(['name' => $this->name]);
+                $group = Role::create(['name' => $this->name]);
                 $this->dispatch('groupCreated');
             }
         } catch (\Throwable $th) {
@@ -60,7 +61,11 @@ class GroupeForm extends Component
 
     public function cancel()
     {
-        $this->reset('name');
+        if ($this->groupId) {
+            $this->name = Role::findOrFail($this->groupId)->name;
+        } else {
+            $this->reset('name');
+        }
     }
 
     public function render()

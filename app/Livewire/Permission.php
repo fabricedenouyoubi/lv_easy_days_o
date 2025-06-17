@@ -2,16 +2,15 @@
 
 namespace App\Livewire;
 
-use App\Models\Permission as ModelsPermission;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Spatie\Permission\Models\Permission as ModelsPermission;
 
 class Permission extends Component
 {
     use WithPagination;
 
     public $name_searched;
-    public $code_searched;
     public $type_searched;
 
     protected $paginationTheme = 'bootstrap';
@@ -20,30 +19,23 @@ class Permission extends Component
     public function get_permission()
     {
         return ModelsPermission::query()
-            ->with('contentType')
             ->when(
                 $this->name_searched,
                 fn($query) =>
                 $query->where('name', 'like', '%' . $this->name_searched . '%')
             )
             ->when(
-                $this->code_searched,
+                $this->type_searched,
                 fn($query) =>
-                $query->where('codename', 'like', '%' . $this->code_searched . '%')
+                $query->where('module', 'like', '%' . $this->type_searched . '%')
             )
-            ->when($this->type_searched, function ($query) {
-                $query->where(function ($subQuery) {
-                    $subQuery->whereHas('contentType', function ($Query) {
-                        $Query->where('app_label', 'like', '%' . $this->type_searched . '%');
-                    });
-                });
-            })->paginate(10);
+            ->paginate(10);
     }
 
     //--- fonction reinitialisation des champs de filtre des permissions
     public function resetFilter()
     {
-        $this->reset(['name_searched', 'code_searched']);
+        $this->reset(['name_searched', 'type_searched']);
     }
 
     public function render()

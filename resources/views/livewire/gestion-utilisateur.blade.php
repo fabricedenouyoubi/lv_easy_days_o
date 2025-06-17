@@ -69,7 +69,7 @@
                                     </td>
                                     <td class="py-2">
                                         <ul class="ps-0">
-                                            @foreach ($utilisateur->groups as $group)
+                                            @foreach ($utilisateur->roles as $group)
                                                 <li class="list-group-item px-0 border-0">
                                                     {{ $group?->name }}
                                                 </li>
@@ -78,22 +78,11 @@
                                     </td>
                                     <td class="py-2">
                                         <div class="d-flex gap-2 justify-content-center">
-                                            {{-- <a class="btn btn-sm bg-gradient btn-primary" data-bs-toggle="tooltip"
-                                                data-bs-placement="top" aria-label="Groupes"
-                                                data-bs-original-title="Modifier le(s) groupe(s) de l'utilisateur">
-                                                <span class="mdi mdi-account"></span>
-                                            </a> --}}
                                             <a class="btn btn-sm bg-gradient btn-warning" data-bs-toggle="tooltip"
                                                 data-bs-placement="top" aria-label="Permissions"
                                                 title="Permission de l'utilisateur"
                                                 wire:click="show_user_modal('{{ $utilisateur->name }}', {{ $utilisateur->id }})">
                                                 <span class="mdi mdi-cancel"></span>
-                                            </a>
-                                            <a class="btn btn-sm bg-gradient btn-success" data-bs-toggle="tooltip"
-                                                data-bs-placement="top" aria-label="Group_permission"
-                                                data-bs-original-title="Reinitialiser les permisions de groupe"
-                                                wire:click="reset_group_permission({{ $utilisateur->id }})">
-                                                <span class="mdi mdi-refresh"></span>
                                             </a>
                                         </div>
                                     </td>

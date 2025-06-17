@@ -5,8 +5,6 @@ use App\Http\Controllers\AutorisationController;
 use Illuminate\Support\Facades\Route;
 
 
-
-
 Route::get('/login', [AuthController::class, 'login'])->name('login');
 
 Route::middleware('auth')->group(function () {

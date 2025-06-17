@@ -2,10 +2,10 @@
 
 namespace App\Livewire;
 
-use App\Models\Group;
-use App\Models\Permission;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class GroupPermission extends Component
 {
@@ -23,14 +23,15 @@ class GroupPermission extends Component
     //---  recuperation des permissions d'un groupe
     public function get_group_permission()
     {
-        $group = Group::query()->with('permissions')->where('id', $this->groupId)->first();
-        return $group->permissions()->pluck('permission_id')->toArray();
+        $group = Role::query()->with('permissions')->where('id', $this->groupId)->first();
+        //return $group->permissions()->pluck('permission_id')->toArray();
+        return $group->getPermissionNames();
     }
 
     //---  recuperation de toutes les permissions
     public function get_all_permission()
     {
-        return Permission::query()->pluck('id')->toArray();
+        return Permission::query()->pluck('name')->toArray();
     }
 
     /*
@@ -60,21 +61,13 @@ class GroupPermission extends Component
         try {
             $this->load_save_permission = true;
             //--- mise a jour des permission du groupe
-            $group = Group::query()->with('permissions')->where('id', $this->groupId)->first();
-            $group->permissions()->sync($this->checkedPermissions);
+            $group = Role::query()->with('permissions')->where('id', $this->groupId)->first();
+            $group->syncPermissions($this->checkedPermissions);
 
-            //--- mise a jour des permission des utilisateur group
-            foreach ($group->users as $user) {
-                $groupPermisionsId = collect();
-                foreach ($user->groups as $group) {
-                    $groupPermisionsId = $groupPermisionsId->merge($group->permissions->pluck('id'));
-                }
-                $uniquePermissionId = $groupPermisionsId->unique()->toArray();
-                $user->permissions()->sync($uniquePermissionId);
-            }
             $this->load_save_permission = false;
             $this->dispatch('groupPermissionUpdated', $group->name);
         } catch (\Throwable $th) {
+            dd($th->getMessage());
             $this->addError('error', 'Erreur de sauvegarde ' . $th->getMessage());
         }
     }
@@ -83,30 +76,22 @@ class GroupPermission extends Component
     public function get_permission()
     {
         return Permission::query()
-            ->with('contentType')
             ->when(
                 $this->name_searched,
                 fn($query) =>
                 $query->where('name', 'like', '%' . $this->name_searched . '%')
             )
             ->when(
-                $this->code_searched,
+                $this->type_searched,
                 fn($query) =>
-                $query->where('codename', 'like', '%' . $this->code_searched . '%')
-            )
-            ->when($this->type_searched, function ($query) {
-                $query->where(function ($subQuery) {
-                    $subQuery->whereHas('contentType', function ($Query) {
-                        $Query->where('app_label', 'like', '%' . $this->type_searched . '%');
-                    });
-                });
-            })->paginate(10, ['*'], 'permission');
+                $query->where('module', 'like', '%' . $this->type_searched . '%')
+            )->paginate(10, ['*'], 'permission');
     }
 
     //--- fonction reinitialisation des champs de filtre des permissions
     public function resetFilter()
     {
-        $this->reset(['name_searched', 'code_searched', 'type_searched']);
+        $this->reset(['name_searched', 'type_searched']);
     }
 
 

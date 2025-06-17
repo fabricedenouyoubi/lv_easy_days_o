@@ -2,13 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\Permission;
-use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Log;
 use Modules\Budget\Database\Seeders\BudgetDatabaseSeeder;
-use Modules\RhEmploye\Models\Employe;
+use Modules\Roles\Database\Seeders\PermissionSeeder;
+use Modules\Roles\Database\Seeders\RoleSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -24,6 +22,12 @@ class DatabaseSeeder extends Seeder
 
         $this->command->info("--- start seed GroupSeeder ---");
         $this->call(GroupSeeder::class);
+
+        $this->command->info("--- start seed PermissionSeeder ---");
+        $this->call(PermissionSeeder::class);
+
+        $this->command->info("--- start seed RoleSeeder ---");
+        $this->call(RoleSeeder::class);
 
         $this->command->info("--- start seed UserSeeder ---");
         $this->call(UserSeeder::class);
