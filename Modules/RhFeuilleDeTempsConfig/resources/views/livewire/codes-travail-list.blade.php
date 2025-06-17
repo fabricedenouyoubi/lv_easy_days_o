@@ -117,4 +117,118 @@
             </x-filter-card>
         </div>
     </div>
+
+     {{-- Modal Formulaire --}}
+    @if($showModal)
+        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-clipboard-list me-2"></i>
+                            {{ $editingId ? 'Modifier le Code de travail' : 'Nouveau Code de travail' }}
+                        </h5>
+                        <button type="button" class="btn-close" wire:click="closeModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <livewire:rh-config::code-travail-form :codeTravailId="$editingId" :key="$editingId" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Modal Détail Code de travail --}}
+    @if($showDetail && $detailCodeTravail)
+        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Détails du Code de travail
+                        </h5>
+                        <button type="button" class="btn-close" wire:click="closeDetailModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-clipboard-list me-2"></i>Informations du Code</h6>
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td><strong>Code :</strong></td>
+                                        <td><code class="bg-light px-2 py-1 rounded">{{ $detailCodeTravail->code }}</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Libellé :</strong></td>
+                                        <td>{{ $detailCodeTravail->libelle }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Catégorie :</strong></td>
+                                        <td>
+                                            <span class="badge bg-info">{{ $detailCodeTravail->categorie->intitule }}</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Configurable :</strong></td>
+                                        <td>
+                                            @if($detailCodeTravail->isConfigurable())
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check me-1"></i>Oui
+                                                </span>
+                                            @else
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-times me-1"></i>Non
+                                                </span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-calendar me-2"></i>Dates</h6>
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td><strong>Créé le :</strong></td>
+                                        <td>{{ $detailCodeTravail->created_at->format('d/m/Y à H:i') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Modifié le :</strong></td>
+                                        <td>{{ $detailCodeTravail->updated_at->format('d/m/Y à H:i') }}</td>
+                                    </tr>
+                                </table>
+
+                                {{-- Configuration de la catégorie --}}
+                                @if($detailCodeTravail->categorie->configurable)
+                                    <h6><i class="fas fa-cog me-2"></i>Configuration</h6>
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>Type config :</strong></td>
+                                            <td>
+                                                <span class="badge bg-primary">
+                                                    {{ $detailCodeTravail->categorie->valeur_config }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" wire:click="closeDetailModal">Fermer</button>
+                        <button type="button" class="btn btn-success" wire:click="showEditModal({{ $detailCodeTravail->id }})">
+                            <i class="fas fa-cog me-2"></i>Modifier
+                        </button>
+                        @if($detailCodeTravail->isConfigurable())
+                            <a href="{{ route('rhfeuilledetempsconfig.configure', $detailCodeTravail->id) }}" 
+                               class="btn btn-primary">
+                                <i class="fas fa-sliders-h me-2"></i>Configuration
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
