@@ -133,15 +133,38 @@
                                id="searchLibelle"
                                class="form-control" 
                                placeholder="Rechercher par libellé..." 
-                               wire:model.live.debounce.300ms="searchLibelle">
+                               wire:model.defer="searchLibelle">
                     </div>
 
-                    {{-- Informations sur les résultats --}}
-                    <div class="mt-3 p-3 bg-light rounded">
-                        <small class="text-muted">
-                            <i class="fas fa-info-circle me-1"></i>
-                            {{ $joursFeries->total() }} jour(s) férié(s) trouvé(s)
-                        </small>
+                    {{-- Boutons d'action --}}
+                    <div class="d-flex gap-3">
+                        <button type="button" 
+                                class="btn btn-primary" 
+                                wire:click="filter"
+                                wire:loading.attr="disabled"
+                                wire:target="filter">
+                            <span wire:loading.remove wire:target="filter">
+                                <i class="fas fa-search me-2"></i>Filtrer
+                            </span>
+                            <span wire:loading wire:target="filter">
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                Filtrage...
+                            </span>
+                        </button>
+
+                        <button type="button" 
+                                class="btn btn-outline-secondary" 
+                                wire:click="resetFilters"
+                                wire:loading.attr="disabled"
+                                wire:target="resetFilters">
+                            <span wire:loading.remove wire:target="resetFilters">
+                                <i class="fas fa-refresh me-2"></i>Réinitialiser
+                            </span>
+                            <span wire:loading wire:target="resetFilters">
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                Réinitialisation...
+                            </span>
+                        </button>
                     </div>
 
                     {{-- Information sur le code de travail --}}
@@ -157,14 +180,6 @@
                             <tr>
                                 <td><strong>Libellé :</strong></td>
                                 <td>{{ $codeTravail->libelle }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Catégorie :</strong></td>
-                                <td><span class="badge bg-info">{{ $codeTravail->categorie->intitule }}</span></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Type :</strong></td>
-                                <td><span class="badge bg-primary">{{ $codeTravail->categorie->valeur_config }}</span></td>
                             </tr>
                         </table>
                     </div>

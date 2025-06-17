@@ -6,13 +6,10 @@
 @section('content')
 <div class="container-fluid">
     <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Accueil</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('budget.annees-financieres') }}">Années financières</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Détails</li>
-        </ol>
-    </nav>
+    <x-breadcrumb :items="[
+        ['label' => 'Années financières', 'url' => route('budget.annees-financieres')],
+        ['label' => 'Détails']
+    ]" />
 
     <!-- Information de l'année financière -->
     <div class="row mb-4">

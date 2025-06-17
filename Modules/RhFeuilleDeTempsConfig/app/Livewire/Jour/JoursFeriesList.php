@@ -16,6 +16,7 @@ class JoursFeriesList extends Component
     public $codeTravailId;
     public $codeTravail;
     public $searchLibelle = '';
+    public $isFiltering = false;
     public $showModal = false;
     public $editingId = null;
     public $showDetail = false;
@@ -97,7 +98,27 @@ class JoursFeriesList extends Component
             ->orderBy('date')
             ->paginate(10);
     }
+    public function filter()
+    {
+        $this->isFiltering = true;
+        
+        // Simuler un délai pour montrer le spinner
+        sleep(1);
+        
+        $this->resetPage();
+        $this->isFiltering = false;
+    }
 
+    public function resetFilters()
+    {
+        $this->isFiltering = true;
+        
+        // Simuler un délai pour montrer le spinner
+        sleep(1);
+        $this->searchLibelle = '';
+        $this->resetPage();
+        $this->isFiltering = false;
+    }
     public function getDetailJourFerieProperty()
     {
         if ($this->detailJourFerieId) {

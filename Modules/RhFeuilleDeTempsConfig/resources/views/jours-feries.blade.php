@@ -5,14 +5,11 @@
 
 @section('content')
 <!-- Breadcrumb -->
-<nav aria-label="breadcrumb" class="mb-4">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Accueil</a></li>
-        <li class="breadcrumb-item"><a href="#">Ressources Humaines</a></li>
-        <li class="breadcrumb-item"><a href="{{ route('rhfeuilledetempsconfig.codes-travail.codetravails') }}">Codes de Travail</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Configuration - {{ $codeTravail->libelle ?? 'Jours fériés' }}</li>
-    </ol>
-</nav>
+<x-breadcrumb :items="[
+    ['label' => 'Ressources Humaines'],
+    ['label' => 'Codes de Travail', 'url' => route('rhfeuilledetempsconfig.codes-travail.codetravails')],
+    ['label' => 'Configuration - ' . ($codeTravail->libelle ?? 'Jours fériés')]
+]" />
 
 <div class="row">
     <div class="col-12">
