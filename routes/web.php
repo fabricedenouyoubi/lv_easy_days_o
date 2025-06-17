@@ -4,11 +4,22 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AutorisationController;
 use Illuminate\Support\Facades\Route;
 
+require __DIR__ . '/auth.php';
 
-Route::get('/login', [AuthController::class, 'login'])->name('login');
+//--- Liens Utilisées par laravel breeze
+
+/* Route::view('/welcome', 'welcome');
+
+Route::view('dashboard', 'brezze-dashboard')
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
+
+Route::view('profile', 'profile')
+    ->middleware(['auth'])
+    ->name('profile'); */
 
 Route::middleware('auth')->group(function () {
-    Route::get('/', [AuthController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [AuthController::class, 'index'])->name('dashboard')->middleware('verified');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::prefix('permissions')->name('permission.')->group(function () {

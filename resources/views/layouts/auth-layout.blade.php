@@ -25,7 +25,7 @@
 </head>
 
 <body>
-    @yield('content')
+    {{ $slot }}
 
     <script src="{{ asset('assets/borex/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('assets/borex/libs/metismenujs/metismenujs.min.js') }}"></script>

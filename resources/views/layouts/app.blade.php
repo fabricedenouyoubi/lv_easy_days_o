@@ -70,3 +70,5 @@
     <script src="{{ asset('assets/borex/js/app.js') }}"></script>
 </body>
 </html>
+
+
