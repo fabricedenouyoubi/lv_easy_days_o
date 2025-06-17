@@ -11,6 +11,10 @@ class EntrepriseDatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // $this->call([]);
+        $this->call([
+            EntrepriseSeeder::class,
+            AdresseSeeder::class,
+            SiteSeeder::class,
+        ]);
     }
 }

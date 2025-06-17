@@ -8,7 +8,9 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Log;
 use Modules\Budget\Database\Seeders\BudgetDatabaseSeeder;
+use Modules\Entreprise\Database\Seeders\EntrepriseDatabaseSeeder;
 use Modules\RhEmploye\Models\Employe;
+use Modules\RhFeuilleDeTempsConfig\Database\Seeders\RhFeuilleDeTempsConfigDatabaseSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -21,6 +23,12 @@ class DatabaseSeeder extends Seeder
 
         $this->command->info("--- start seed BudgetDatabaseSeeder ---");
         $this->call(BudgetDatabaseSeeder::class);
+
+        $this->command->info("--- start seed EntrepriseDatabaseSeeder ---");
+        $this->call(EntrepriseDatabaseSeeder::class);
+
+        $this->command->info("--- start seed RhFeuilleTempsDatabaseSeeder ---");
+        $this->call(RhFeuilleDeTempsConfigDatabaseSeeder::class);
 
         $this->command->info("--- start seed GroupSeeder ---");
         $this->call(GroupSeeder::class);
