@@ -1,13 +1,21 @@
 <?php
 
-namespace Modules\RhCodeTravailComportement\Http\Controllers;
+namespace Modules\RhFeuilleDeTempsConfig\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\RhFeuilleDeTempsConfig\Models\CodeTravail;
 
-class RhCodeTravailComportementController extends Controller
+class ComportementController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+        return view('rhfeuilledetempsconfig::index');
+    }
+
     /**
      * Afficher la configuration d'un code de travail
      */
@@ -40,29 +48,29 @@ class RhCodeTravailComportementController extends Controller
      */
     private function configureJoursFeries($codeTravail)
     {
-        return view('rhcodetravailcomportement::jours-feries', [
+        return view('rhfeuilledetempsconfig::jours-feries', [
             'codeTravail' => $codeTravail
         ]);
     }
     
     /**
-     * Configuration individuelle (pour plus tard)
+     * Configuration individuelle d'un employé
      */
     private function configureIndividuel($codeTravail)
     {
         // À implémenter plus tard
-        return view('rhcodetravailcomportement::individuel', [
+        return view('rhfeuilledetempsconfig::individuel', [
             'codeTravail' => $codeTravail
         ]);
     }
     
     /**
-     * Configuration collective (pour plus tard)
+     * Configuration collective pour des employés
      */
     private function configureCollectif($codeTravail)
     {
         // À implémenter plus tard
-        return view('rhcodetravailcomportement::collectif', [
+        return view('rhfeuilledetempsconfig::collectif', [
             'codeTravail' => $codeTravail
         ]);
     }

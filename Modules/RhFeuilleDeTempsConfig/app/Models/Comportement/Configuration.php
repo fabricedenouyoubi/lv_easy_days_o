@@ -1,13 +1,13 @@
 <?php
 
-namespace Modules\RhCodeTravailComportement\Models;
+namespace Modules\RhFeuilleDeTempsConfig\Models\Comportement;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+// use Modules\RhFeuilleDeTempsConfig\Database\Factories\Comportement/ConfigurationFactory;
 
 class Configuration extends Model
-{
+ {
     use HasFactory;
 
     protected $fillable = [

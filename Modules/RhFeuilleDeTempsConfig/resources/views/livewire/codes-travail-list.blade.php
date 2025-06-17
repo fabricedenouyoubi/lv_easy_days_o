@@ -81,7 +81,7 @@
 
                                                 {{-- Bouton Configuration (conditionnel) --}}
                                                 @if($codeTravail->isConfigurable())
-                                                    <a href="{{ route('rhcodetravailcomportement.configure', $codeTravail->id) }}" 
+                                                    <a href="{{ route('rhfeuilledetempsconfig.configure', $codeTravail->id) }}" 
                                                        class="btn btn-sm btn-outline-primary"
                                                        data-bs-toggle="tooltip" 
                                                        title="Configuration">
@@ -155,7 +155,7 @@
                     </div>
 
                     {{-- Boutons d'action --}}
-                    <div class="d-grid gap-2">
+                    <div class="d-flex gap-2">
                         <button type="button" 
                                 class="btn btn-primary" 
                                 wire:click="filter"
@@ -183,14 +183,6 @@
                                 Réinitialisation...
                             </span>
                         </button>
-                    </div>
-
-                    {{-- Informations sur les résultats --}}
-                    <div class="mt-3 p-3 bg-light rounded">
-                        <small class="text-muted">
-                            <i class="fas fa-info-circle me-1"></i>
-                            {{ $codesTravail->total() }} code(s) de travail trouvé(s)
-                        </small>
                     </div>
                 </div>
             </div>
@@ -300,7 +292,7 @@
                             <i class="fas fa-cog me-2"></i>Modifier
                         </button>
                         @if($detailCodeTravail->isConfigurable())
-                            <a href="{{ route('rhcodetravailcomportement.configure', $detailCodeTravail->id) }}" 
+                            <a href="{{ route('rhfeuilledetempsconfig.configure', $detailCodeTravail->id) }}" 
                                class="btn btn-primary">
                                 <i class="fas fa-sliders-h me-2"></i>Configuration
                             </a>

@@ -1,11 +1,10 @@
 <?php
 
-namespace Modules\RhCodeTravailComportement\Livewire;
+namespace Modules\RhFeuilleDeTempsConfig\Livewire\Jour;
 
 use Livewire\Component;
-use Modules\RhCodeTravailComportement\Models\Configuration;
-use Carbon\Carbon;
 use Modules\Budget\Models\AnneeFinanciere;
+use Modules\RhFeuilleDeTempsConfig\Models\Comportement\Configuration;
 
 class JourFerieForm extends Component
 {
@@ -38,13 +37,13 @@ class JourFerieForm extends Component
 
     protected $messages = [
         'libelle.required' => 'Le libellé est obligatoire.',
-        'libelle.max' => 'Le libellé ne peut pas dépasser 200 caractères.',
+        'libelle.max' => '',
         'date.required' => 'La date est obligatoire.',
         'date.date' => 'La date doit être valide.',
-        'date.after_or_equal' => 'La date doit être dans l\'année budgétaire active.',
-        'date.before_or_equal' => 'La date doit être dans l\'année budgétaire active.',
+        'date.after_or_equal' => 'La date doit être dans l\'année financiere active.',
+        'date.before_or_equal' => 'La date doit être dans l\'année financiere active.',
         'date.unique' => 'Un jour férié existe déjà à cette date pour ce code de travail.',
-        'commentaire.max' => 'Le commentaire ne peut pas dépasser 1000 caractères.',
+        'commentaire.max' => '',
     ];
 
     public function mount($jourFerieId = null, $codeTravailId = null)
@@ -82,7 +81,7 @@ class JourFerieForm extends Component
             $anneeBudgetaire = AnneeFinanciere::where('actif', true)->first();
             
             if (!$anneeBudgetaire) {
-                session()->flash('error', 'Aucune année budgétaire active trouvée.');
+                session()->flash('error', 'Aucune année financière active trouvée.');
                 return;
             }
 
@@ -93,7 +92,7 @@ class JourFerieForm extends Component
                 'quota' => 0,
                 'consomme' => 0,
                 'reste' => 0,
-                'employe_id' => null, 
+                'employe_id' => null, // Jour férié global
                 'annee_budgetaire_id' => $anneeBudgetaire->id,
                 'code_travail_id' => $this->codeTravailId,
             ];
@@ -125,12 +124,12 @@ class JourFerieForm extends Component
 
     public function getAnneeBudgetaireActiveProperty()
     {
-        return AnneeFinanciere::where('actif', true)->first();
+         return AnneeFinanciere::where('actif', true)->first();
     }
 
     public function render()
     {
-        return view('rhcodetravailcomportement::livewire.jour-ferie-form', [
+        return view('rhfeuilledetempsconfig::livewire.jour.jour-ferie-form', [
             'anneeBudgetaireActive' => $this->anneeBudgetaireActive
         ]);
     }

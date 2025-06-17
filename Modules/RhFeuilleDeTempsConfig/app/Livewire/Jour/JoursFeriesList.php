@@ -1,15 +1,16 @@
 <?php
 
-namespace Modules\RhCodeTravailComportement\Livewire;
+namespace Modules\RhFeuilleDeTempsConfig\Livewire\Jour;
 
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Budget\Models\AnneeFinanciere;
-use Modules\RhCodeTravailComportement\Models\Configuration;
 use Modules\RhFeuilleDeTempsConfig\Models\CodeTravail;
+use Modules\RhFeuilleDeTempsConfig\Models\Comportement\Configuration;
 
 class JoursFeriesList extends Component
 {
+
     use WithPagination;
 
     public $codeTravailId;
@@ -112,10 +113,11 @@ class JoursFeriesList extends Component
 
     public function render()
     {
-        return view('rhcodetravailcomportement::livewire.jours-feries-list', [
+        return view('rhfeuilledetempsconfig::livewire.jour.jours-feries-list', [
             'joursFeries' => $this->joursFeries,
             'detailJourFerie' => $this->detailJourFerie,
             'anneeBudgetaireActive' => $this->anneeBudgetaireActive
         ]);
     }
+    
 }

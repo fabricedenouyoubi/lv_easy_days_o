@@ -20,7 +20,7 @@ return new class extends Migration
             $table->date('date')->nullable();
             $table->text('commentaire')->nullable()->default('');
             
-            // Relations selon le diagramme
+            // Relations 
             $table->foreignId('employe_id')->nullable()->constrained('employes')->onDelete('cascade');
             $table->foreignId('annee_budgetaire_id')->constrained('annee_financieres')->onDelete('cascade');
             $table->foreignId('code_travail_id')->constrained('codes_travail')->onDelete('cascade');
