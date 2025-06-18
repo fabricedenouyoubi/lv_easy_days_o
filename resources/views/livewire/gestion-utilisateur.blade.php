@@ -1,177 +1,102 @@
 <div>
-    <!-- Messages de feedback -->
-    @if (session()->has('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
-    @if (session()->has('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
+    {{-- Messages de feedback --}}
+    <x-alert-messages />
+    {{-- Layout principal --}}
     <div class="row">
-        <div class="card col col-md-9">
-            <div class="card-header">
-                <div class="row align-items-center">
-                    <div class="col">
-                        <h4 class="card-title mb-0 d-flex align-items-center">
-                            <i class="mdi mdi-account-multiple fill-white me-2 fs-4"></i>
-                            Liste des utilisateurs
-                        </h4>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body row">
-                <!-- Tableau des années financières -->
-                <div class="table-responsive">
-                    <table class="table table-nowrap align-middle table-hover align-middle table-nowrap mb-0"
-                        id="employes" aria-describedby="Liste des utilisateurs">
+        {{-- Colonne principale - Tableau --}}
+        <div class="col-lg-8">
+            <x-table-card title="Liste des Utilisateurs" icon="fas fa-user">
 
+                {{-- Contenu du tableau --}}
+                <div class="table-responsive">
+                    <table class="table table-nowrap align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th class="orderable" scope="col">
-                                    <a class="text-decoration-none text-dark d-flex align-items-center">
-                                        <span class="me-1">Nom</span>
-                                    </a>
-                                </th>
-
-                                <th class="orderable" scope="col">
-                                    <a class="text-decoration-none text-dark d-flex align-items-center">
-                                        <span class="me-1">Email</span>
-                                    </a>
-                                </th>
-
-                                <th class="orderable" scope="col">
-                                    <a class="text-decoration-none text-dark d-flex align-items-center">
-                                        <span class="me-1">Groupe</span>
-                                    </a>
-                                </th>
-
-                                <th scope="col" class="py-3">
-                                    <span class="fw-bold">Actions</span>
-                                </th>
+                                <th>Nom</th>
+                                <th>Email</th>
+                                <th>Groupe</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
-
                         <tbody>
-                            @forelse ($utilisateurs as $utilisateur)
-                                <tr class="odd">
-                                    <td class="py-2">
-                                        {{ $utilisateur->name }}
+                            @forelse($utilisateurs as $utilisateur)
+                                <tr>
+                                    <td>
+                                        <span>{{ $utilisateur->name }}</span>
                                     </td>
-
-                                    <td class="py-2">
-                                        {{ $utilisateur->email }}
+                                    <td>
+                                        <span>{{ $utilisateur->email }}</span>
                                     </td>
-                                    <td class="py-2">
-                                        <ul class="ps-0">
-                                            @foreach ($utilisateur->roles as $group)
-                                                <li class="list-group-item px-0 border-0">
-                                                    {{ $group?->name }}
-                                                </li>
-                                            @endforeach
-                                        </ul>
+                                    <td>
+                                        <span>
+                                            <ul class="ps-0">
+                                                @forelse ($utilisateur->roles as $group)
+                                                    <li class="list-group-item px-0 border-0">
+                                                        {{ $group?->name }}
+                                                    </li>
+                                                @empty
+                                                    <li class="list-group-item px-0 border-0">---</li>
+                                                @endforelse
+                                            </ul>
+                                        </span>
                                     </td>
-                                    <td class="py-2">
-                                        <div class="d-flex gap-2 justify-content-center">
-                                            <a class="btn btn-sm bg-gradient btn-warning" data-bs-toggle="tooltip"
-                                                data-bs-placement="top" aria-label="Permissions"
-                                                title="Permission de l'utilisateur"
-                                                wire:click="show_user_modal('{{ $utilisateur->name }}', {{ $utilisateur->id }})">
-                                                <span class="mdi mdi-cancel"></span>
-                                            </a>
+                                    <td>
+                                        <div class="d-flex gap-2">
+                                            {{-- Boutons avec composant --}}
+                                            <x-action-button type="outline-info" icon="fas fa-ban"
+                                                tooltip="Voir Les Permissions" wireClick="show_user_modal('{{ $utilisateur->name }}', {{ $utilisateur->id }})" />
                                         </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
                                     <td colspan="4" class="text-center py-4">
-                                        <i class="mdi mdi-account-multiple h1 text-muted mb-3"></i>
-                                        <p class="text-muted mb-0">Aucun utilisateur trouvé</p>
+                                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted mb-0">Aucun Utilisateur trouvé</p>
                                     </td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
+
+                {{-- Pagination --}}
                 <div class="mt-3">
                     {{ $utilisateurs->links() }}
                 </div>
-            </div>
+            </x-table-card>
         </div>
-
-
-        <div class="col">
-            <!-- Filters Card -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent border-0 py-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h6 class="fw-bold m-0 d-flex align-items-center">
-                            <i class="fa fa-filter me-2 text-primary"></i>
-                            Filtres
-                        </h6>
-                    </div>
+        {{-- Colonne latérale - Filtres --}}
+        <div class="col-lg-4">
+            <x-filter-card filterAction="get_utilisateurs">
+                {{-- Filtre par nom --}}
+                <div class="mb-3">
+                    <label for="name_searched" class="form-label">Nom</label>
+                    <input type="text" id="name_searched" class="form-control" placeholder="Rechercher par Nom..."
+                        wire:model.defer="name_searched">
                 </div>
-
-                <div class="card-body pt-2 pb-3">
-                    <form class="filter-form" wire:submit.prevent="get_utilisateurs">
-                        <div class="row">
-                            <div class="col-12 mb-3">
-                                <div id="div_id_matricule" class="mb-3">
-                                    <label for="email" class="form-label">Email</label>
-                                    <input type="text" name="email" placeholder="Rechercher par email"
-                                        class="textinput form-control" id="email" wire:model="email_searched">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-12 mb-3">
-                                <div id="div_id_nom" class="mb-3">
-                                    <label for="id_nom" class="form-label"> Nom </label>
-                                    <input type="text" name="nom" placeholder="Rechercher par nom"
-                                        class="textinput form-control" id="id_nom" wire:model="name_searched">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12 mb-3">
-                                <div id="div_id_prenom" class="mb-3">
-                                    <label for="groupe" class="form-label">Goupe</label>
-                                    <input type="text" name="groupe" placeholder="Rechercher par groupe"
-                                        class="textinput form-control" id="groupe" wire:model="groupe_searched">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="d-flex justify-content-end">
-                                    <button type="submit" class="btn btn-primary me-2 btn-sm">
-                                        <span class="mdi mdi-filter"></span>
-                                        Filtrer
-                                    </button>
-                                    <button type="button" class="btn btn-secondary btn-sm" wire:click="resetFilter">
-                                        <span class="mdi mdi-refresh"></span>
-                                        Réinitialiser
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
+                {{-- Filtre par email --}}
+                <div class="mb-3">
+                    <label for="email_searched" class="form-label">Email</label>
+                    <input type="text" id="email_searched" class="form-control"
+                        placeholder="Rechercher par Email..." wire:model.defer="email_searched">
                 </div>
-            </div>
+                {{-- Filtre par groupe --}}
+                <div class="mb-3">
+                    <label for="groupe_searched" class="form-label">Groupe</label>
+                    <input type="text" id="groupe_searched" class="form-control"
+                        placeholder="Rechercher par Groupe..." wire:model.defer="groupe_searched">
+                </div>
+            </x-filter-card>
         </div>
     </div>
+
     @if ($userPermissionModal)
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
             <div id="dialog-lg" class="modal-dialog modal-xl w-100" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Permissions <span class="fw-bold">{{ $userName }}</span></h5>
+                        <h5 class="modal-title"><i class="fas fa-ban"></i> Permissions <span class="fw-bold">{{ $userName }}</span></h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
                             wire:click="hide_user_modal()"></button>
                     </div>

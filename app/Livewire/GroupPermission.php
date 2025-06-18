@@ -15,7 +15,6 @@ class GroupPermission extends Component
     public $name_searched;
     public $code_searched;
     public $type_searched;
-    public $load_save_permission = false;
     public $checkedPermissions = [];
 
     protected $paginationTheme = 'bootstrap';
@@ -59,12 +58,9 @@ class GroupPermission extends Component
     public function set_group_permission()
     {
         try {
-            $this->load_save_permission = true;
             //--- mise a jour des permission du groupe
             $group = Role::query()->with('permissions')->where('id', $this->groupId)->first();
             $group->syncPermissions($this->checkedPermissions);
-
-            $this->load_save_permission = false;
             $this->dispatch('groupPermissionUpdated', $group->name);
         } catch (\Throwable $th) {
             dd($th->getMessage());
@@ -89,7 +85,7 @@ class GroupPermission extends Component
     }
 
     //--- fonction reinitialisation des champs de filtre des permissions
-    public function resetFilter()
+    public function resetFilters()
     {
         $this->reset(['name_searched', 'type_searched']);
     }

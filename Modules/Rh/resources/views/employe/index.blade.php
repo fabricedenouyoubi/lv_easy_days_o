@@ -1,12 +1,14 @@
 @extends('layouts.app')
 
-@section('title', config('app.name'). ' | Employés')
-@section('page-title', 'Employés')
-
+@section('title', config('app.name') . ' | Employés')
+@section('page-title', 'Gestion des Employés')
 @section('content')
-<div class="row">
-    <div class="col-12">
-        <livewire:rh::employe.employe-list />
+
+    <x-breadcrumb :items="[['label' => 'RH Employé']]" />
+
+    <div class="row">
+        <div class="col-12">
+            <livewire:rh::employe.employe-list />
+        </div>
     </div>
-</div>
 @endsection

@@ -160,7 +160,7 @@ class EmployeEdit extends Component
             $this->nombre_d_heure_semaine = $employe->nombre_d_heure_semaine;
             $this->adresse_id = $employe->adresse_id;
             $this->email = $employe->email();
-            $this->groups = $employe->employe_groups()->pluck('id')->toArray();
+            $this->groups = $employe->employe_groups()->pluck('name')->toArray();
         }
         $this->groups_list = $this->get_groups();
     }

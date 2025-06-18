@@ -24,7 +24,7 @@ class GestionUtilisateur extends Component
     ];
 
     //--- fonction reinitialisation des champs de filtre des utilisateur
-    public function resetFilter()
+    public function resetFilters()
     {
         $this->reset(['email_searched', 'name_searched', 'groupe_searched']);
     }
@@ -64,7 +64,7 @@ class GestionUtilisateur extends Component
             )
             ->when($this->groupe_searched, function ($query) {
                 $query->where(function ($subQuery) {
-                    $subQuery->whereHas('groups', function ($Query) {
+                    $subQuery->whereHas('roles', function ($Query) {
                         $Query->where('name', 'like', '%' . $this->groupe_searched . '%');
                     });
                 });

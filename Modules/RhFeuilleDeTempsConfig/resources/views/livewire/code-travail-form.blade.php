@@ -6,9 +6,9 @@
             <label for="code" class="form-label">
                 Code <span class="text-danger">*</span>
             </label>
-            <input type="text" 
+            <input type="text"
                    id="code"
-                   class="form-control @error('code') is-invalid @enderror" 
+                   class="form-control @error('code') is-invalid @enderror"
                    wire:model="code"
                    placeholder="Ex: VAC, CSN, CAISS..."
                    style="text-transform: uppercase;">
@@ -26,9 +26,9 @@
             <label for="libelle" class="form-label">
                 Libellé <span class="text-danger">*</span>
             </label>
-            <input type="text" 
+            <input type="text"
                    id="libelle"
-                   class="form-control @error('libelle') is-invalid @enderror" 
+                   class="form-control @error('libelle') is-invalid @enderror"
                    wire:model="libelle"
                    placeholder="Ex: Vacances, Heure CSN, Banque de temps...">
             @error('libelle')
@@ -69,7 +69,7 @@
                 <i class="fas fa-lightbulb me-2"></i>Information
             </h6>
             <p class="mb-0 small">
-                Si vous sélectionnez une catégorie <strong>configurable</strong>, vous pourrez ensuite 
+                Si vous sélectionnez une catégorie <strong>configurable</strong>, vous pourrez ensuite
                 accéder aux options de configuration avancées pour ce code de travail.
             </p>
         </div>
@@ -80,7 +80,7 @@
                 <i class="fas fa-times me-2"></i>
                 Annuler
             </button>
-                
+
             <button type="submit" class="btn btn-success">
                 <i class="fas fa-save me-2"></i>
                 {{ $codeTravailId ? 'Modifier' : 'Créer' }}

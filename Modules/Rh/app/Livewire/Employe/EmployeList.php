@@ -48,7 +48,7 @@ class EmployeList extends Component
     }
 
     //--- reinitialisation des champs du formulaire d'ajout d'um employe
-    public function resetFilter()
+    public function resetFilters()
     {
         $this->reset(['matricule_searched', 'nom_searched', 'prenom_searched', 'gestionnaire_searched']);
     }

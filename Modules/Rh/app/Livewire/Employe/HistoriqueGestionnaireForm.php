@@ -2,12 +2,12 @@
 
 namespace Modules\Rh\Livewire\Employe;
 
-use App\Models\Group;
 use App\Models\User;
 use Carbon\Carbon;
 use Livewire\Component;
 use Modules\Rh\Models\Employe\Employe;
 use Modules\Rh\Models\Employe\HistoriqueGestionnaire;
+use Spatie\Permission\Models\Role;
 
 class HistoriqueGestionnaireForm extends Component
 {
@@ -23,12 +23,7 @@ class HistoriqueGestionnaireForm extends Component
     public function mount()
     {
         try {
-            $employe_user_id = Employe::findOrFail($this->employeId)->user_id;
-            $gestionnaire_group_id = Group::where('name', 'GESTIONNAIRE')->first()->id;
-            $this->gestionnaire_list = User::with('groups')->whereHas('groups', function ($query) use ($gestionnaire_group_id, $employe_user_id) {
-                $query->where('group_id', $gestionnaire_group_id);
-                $query->where('user_id', '!=', $employe_user_id);
-            })->orderBy('name', 'asc')->get();
+            $this->gestionnaire_list = Employe::where('id', '!=', $this->employeId)->get();
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors de la selection des gestionnaires : ' . $th->getMessage());
         }
@@ -73,6 +68,14 @@ class HistoriqueGestionnaireForm extends Component
             $employe->update([
                 'gestionnaire_id' => $this->gestionnaire,
             ]);
+
+            $dernierHistorique = HistoriqueGestionnaire::orderBy('id', 'desc')->first();
+
+            if ($dernierHistorique) {
+                $dernierHistorique->update([
+                    'date_fin' => $this->dateDebut,
+                ]);
+            }
 
             HistoriqueGestionnaire::create([
                 'employe_id' => $this->employeId,
