@@ -26,9 +26,6 @@ class DatabaseSeeder extends Seeder
         $this->command->info("--- start seed EntrepriseDatabaseSeeder ---");
         $this->call(EntrepriseDatabaseSeeder::class);
 
-        $this->command->info("--- start seed RhFeuilleTempsDatabaseSeeder ---");
-        $this->call(RhFeuilleDeTempsConfigDatabaseSeeder::class);
-
         $this->command->info("--- start seed PermissionSeeder ---");
         $this->call(PermissionSeeder::class);
 
@@ -40,5 +37,8 @@ class DatabaseSeeder extends Seeder
 
         $this->command->info("--- start seed EmployeSeeder ---");
         $this->call(EmployeSeeder::class);
+
+        $this->command->info("--- start seed RhFeuilleTempsDatabaseSeeder ---");
+        $this->call(RhFeuilleDeTempsConfigDatabaseSeeder::class);
     }
 }

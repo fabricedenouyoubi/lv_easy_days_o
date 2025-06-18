@@ -27,10 +27,6 @@
                                 <i class="fas fa-users-cog me-2"></i>
                                 {{ $titleModal }}
                             </h4>
-                            <small class="text-muted">
-                                Code: <code class="bg-light px-2 py-1 rounded">{{ $codeTravail->code }}</code> - 
-                                {{ $codeTravail->libelle }}
-                            </small>
                         </div>
                         <div class="col-auto">
                             <a href="{{ route('rhfeuilledetempsconfig.codes-travail.codetravails') }}" 
@@ -45,26 +41,12 @@
                 </div>
 
                 <div class="card-body">
-                    {{-- Information sur l'année budgétaire --}}
-                    @if($anneeBudgetaireActive)
-                        <div class="alert alert-info mb-3">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <strong>Année financière active :</strong> {{ $anneeBudgetaireActive->libelle }}
-                            ({{ $anneeBudgetaireActive->debut->format('d/m/Y') }} - {{ $anneeBudgetaireActive->fin->format('d/m/Y') }})
-                        </div>
-                    @else
-                        <div class="alert alert-warning mb-3">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            <strong>Attention :</strong> Aucune année financière active trouvée.
-                        </div>
-                    @endif
-
                     {{-- Tableau des configurations collectives --}}
                     <div class="table-responsive">
                         <table class="table table-nowrap align-middle">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Libellé (configuration)</th>
+                                    <th>Libellé</th>
                                     <th>Nombre d'heures</th>
                                     <th>Nombre d'heures restant</th>
                                     <th>Nombre d'heures pris</th>
@@ -132,7 +114,7 @@
                                             <p class="text-muted mb-0">Aucune configuration collective trouvée</p>
                                             @if($anneeBudgetaireActive)
                                                 <small class="text-muted">
-                                                    Cliquez sur "Nouveau" pour créer une configuration collective
+                                                    Cliquez sur "Nouveau" pour créer une configuration
                                                 </small>
                                             @endif
                                         </td>
@@ -231,14 +213,14 @@
     {{-- Modal Formulaire --}}
     @if($showModal)
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-            <div class="modal-dialog modal-lg">
+            <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="modal-header bg-primary text-white">
+                    <div class="modal-header text-white">
                         <h5 class="modal-title">
                             <i class="fas fa-plus me-2"></i>
-                            {{ $editingId ? 'Modifier la configuration collective' : 'Nouvelle configuration collective' }}
+                            {{ $editingId ? 'Modifier la configuration' : 'Nouvelle configuration' }}
                         </h5>
-                        <button type="button" class="btn-close btn-close-white" wire:click="closeModal"></button>
+                        <button type="button" class="btn-close btn-close-primary" wire:click="closeModal"></button>
                     </div>
                     <div class="modal-body">
                         @if(!$anneeBudgetaireActive)
@@ -261,14 +243,14 @@
     {{-- Modal Détail Configuration --}}
     @if($showDetail && $detailConfiguration)
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-            <div class="modal-dialog modal-xl">
+            <div class="modal-dialog modal-lg">
                 <div class="modal-content">
-                    <div class="modal-header bg-info text-white">
+                    <div class="modal-header text-white">
                         <h5 class="modal-title">
                             <i class="fas fa-info-circle me-2"></i>
-                            Détails de la configuration collective
+                            Détails de la configuration
                         </h5>
-                        <button type="button" class="btn-close btn-close-white" wire:click="closeDetailModal"></button>
+                        <button type="button" class="btn-close btn-close-primary" wire:click="closeDetailModal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="row">
@@ -324,12 +306,6 @@
                         <button type="button" class="btn btn-secondary" wire:click="closeDetailModal">
                             <i class="fas fa-times me-2"></i>Fermer
                         </button>
-                        <button type="button" class="btn btn-primary" wire:click="showEditModal({{ $detailConfiguration->id }})">
-                            <i class="fas fa-edit me-2"></i>Modifier
-                        </button>
-                        <button type="button" class="btn btn-success" wire:click="showAffectationModal({{ $detailConfiguration->id }})">
-                            <i class="fas fa-user-plus me-2"></i>Affecter
-                        </button>
                     </div>
                 </div>
             </div>
@@ -339,14 +315,14 @@
     {{-- Modal Affectation Employés --}}
     @if($showAffectation)
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-            <div class="modal-dialog modal-xl">
+            <div class="modal-dialog modal-lg">
                 <div class="modal-content">
-                    <div class="modal-header bg-success text-white">
+                    <div class="modal-header text-white">
                         <h5 class="modal-title">
                             <i class="fas fa-user-plus me-2"></i>
                             Affecter des employés
                         </h5>
-                        <button type="button" class="btn-close btn-close-white" wire:click="closeAffectationModal"></button>
+                        <button type="button" class="btn-close btn-close-primary" wire:click="closeAffectationModal"></button>
                     </div>
                     <div class="modal-body">
                         <livewire:rh-comportement::affectation-employes 

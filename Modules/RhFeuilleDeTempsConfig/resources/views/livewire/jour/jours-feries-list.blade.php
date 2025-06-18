@@ -27,10 +27,6 @@
                                 <i class="fas fa-calendar-day me-2"></i>
                                 Liste des jours fériés
                             </h4>
-                            <small class="text-muted">
-                                Code: <code class="bg-light px-2 py-1 rounded">{{ $codeTravail->code }}</code> - 
-                                {{ $codeTravail->libelle }}
-                            </small>
                         </div>
                         <div class="col-auto">
                             <a href="{{ route('rhfeuilledetempsconfig.codes-travail.codetravails') }}" 
@@ -221,14 +217,14 @@
     {{-- Modal Détail Jour Férié --}}
     @if($showDetail && $detailJourFerie)
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-            <div class="modal-dialog modal-lg">
+            <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="modal-header bg-info text-white">
+                    <div class="modal-header text-white">
                         <h5 class="modal-title">
                             <i class="fas fa-info-circle me-2"></i>
                             Détails du jour férié
                         </h5>
-                        <button type="button" class="btn-close btn-close-white" wire:click="closeDetailModal"></button>
+                        <button type="button" class="btn-close btn-close-primary" wire:click="closeDetailModal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="row">
@@ -263,11 +259,6 @@
                                         <td><strong>Type :</strong></td>
                                         <td><span class="badge bg-success">Jour férié global</span></td>
                                     </tr>
-                                    <tr>
-                                        <td><strong>Créé le :</strong></td>
-                                        <td>{{ $detailJourFerie->created_at->format('d/m/Y à H:i') }}</td>
-                                    </tr>
-                                    <tr>
                                         <td><strong>Modifié le :</strong></td>
                                         <td>{{ $detailJourFerie->updated_at->format('d/m/Y à H:i') }}</td>
                                     </tr>
@@ -278,9 +269,6 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" wire:click="closeDetailModal">
                             <i class="fas fa-times me-2"></i>Fermer
-                        </button>
-                        <button type="button" class="btn btn-primary" wire:click="showEditModal({{ $detailJourFerie->id }})">
-                            <i class="fas fa-edit me-2"></i>Modifier
                         </button>
                     </div>
                 </div>

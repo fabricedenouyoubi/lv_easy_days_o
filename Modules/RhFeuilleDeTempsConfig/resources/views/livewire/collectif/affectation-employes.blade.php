@@ -16,7 +16,7 @@
                 </div>
                 <div class="col-md-4 text-end">
                     <span class="badge bg-success fs-6">
-                        {{ $nombreEmployesSelectionnes }} employé(s) sélectionné(s)
+                        {{ $nombreEmployesSelectionnes }} employé(s)
                     </span>
                 </div>
             </div>
@@ -24,7 +24,7 @@
 
         {{-- Barre de recherche --}}
         <div class="row mb-3">
-            <div class="col-md-6">
+            <div class="col-md-12">
                 <div class="input-group">
                     <span class="input-group-text">
                         <i class="fas fa-search"></i>
@@ -33,27 +33,6 @@
                            class="form-control" 
                            placeholder="Rechercher un employé..." 
                            wire:model.live.debounce.300ms="searchEmploye">
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="d-flex gap-2">
-                    <button type="button" 
-                            class="btn btn-success"
-                            wire:click="sauvegarderAffectations"
-                            wire:loading.attr="disabled">
-                        <span wire:loading.remove>
-                            <i class="fas fa-save me-2"></i>Sauvegarder les affectations
-                        </span>
-                        <span wire:loading>
-                            <span class="spinner-border spinner-border-sm me-2"></span>
-                            Sauvegarde...
-                        </span>
-                    </button>
-                    <button type="button" 
-                            class="btn btn-secondary"
-                            wire:click="cancel">
-                        Annuler
-                    </button>
                 </div>
             </div>
         </div>
@@ -123,32 +102,12 @@
             @endforelse
         </div>
 
-        {{-- Résumé des sélections --}}
-        @if($nombreEmployesSelectionnes > 0)
-            <div class="mt-4 p-3 bg-success bg-opacity-10 border border-success rounded">
-                <h6 class="text-success mb-2">
-                    <i class="fas fa-check-circle me-2"></i>
-                    Résumé des affectations
-                </h6>
-                <div class="row">
-                    <div class="col-md-6">
-                        <small class="text-muted d-block">Employés sélectionnés</small>
-                        <strong>{{ $nombreEmployesSelectionnes }} employé(s)</strong>
-                    </div>
-                    <div class="col-md-6">
-                        <small class="text-muted d-block">Quota partagé</small>
-                        <strong>{{ number_format($configuration->quota, 2) }} heures</strong>
-                    </div>
-                </div>
-            </div>
-        @endif
-
         {{-- Boutons d'action en bas --}}
         <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
             <div>
                 <small class="text-muted">
                     <i class="fas fa-info-circle me-1"></i>
-                    Les employés sélectionnés partageront le quota total de {{ number_format($configuration->quota ?? 0, 2) }} heures
+                    Total quota horaire {{ number_format($configuration->quota ?? 0, 2) }} heures
                 </small>
             </div>
             <div class="d-flex gap-2">

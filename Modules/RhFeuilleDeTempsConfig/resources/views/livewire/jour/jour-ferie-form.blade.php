@@ -6,10 +6,7 @@
             <div class="d-flex align-items-center">
                 <i class="fas fa-info-circle me-2"></i>
                 <div>
-                    <h6 class="mb-1">Veuillez remplir tous les champs obligatoires marqués d'un astérisque (*)</h6>
-                    <small class="text-muted">
-                        Les jours fériés seront appliqués à tous les employés pour l'année budgétaire active.
-                    </small>
+                    <h6 class="mb-1">Champs obligatoires (*)</h6>
                 </div>
             </div>
         </div>
@@ -34,7 +31,6 @@
                     @error('libelle')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <small class="form-text text-muted">Maximum 200 caractères</small>
                 </div>
             </div>
 
@@ -49,7 +45,6 @@
                     @error('commentaire')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <small class="form-text text-muted">Maximum 1000 caractères</small>
                 </div>
             </div>
         </div>

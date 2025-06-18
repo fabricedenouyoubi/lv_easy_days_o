@@ -6,10 +6,7 @@
             <div class="d-flex align-items-center">
                 <i class="fas fa-info-circle me-2"></i>
                 <div>
-                    <h6 class="mb-1">Veuillez remplir tous les champs obligatoires marqués d'un astérisque (*)</h6>
-                    <small class="text-muted">
-                        Cette configuration pourra être partagée entre plusieurs employés.
-                    </small>
+                    <h6 class="mb-1">Champs obligatoires (*)</h6>
                 </div>
             </div>
         </div>
@@ -64,46 +61,7 @@
             </div>
         </div>
 
-        {{-- Aperçu de la configuration --}}
-        @if($libelle && $quota)
-            <div class="alert alert-success mt-3">
-                <h6 class="mb-2">
-                    <i class="fas fa-eye me-2"></i>Aperçu de la configuration
-                </h6>
-                <div class="row">
-                    <div class="col-md-6">
-                        <p class="mb-1">
-                            <strong>Configuration :</strong> {{ $libelle }}
-                        </p>
-                        <p class="mb-0">
-                            <strong>Quota total :</strong> {{ number_format($quota, 2) }} heures
-                        </p>
-                    </div>
-                    <div class="col-md-6">
-                        <p class="mb-1">
-                            <strong>Type :</strong> <span class="badge bg-info">Collectif</span>
-                        </p>
-                        <p class="mb-0">
-                            <strong>Partage :</strong> Entre plusieurs employés
-                        </p>
-                    </div>
-                </div>
-            </div>
-        @endif
-
-        {{-- Information sur les étapes suivantes --}}
-        <div class="alert alert-light border-start border-primary border-3 mt-4">
-            <h6 class="mb-2">
-                <i class="fas fa-lightbulb me-2"></i>Étapes suivantes
-            </h6>
-            <ol class="mb-0 ps-3">
-                <li>Créer cette configuration collective</li>
-                <li>Utiliser le bouton <strong>"Affecter"</strong> pour sélectionner les employés</li>
-                <li>Les employés affectés partageront le quota d'heures défini</li>
-            </ol>
-        </div>
-
-        {{-- Informations automatiques (en lecture seule) --}}
+        {{-- Informations --}}
         @if($anneeBudgetaireActive)
             <div class="mt-4 p-3 bg-light rounded">
                 <h6 class="mb-2">

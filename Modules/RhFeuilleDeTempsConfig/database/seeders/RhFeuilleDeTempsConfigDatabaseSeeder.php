@@ -3,8 +3,6 @@
 namespace Modules\RhFeuilleDeTempsConfig\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Modules\RhFeuilleDeTempsConfig\Models\CodeDeTravail;
-use Modules\RhFeuilleDeTempsConfig\Models\CategorieCodeDeTravail;
 
 class RhFeuilleDeTempsConfigDatabaseSeeder extends Seeder
 {
@@ -16,6 +14,7 @@ class RhFeuilleDeTempsConfigDatabaseSeeder extends Seeder
         $this->call([
             CategorieSeeder::class,
             CodeTravailSeeder::class,
+            ConfigurationSeeder::class,
         ]);
     }
 }
