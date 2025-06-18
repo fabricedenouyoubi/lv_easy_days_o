@@ -33,7 +33,7 @@ class Permission extends Component
     }
 
     //--- fonction reinitialisation des champs de filtre des permissions
-    public function resetFilter()
+    public function resetFilters()
     {
         $this->reset(['name_searched', 'type_searched']);
     }

@@ -96,7 +96,7 @@ class Groupe extends Component
     }
 
     //--- reinitialisation des champs de recherche d'un goupe
-    public function resetFilter()
+    public function resetFilters()
     {
         $this->reset('name_searched');
     }
