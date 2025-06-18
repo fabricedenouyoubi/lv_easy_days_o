@@ -128,4 +128,47 @@ class Configuration extends Model
         
         return $jours[$this->date->format('l')] ?? $this->date->format('l');
     }
+
+    /**
+     * Relation Many-to-Many avec Employe (pour comportement Collectif)
+     */
+    public function employes()
+    {
+        return $this->belongsToMany(Employe::class, 'configuration_employe')
+                    ->withPivot('consomme_individuel')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Scope pour les configurations collectives
+     */
+    public function scopeCollectif($query)
+    {
+        return $query->whereNull('employe_id')
+                    ->whereNull('date');
+    }
+
+    /**
+     * Vérifier si c'est une configuration collective
+     */
+    public function isCollectif()
+    {
+        return is_null($this->employe_id) && is_null($this->date);
+    }
+
+    /**
+     * Obtenir le total des heures consommées individuellement (pour collectif)
+     */
+    public function getTotalConsommeIndividuelAttribute()
+    {
+        return $this->employes()->sum('configuration_employe.consomme_individuel');
+    }
+
+    /**
+     * Obtenir le nombre d'employés affectés
+     */
+    public function getNombreEmployesAffectesAttribute()
+    {
+        return $this->employes()->count();
+    }
 }

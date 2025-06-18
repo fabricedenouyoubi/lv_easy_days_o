@@ -69,7 +69,6 @@ class ComportementController extends Controller
      */
     private function configureCollectif($codeTravail)
     {
-        // À implémenter plus tard
         return view('rhfeuilledetempsconfig::collectif', [
             'codeTravail' => $codeTravail
         ]);

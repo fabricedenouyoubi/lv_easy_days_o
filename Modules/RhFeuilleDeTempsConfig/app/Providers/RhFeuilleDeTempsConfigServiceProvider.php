@@ -12,6 +12,9 @@ use Modules\RhFeuilleDeTempsConfig\Livewire\CategoriesList;
 use Modules\RhFeuilleDeTempsConfig\Livewire\CategoriesForm;
 use Modules\RhFeuilleDeTempsConfig\Livewire\CodesTravailList;
 use Modules\RhFeuilleDeTempsConfig\Livewire\CodeTravailForm;
+use Modules\RhFeuilleDeTempsConfig\Livewire\Collectif\AffectationEmployes;
+use Modules\RhFeuilleDeTempsConfig\Livewire\Collectif\CollectifForm;
+use Modules\RhFeuilleDeTempsConfig\Livewire\Collectif\CollectifList;
 use Modules\RhFeuilleDeTempsConfig\Livewire\Individuel\IndividuelForm;
 use Modules\RhFeuilleDeTempsConfig\Livewire\Individuel\IndividuelList;
 use Modules\RhFeuilleDeTempsConfig\Livewire\Jour\JourFerieForm;
@@ -65,6 +68,11 @@ class RhFeuilleDeTempsConfigServiceProvider extends ServiceProvider
         // Composants pour les comportements - Individuel
         Livewire::component('rh-comportement::individuel-list', IndividuelList::class);
         Livewire::component('rh-comportement::individuel-form', IndividuelForm::class);
+
+        // Composants pour les comportements - Collectif
+        Livewire::component('rh-comportement::collectif-list', CollectifList::class);
+        Livewire::component('rh-comportement::collectif-form', CollectifForm::class);
+        Livewire::component('rh-comportement::affectation-employes', AffectationEmployes::class);
     }
 
     /**
