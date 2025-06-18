@@ -4,6 +4,9 @@ namespace Modules\RhFeuilleDeTempsConfig\Models\Comportement;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Modules\Budget\Models\AnneeFinanciere;
+use Modules\Rh\Models\Employe\Employe;
+
 // use Modules\RhFeuilleDeTempsConfig\Database\Factories\Comportement/ConfigurationFactory;
 
 class Configuration extends Model
@@ -34,7 +37,7 @@ class Configuration extends Model
      */
     public function employe()
     {
-        return $this->belongsTo(\Modules\RhEmploye\Models\Employe::class);
+        return $this->belongsTo(Employe::class);
     }
 
     /**
@@ -42,7 +45,7 @@ class Configuration extends Model
      */
     public function anneeBudgetaire()
     {
-        return $this->belongsTo(\Modules\Budget\Models\AnneeFinanciere::class, 'annee_budgetaire_id');
+        return $this->belongsTo(AnneeFinanciere::class, 'annee_budgetaire_id');
     }
 
     /**

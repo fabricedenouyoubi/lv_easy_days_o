@@ -12,6 +12,8 @@ use Modules\RhFeuilleDeTempsConfig\Livewire\CategoriesList;
 use Modules\RhFeuilleDeTempsConfig\Livewire\CategoriesForm;
 use Modules\RhFeuilleDeTempsConfig\Livewire\CodesTravailList;
 use Modules\RhFeuilleDeTempsConfig\Livewire\CodeTravailForm;
+use Modules\RhFeuilleDeTempsConfig\Livewire\Individuel\IndividuelForm;
+use Modules\RhFeuilleDeTempsConfig\Livewire\Individuel\IndividuelList;
 use Modules\RhFeuilleDeTempsConfig\Livewire\Jour\JourFerieForm;
 use Modules\RhFeuilleDeTempsConfig\Livewire\Jour\JoursFeriesList;
 
@@ -59,6 +61,10 @@ class RhFeuilleDeTempsConfigServiceProvider extends ServiceProvider
         // Composants pour les jours fériés
         Livewire::component('rh-comportement::jours-feries-list', JoursFeriesList::class);
         Livewire::component('rh-comportement::jour-ferie-form', JourFerieForm::class);
+
+        // Composants pour les comportements - Individuel
+        Livewire::component('rh-comportement::individuel-list', IndividuelList::class);
+        Livewire::component('rh-comportement::individuel-form', IndividuelForm::class);
     }
 
     /**

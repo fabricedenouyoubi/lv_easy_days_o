@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
 use Modules\Budget\Database\Seeders\BudgetDatabaseSeeder;
 use Modules\Roles\Database\Seeders\RoleSeeder;
 use Modules\Entreprise\Database\Seeders\EntrepriseDatabaseSeeder;
-use Modules\RhEmploye\Models\Employe;
+use Modules\Rh\Models\Employe;
 use Modules\RhFeuilleDeTempsConfig\Database\Seeders\RhFeuilleDeTempsConfigDatabaseSeeder;
 use Modules\Roles\Database\Seeders\PermissionSeeder;
 
