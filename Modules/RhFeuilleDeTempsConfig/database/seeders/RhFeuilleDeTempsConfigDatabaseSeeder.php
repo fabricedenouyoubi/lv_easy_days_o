@@ -14,7 +14,8 @@ class RhFeuilleDeTempsConfigDatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            CodeDeTravailSeeder::class,
+            CategorieSeeder::class,
+            CodeTravailSeeder::class,
         ]);
     }
 }

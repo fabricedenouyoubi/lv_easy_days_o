@@ -1,16 +1,15 @@
 <?php
 
-namespace Modules\RhFeuilleDeTempsConfig\Livewire;
+namespace Modules\Budget\Livewire;
 
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Budget\Models\AnneeFinanciere;
-use Modules\RhFeuilleDeTempsConfig\Models\FeuilleDeTemps;
+use Modules\Budget\Models\SemaineAnnee;
 
-class FeuilleDeTempsDetails extends Component
+class SemaineAnneeDetails extends Component
 {
-
-        use WithPagination;
+    use WithPagination;
 
     public $anneeFinanciere;
     public $dateDebut = '';
@@ -60,7 +59,7 @@ class FeuilleDeTempsDetails extends Component
     public function toggleSemaineDePaie($feuilleId)
     {
         try {
-            $feuille = FeuilleDeTemps::findOrFail($feuilleId);
+            $feuille = SemaineAnnee::findOrFail($feuilleId);
             $feuille->update(['est_semaine_de_paie' => !$feuille->est_semaine_de_paie]);
             
             $status = $feuille->est_semaine_de_paie ? 'marquée' : 'non marquée';
@@ -73,7 +72,7 @@ class FeuilleDeTempsDetails extends Component
     public function activerFeuille($feuilleId)
     {
         try {
-            $feuille = FeuilleDeTemps::findOrFail($feuilleId);
+            $feuille = SemaineAnnee::findOrFail($feuilleId);
             $feuille->update(['actif' => true]);
             
             session()->flash('success', "Semaine {$feuille->numero_semaine} activée.");
@@ -85,7 +84,7 @@ class FeuilleDeTempsDetails extends Component
     public function desactiverFeuille($feuilleId)
     {
         try {
-            $feuille = FeuilleDeTemps::findOrFail($feuilleId);
+            $feuille = SemaineAnnee::findOrFail($feuilleId);
             $feuille->update(['actif' => false]);
             
             session()->flash('success', "Semaine {$feuille->numero_semaine} désactivée.");
@@ -96,7 +95,7 @@ class FeuilleDeTempsDetails extends Component
 
     public function getFeuillesProperty()
     {
-        return FeuilleDeTemps::where('annee_financiere_id', $this->anneeFinanciere->id)
+        return SemaineAnnee::where('annee_financiere_id', $this->anneeFinanciere->id)
             ->when($this->appliedDateDebut, function ($query) {
                 $query->where('debut', '>=', $this->appliedDateDebut);
             })
@@ -112,7 +111,7 @@ class FeuilleDeTempsDetails extends Component
 
     public function getStatistiquesProperty()
     {
-        $query = FeuilleDeTemps::where('annee_financiere_id', $this->anneeFinanciere->id)
+        $query = SemaineAnnee::where('annee_financiere_id', $this->anneeFinanciere->id)
             ->when($this->appliedDateDebut, function ($query) {
                 $query->where('debut', '>=', $this->appliedDateDebut);
             })
@@ -127,11 +126,9 @@ class FeuilleDeTempsDetails extends Component
             'semaines_paie' => $query->clone()->where('est_semaine_de_paie', true)->count(),
         ];
     }
-
-
     public function render()
     {
-        return view('rhfeuilledetempsconfig::livewire.feuille-de-temps-details', [
+        return view('budget::livewire.semaine-annee-details', [
             'feuilles' => $this->feuilles,
             'statistiques' => $this->statistiques
         ]);

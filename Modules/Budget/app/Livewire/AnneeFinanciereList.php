@@ -5,6 +5,7 @@ namespace Modules\Budget\Livewire;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Budget\Models\AnneeFinanciere;
+use Modules\Budget\Models\SemaineAnnee;
 
 class AnneeFinanciereList extends Component
 {
@@ -45,20 +46,16 @@ class AnneeFinanciereList extends Component
             $anneeFinanciere = AnneeFinanciere::findOrFail($anneeId);
             
             // Vérifier si le service de génération est disponible
-            if (class_exists('Modules\RhFeuilleDeTempsConfig\Services\FeuilleDeTempsGeneratorService')) {
+            if (class_exists('Modules\Budget\Services\SemaineGeneratorService')) {
                 
                 // Vérifier si les feuilles existent déjà dans la base de données
-                $existingFeuilles = \Modules\RhFeuilleDeTempsConfig\Models\FeuilleDeTemps::where('annee_financiere_id', $anneeFinanciere->id)->count();
+                $existingFeuilles = SemaineAnnee::where('annee_financiere_id', $anneeFinanciere->id)->count();
                 
                 if ($existingFeuilles == 0) {
                     // Aucune feuille n'existe, on génère
-                    $feuilleGenerator = app('Modules\RhFeuilleDeTempsConfig\Services\FeuilleDeTempsGeneratorService');
-                    $jourFerieGenerator = app('Modules\RhFeuilleDeTempsConfig\Services\JourFerieGeneratorService');
+                    $feuilleGenerator = app('Modules\Budget\Services\SemaineGeneratorService');
                     
-                    // Générer les jours fériés d'abord
-                    $jourFerieGenerator->generateJourFerie($anneeFinanciere);
-                    
-                    // Puis générer les feuilles de temps
+                    // Générer les feuilles de temps
                     $feuilleGenerator->generateFeuillesDeTemps($anneeFinanciere);
                     
                     session()->flash('success', 'Les semaines générées pour l\'année ' . $anneeFinanciere->libelle);
@@ -69,7 +66,7 @@ class AnneeFinanciereList extends Component
             $this->generatingId = null; 
             
             // Rediriger vers la page des détails dans tous les cas
-            return redirect()->route('budget.annee-details', ['annee' => $anneeId]);
+            return redirect()->route('budget.details-annee', ['annee' => $anneeId]);
             
         } catch (\Exception $e) {
             $this->generatingId = null;

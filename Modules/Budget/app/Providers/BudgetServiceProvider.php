@@ -10,6 +10,7 @@ use RecursiveIteratorIterator;
 use Livewire\Livewire;
 use Modules\Budget\Livewire\AnneeFinanciereForm;
 use Modules\Budget\Livewire\AnneeFinanciereList;
+use Modules\Budget\Livewire\SemaineAnneeDetails;
 
 class BudgetServiceProvider extends ServiceProvider
 {
@@ -72,6 +73,8 @@ class BudgetServiceProvider extends ServiceProvider
     {
         Livewire::component('budget::annee-financiere-list', AnneeFinanciereList::class);
         Livewire::component('budget::annee-financiere-form', AnneeFinanciereForm::class);
+
+        Livewire::component('budget::semaine-annee-details', SemaineAnneeDetails::class);
     }
 
 

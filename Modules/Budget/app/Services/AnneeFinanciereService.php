@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\RhFeuilleDeTempsConfig\Services;
+namespace Modules\Budget\Services;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -9,15 +9,12 @@ use Modules\RhFeuilleDeTempsConfig\Models\ConfigurationCodeDeTravail;
 
 class AnneeFinanciereService
 {
-    protected $feuilleDeTempsGenerator;
-    protected $jourFerieGenerator;
+    protected $semaineGenerator;
 
     public function __construct(
-        FeuilleDeTempsGeneratorService $feuilleDeTempsGenerator,
-        JourFerieGeneratorService $jourFerieGenerator
+        SemaineGeneratorService $semaineGenerator
     ) {
-        $this->feuilleDeTempsGenerator = $feuilleDeTempsGenerator;
-        $this->jourFerieGenerator = $jourFerieGenerator;
+        $this->semaineGenerator = $semaineGenerator;
     }
 
     /**
@@ -39,21 +36,17 @@ class AnneeFinanciereService
 
             // 3. Désactiver toutes les feuilles de temps des années précédentes
             Log::info("Désactivation des feuilles de temps des années financières précédentes...");
-            $this->feuilleDeTempsGenerator->deactivateAllFeuillesDeTemps();
+            $this->semaineGenerator->deactivateAllFeuillesDeTemps();
 
-            // 4. Générer les nouveaux jours fériés
-            Log::info("Génération des nouveaux jours fériés...");
-            $this->jourFerieGenerator->generateJourFerie($newAnneeFinanciere);
-
-            // 5. Générer les nouvelles feuilles de temps
+            // 4. Générer les nouvelles feuilles de temps
             Log::info("Génération des nouvelles feuilles de temps...");
-            $this->feuilleDeTempsGenerator->generateFeuillesDeTemps($newAnneeFinanciere);
+            $this->semaineGenerator->generateFeuillesDeTemps($newAnneeFinanciere);
 
-            // 6. Transférer les codes de travail de l'ancienne à la nouvelle année
+            // 5. Transférer les codes de travail de l'ancienne à la nouvelle année
             Log::info("Transfert des codes de travail de l'ancienne à la nouvelle année...");
             $this->transfererCodeTravailVersNouvelleAnnee($newAnneeFinanciere, $oldAnneeFinanciere);
 
-            // 7. Mettre à jour l'année par défaut dans le système
+            // 6. Mettre à jour l'année par défaut dans le système
             Log::info("Mise à jour de l'année par défaut dans le système...");
             $this->updateAnneeFinanciereSessionData($newAnneeFinanciere);
 
@@ -159,8 +152,7 @@ class AnneeFinanciereService
      */
     public function getAnneeFinanciereStats(AnneeFinanciere $anneeFinanciere)
     {
-        $feuilleStats = $this->feuilleDeTempsGenerator->getGenerationStats($anneeFinanciere);
-        $ferieStats = $this->jourFerieGenerator->getGenerationStats($anneeFinanciere);
+        $feuilleStats = $this->semaineGenerator->getGenerationStats($anneeFinanciere);
         
         $configStats = [
             'total_configurations' => ConfigurationCodeDeTravail::parAnneeFinanciere($anneeFinanciere->id)->count(),
@@ -172,7 +164,7 @@ class AnneeFinanciereService
                                                                    ->count()
         ];
 
-        return array_merge($feuilleStats, $ferieStats, $configStats);
+        return array_merge($feuilleStats, $configStats);
     }
 
     /**
@@ -181,11 +173,8 @@ class AnneeFinanciereService
     public function initialiserNouvelleAnnee(AnneeFinanciere $anneeFinanciere)
     {
         return DB::transaction(function () use ($anneeFinanciere) {
-            // Générer les jours fériés
-            $this->jourFerieGenerator->generateJourFerie($anneeFinanciere);
-            
             // Générer les feuilles de temps
-            $this->feuilleDeTempsGenerator->generateFeuillesDeTemps($anneeFinanciere);
+            $this->semaineGenerator->generateFeuillesDeTemps($anneeFinanciere);
             
             // Mettre à jour la session
             $this->updateAnneeFinanciereSessionData($anneeFinanciere);

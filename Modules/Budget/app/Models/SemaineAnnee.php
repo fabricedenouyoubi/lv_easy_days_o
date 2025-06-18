@@ -1,18 +1,21 @@
 <?php
 
-namespace Modules\RhFeuilleDeTempsConfig\Models;
+namespace Modules\Budget\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Modules\Budget\Models\AnneeFinanciere;
+// use Modules\Budget\Database\Factories\SemaineAnneeFactory;
 
-// use Modules\RhFeuilleDeTempsConfig\Database\Factories\FeuilleDeTempsFactory;
-
-class FeuilleDeTemps extends Model
+class SemaineAnnee extends Model
 {
     use HasFactory;
 
-    protected $table = 'feuilles_de_temps';
+    /**
+     * The attributes that are mass assignable.
+     */
+        use HasFactory;
+
+    protected $table = 'annee_semaines';
 
     protected $fillable = [
         'numero_semaine',
@@ -39,11 +42,11 @@ class FeuilleDeTemps extends Model
     }
 
     /**
-     * Relation avec les opérations (à créer plus tard)
+     * Relation avec les opérations 
      */
     public function operations()
     {
-        return $this->hasMany('Modules\RhFeuilleDeTemps\Models\Operation');
+        return $this->hasMany('Modules\Budget\Models\Operation');
     }
 
     /**
@@ -168,8 +171,8 @@ class FeuilleDeTemps extends Model
         return $this->libelle;
     }
 
-    // protected static function newFactory(): FeuilleDeTempsFactory
+    // protected static function newFactory(): SemaineAnneeFactory
     // {
-    //     // return FeuilleDeTempsFactory::new();
+    //     // return SemaineAnneeFactory::new();
     // }
 }

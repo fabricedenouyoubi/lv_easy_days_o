@@ -73,7 +73,7 @@
     <!-- Section feuilles de temps -->
     <div class="row">
         <div class="col-12">
-            <livewire:rhfeuilledetempsconfig::feuille-de-temps-details :anneeFinanciereId="$anneeFinanciere->id" />
+            <livewire:budget::semaine-annee-details :anneeFinanciereId="$anneeFinanciere->id" />
         </div>
     </div>
 </div>

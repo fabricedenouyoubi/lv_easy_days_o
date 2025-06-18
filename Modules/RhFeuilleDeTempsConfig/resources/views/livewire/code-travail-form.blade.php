@@ -63,36 +63,6 @@
             </div>
         </div>
 
-        {{-- Aperçu de la sélection --}}
-        @if($categorie_id)
-            @php
-                $selectedCategorie = $categories->find($categorie_id);
-            @endphp
-            @if($selectedCategorie)
-                <div class="alert alert-info mb-4">
-                    <h6 class="mb-2">
-                        <i class="fas fa-eye me-2"></i>Aperçu
-                    </h6>
-                    <p class="mb-2">
-                        <strong>Code :</strong> <code class="bg-light px-2 py-1 rounded">{{ strtoupper($code ?: 'CODE') }}</code> - 
-                        <strong>Libellé :</strong> {{ $libelle ?: 'Libellé du code' }}
-                    </p>
-                    <p class="mb-0">
-                        <strong>Catégorie :</strong> <span class="badge bg-info">{{ $selectedCategorie->intitule }}</span>
-                        @if($selectedCategorie->configurable)
-                            <span class="badge bg-success ms-2">
-                                <i class="fas fa-cog me-1"></i>Configurable ({{ $selectedCategorie->valeur_config }})
-                            </span>
-                        @else
-                            <span class="badge bg-secondary ms-2">
-                                <i class="fas fa-times me-1"></i>Non configurable
-                            </span>
-                        @endif
-                    </p>
-                </div>
-            @endif
-        @endif
-
         {{-- Information sur les catégories configurables --}}
         <div class="alert alert-light border mb-4">
             <h6 class="mb-2">
@@ -110,6 +80,7 @@
                 <i class="fas fa-times me-2"></i>
                 Annuler
             </button>
+                
             <button type="submit" class="btn btn-success">
                 <i class="fas fa-save me-2"></i>
                 {{ $codeTravailId ? 'Modifier' : 'Créer' }}

@@ -51,7 +51,7 @@ class GestionUtilisateur extends Component
     //--- recuperation de la liste des utilisateurs
     public function get_utilisateurs()
     {
-        return User::with('groups')
+        return User::query()
             ->when(
                 $this->email_searched,
                 fn($query) =>
