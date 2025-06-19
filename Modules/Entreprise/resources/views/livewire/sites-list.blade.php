@@ -123,7 +123,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($this->sites as $site)
+                        @forelse($sites as $site)
                             <tr>
                                 <td>
                                     <div>
@@ -210,7 +210,7 @@
 
             {{-- Pagination --}}
             <div class="mt-3">
-                {{ $this->sites->links() }}
+                {{ $sites->links() }}
             </div>
         </div>
     </div>
