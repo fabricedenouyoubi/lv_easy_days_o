@@ -40,7 +40,7 @@
                     <div class="search-box">
                         <div class="input-group">
                             <input type="text" 
-                                   class="form-control @if($searchError) is-invalid @endif" 
+                                   class="form-control @if(isset($searchError) && $searchError) is-invalid @endif" 
                                    placeholder="Rechercher un site..." 
                                    wire:model="search"
                                    wire:keydown.enter="performSearch">
@@ -73,7 +73,7 @@
                         </div>
                         
                         {{-- Message d'erreur de validation --}}
-                        @if($searchError)
+                        @if(isset($searchError) && $searchError)
                             <div class="invalid-feedback d-block mt-1">
                                 <i class="fas fa-exclamation-circle me-1"></i>
                                 {{ $searchError }}

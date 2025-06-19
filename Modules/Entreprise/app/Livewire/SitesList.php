@@ -157,7 +157,8 @@ class SitesList extends Component
     {
         return view('entreprise::livewire.sites-list', [
             'sites' => $this->sites,
-            'detailSite' => $this->detailSite
+            'detailSite' => $this->detailSite,
+            'searchError' => $this->searchError
         ]);
     }
 }

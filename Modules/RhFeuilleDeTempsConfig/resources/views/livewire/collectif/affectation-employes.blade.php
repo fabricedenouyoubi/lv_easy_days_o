@@ -69,7 +69,7 @@
                                 </div>
                                 
                                 <div class="form-check">
-                                    <input class="form-check-input" 
+                                    <input class="form-check-input bg-black" 
                                            type="checkbox" 
                                            id="employe_{{ $employe->id }}"
                                            wire:click="toggleEmploye({{ $employe->id }})"
