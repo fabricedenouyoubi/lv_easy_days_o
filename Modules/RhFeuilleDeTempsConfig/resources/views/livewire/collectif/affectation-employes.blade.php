@@ -37,69 +37,73 @@
             </div>
         </div>
 
-        {{-- Liste des employés avec sélection --}}
-        <div class="row">
-            @forelse($employesDisponibles as $employe)
-                <div class="col-md-6 mb-3">
-                    <div class="card h-100 {{ in_array($employe->id, $employesSelectionnes) ? 'border-success bg-light' : '' }}">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="flex-grow-1">
-                                    <h6 class="card-title mb-1">
-                                        {{ $employe->nom }} {{ $employe->prenom }}
-                                    </h6>
-                                    @if($employe->matricule)
-                                        <small class="text-muted">
-                                            <i class="fas fa-id-badge me-1"></i>{{ $employe->matricule }}
-                                        </small>
-                                    @endif
-                                    
-                                    {{-- Afficher la consommation si déjà affecté --}}
-                                    @php
-                                        $employeAffecte = $configuration->employes->find($employe->id);
-                                    @endphp
-                                    @if($employeAffecte)
-                                        <div class="mt-2">
-                                            <small class="text-info">
-                                                <i class="fas fa-clock me-1"></i>
-                                                Consommé : {{ number_format($employeAffecte->pivot->consomme_individuel, 2) }}h
-                                            </small>
-                                        </div>
-                                    @endif
+        {{-- Liste simplifiée des employés --}}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th width="50">
+                            <input type="checkbox" 
+                                   class="form-check-input" 
+                                   id="selectAll">
+                        </th>
+                        <th>Employé</th>
+                        <th>Quota consommé</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($employesDisponibles as $employe)
+                        @php
+                            $employeAffecte = $configuration->employes->find($employe->id);
+                            $isSelected = in_array($employe->id, $employesSelectionnes);
+                        @endphp
+                        <tr class="{{ $isSelected ? 'table-success' : '' }}">
+                            <td>
+                                <input class="form-check-input {{ $isSelected ? '' : 'bg-white border-secondary' }}" 
+                                       type="checkbox" 
+                                       id="employe_{{ $employe->id }}"
+                                       wire:click="toggleEmploye({{ $employe->id }})"
+                                       @if($isSelected) checked @endif>
+                            </td>
+                            <td>
+                                <div>
+                                    <strong>{{ $employe->nom }} {{ $employe->prenom }}</strong>
                                 </div>
-                                
-                                <div class="form-check">
-                                    <input class="form-check-input bg-black" 
-                                           type="checkbox" 
-                                           id="employe_{{ $employe->id }}"
-                                           wire:click="toggleEmploye({{ $employe->id }})"
-                                           @if(in_array($employe->id, $employesSelectionnes)) checked @endif>
-                                    <label class="form-check-label" for="employe_{{ $employe->id }}">
-                                        @if(in_array($employe->id, $employesSelectionnes))
-                                            <span class="badge bg-success">Sélectionné</span>
-                                        @else
-                                            <span class="badge bg-secondary">Non sélectionné</span>
-                                        @endif
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @empty
-                <div class="col-12">
-                    <div class="text-center py-4">
-                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                        <p class="text-muted mb-0">
-                            @if($searchEmploye)
-                                Aucun employé trouvé pour "{{ $searchEmploye }}"
-                            @else
-                                Aucun employé disponible
-                            @endif
-                        </p>
-                    </div>
-                </div>
-            @endforelse
+                            </td>
+                            <td>
+                                @if($employeAffecte)
+                                    <span class="text-info">
+                                        {{ number_format($employeAffecte->pivot->consomme_individuel, 2) }}h
+                                    </span>
+                                @else
+                                    <span class="text-muted">0h</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($isSelected)
+                                    <span class="badge bg-success">Sélectionné</span>
+                                @else
+                                    <span class="badge bg-secondary">Non sélectionné</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="text-center py-4">
+                                <i class="fas fa-users fa-2x text-muted mb-2"></i>
+                                <p class="text-muted mb-0">
+                                    @if($searchEmploye)
+                                        Aucun employé trouvé pour "{{ $searchEmploye }}"
+                                    @else
+                                        Aucun employé disponible
+                                    @endif
+                                </p>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
 
         {{-- Boutons d'action en bas --}}
