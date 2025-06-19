@@ -62,7 +62,7 @@
                             </button>
                             
                             {{-- Bouton Effacer - visible seulement si une recherche est active --}}
-                            @if($searchTerm)
+                            @if(isset($searchTerm) && $searchTerm)
                                 <button type="button" 
                                         class="btn btn-outline-secondary" 
                                         wire:click="clearSearch"
@@ -81,7 +81,7 @@
                         @endif
                         
                         {{-- Indicateur de recherche active --}}
-                        @if($searchTerm)
+                        @if(isset($searchTerm) && $searchTerm)
                             <small class="text-muted mt-1 d-block">
                                 <i class="fas fa-filter me-1"></i>
                                 Filtré par : "<strong>{{ $searchTerm }}</strong>"
@@ -195,7 +195,7 @@
                                 <td colspan="4" class="text-center py-4">
                                     <i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i>
                                     <p class="text-muted mb-0">
-                                        @if($searchTerm)
+                                        @if(isset($searchTerm) && $searchTerm)
                                             Aucun site trouvé pour "{{ $searchTerm }}"
                                         @else
                                             Aucun site trouvé
