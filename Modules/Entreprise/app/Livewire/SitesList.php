@@ -155,10 +155,6 @@ class SitesList extends Component
 
     public function render()
     {
-        return view('entreprise::livewire.sites-list', [
-            'sites' => $this->getSitesProperty(),
-            'detailSite' => $this->getDetailSiteProperty(),
-            'searchError' => $this->searchError
-        ]);
+        return view('entreprise::livewire.sites-list');
     }
 }
