@@ -11,11 +11,15 @@ use Database\Seeders\UserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
+use Livewire\Volt\Volt;
 use Modules\Rh\Livewire\Employe\EmployeDetails;
 use Modules\Rh\Livewire\Employe\EmployeEdit;
 use Modules\Rh\Livewire\Employe\EmployeForm;
 use Modules\Rh\Livewire\Employe\HistoriqueGestionnaireForm;
 use Modules\Rh\Models\Employe\Employe;
+use Modules\Roles\Database\Seeders\RoleSeeder;
+use Spatie\Permission\Contracts\Role;
+use Spatie\Permission\Models\Role as ModelsRole;
 use Tests\TestCase;
 
 class EmployeTest extends TestCase
@@ -25,18 +29,23 @@ class EmployeTest extends TestCase
     //--- Test de connexion de l'utilisateur avant l'access a des pages
     public function connectUser()
     {
+        $this->seed(RoleSeeder::class);
         $this->seed(UserSeeder::class);
+        $user = User::where('email', 'admin@mail.com')->first();
 
-        $user = User::query()->where('email', 'admin@mail.com')->first();
+        $component = Volt::test('pages.auth.login')
+            ->set('form.email', $user->email)
+            ->set('form.password', 'password');
 
-        Livewire::test(LoginForm::class)
-            ->set('email', 'admin@mail.com')
-            ->set('password', 'password')
-            ->call('login')
-            ->assertRedirect(route('dashboard'));
+        $component->call('login');
 
-        //--- Vérifie que l'utilisateur est authentifié
-        $this->assertAuthenticatedAs($user);
+        $component
+            ->assertHasNoErrors()
+            ->assertRedirect(route('dashboard', absolute: false));
+
+        $this->assertAuthenticated();
+
+        return $user->id;
     }
 
     //--- Test d'acces a la pages de la liste des employes
@@ -51,9 +60,10 @@ class EmployeTest extends TestCase
     {
         $this->connectUser();
 
-        $this->seed(GroupSeeder::class);
+        $this->seed(RoleSeeder::class);
 
-        $groupId = Group::first()->id;
+        $groupId = ModelsRole::first()->id;
+        $groupName = ModelsRole::first()->name;
 
         Livewire::test(EmployeForm::class)
             ->set('nom', 'Doe')
@@ -61,7 +71,7 @@ class EmployeTest extends TestCase
             ->set('date_de_naissance', '1990-05-10')
             ->set('email', 'johndoe@example.com')
             ->set('nombre_d_heure_semaine', 35)
-            ->set('groups', [$groupId])
+            ->set('groups', [$groupName])
             ->call('save')
             ->assertDispatched('employeCreated');
 
@@ -78,7 +88,7 @@ class EmployeTest extends TestCase
         $user = User::where('email', 'johndoe@example.com')->first();
         $employeId = Employe::where('user_id', $user->id)->first()->id;
 
-        $this->assertTrue($user->groups->contains('id', $groupId));
+        $this->assertTrue($user->roles->contains('id', $groupId));
 
         return $employeId;
     }
@@ -157,8 +167,8 @@ class EmployeTest extends TestCase
         $employe = Employe::findOrFail($this->insert_employe());
         $user = User::findOrFail($employe->user_id);
 
-        $this->seed(GroupSeeder::class);
-        $group = Group::first();
+        $this->seed(RoleSeeder::class);
+        $group = ModelsRole::first();
 
 
         Livewire::test(EmployeEdit::class, ['employeId' => $employe->id])
@@ -199,9 +209,10 @@ class EmployeTest extends TestCase
     //--- test d'ajout d'un gestionnaire
     public function insert_gestionnaire()
     {
-        $this->seed(GroupSeeder::class);
+        $this->seed(RoleSeeder::class);
 
-        $groupId = Group::where('name', 'GESTIONNAIRE')->first()->id;
+        $groupId = ModelsRole::where('name', 'GESTIONNAIRE')->first()->id;
+        $groupName = ModelsRole::where('name', 'GESTIONNAIRE')->first()->name;
 
         Livewire::test(EmployeForm::class)
             ->set('nom', 'jegestion')
@@ -209,7 +220,7 @@ class EmployeTest extends TestCase
             ->set('date_de_naissance', '1990-05-10')
             ->set('email', 'jegestion@example.com')
             ->set('nombre_d_heure_semaine', 35)
-            ->set('groups', [$groupId])
+            ->set('groups', [$groupName])
             ->call('save')
             ->assertDispatched('employeCreated');
 
@@ -226,7 +237,7 @@ class EmployeTest extends TestCase
         $user = User::where('email', 'jegestion@example.com')->first();
         $gestionnaireId = Employe::where('user_id', $user->id)->first()->id;
 
-        $this->assertTrue($user->groups->contains('id', $groupId));
+        $this->assertTrue($user->roles->contains('id', $groupId));
 
         return $gestionnaireId;
     }

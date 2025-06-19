@@ -19,26 +19,26 @@ class PermissionUtilisateur extends Component
     protected $paginationTheme = 'bootstrap';
 
     //---  recuperation des permissions d'un utilisateur
-    public function get_user_permission()
+    /* public function get_user_permission()
     {
         $user = User::query()->with('permissions')->where('id', $this->userId)->first();
         return $user->permissions()->pluck('permission_id')->toArray();
-    }
+    } */
 
     //---  recuperation de toutes les permissions
-    public function get_all_permission()
+    /* public function get_all_permission()
     {
         return Permission::query()->pluck('id')->toArray();
-    }
+    } */
 
     /*
         - operation au montage du composant des permisions d'un utilisateur
         - chargement des permission d'un utilisateur
     */
-    public function mount()
+    /* public function mount()
     {
         $this->checkedPermissions = $this->get_user_permission();
-    }
+    } */
 
     /*     public function hide_user_modal()
     {
@@ -47,19 +47,19 @@ class PermissionUtilisateur extends Component
     } */
 
     //--- fonction de selection de toutes les permissions pour un utilisateur
-    public function select_all()
+    /* public function select_all()
     {
         $this->checkedPermissions = $this->get_all_permission();
-    }
+    } */
 
     //--- fonction de selection de toutes les permissions pour un utilisateur
-    public function deselect_all()
+    /* public function deselect_all()
     {
         $this->checkedPermissions = [];
-    }
+    } */
 
     //--- fontion de modification des permissions d'un utilisateur
-    public function set_user_permission()
+    /* public function set_user_permission()
     {
         try {
             $user = User::query()->with('permissions')->where('id', $this->userId)->first();
@@ -68,7 +68,7 @@ class PermissionUtilisateur extends Component
         } catch (\Throwable $th) {
             $this->addError('error', 'Erreur de sauvegarde ' . $th->getMessage());
         }
-    }
+    } */
 
     //--- fonction de recuperation de toutes les permissions avec pagination et recherche
     public function get_permission()

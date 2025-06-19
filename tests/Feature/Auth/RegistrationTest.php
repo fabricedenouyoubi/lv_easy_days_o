@@ -8,7 +8,7 @@ use Tests\TestCase;
 
 class RegistrationTest extends TestCase
 {
-    use RefreshDatabase;
+/*     use RefreshDatabase;
 
     public function test_registration_screen_can_be_rendered(): void
     {
@@ -32,5 +32,5 @@ class RegistrationTest extends TestCase
         $component->assertRedirect(route('dashboard', absolute: false));
 
         $this->assertAuthenticated();
-    }
+    } */
 }

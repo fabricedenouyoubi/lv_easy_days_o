@@ -2,11 +2,11 @@
     {{-- Messages de feedback --}}
     <x-alert-messages />
 
-    <div class="col-12 col-md-9">
+    <div class="col-12 col-lg-9">
         <div class="card-body row">
             <div class="table-responsive">
                 <div class="d-flex mb-2 gap-2 justify-content-between">
-                    <div>
+                    <div class="d-flex gap-2">
                         <x-action-button type="secondary" icon="fas fa-object-group me-2" size="md"
                             wireClick='select_all' text="Tout selectionner" />
                         <x-action-button type="success" icon="far fa-object-ungroup me-2" size="md"
@@ -14,7 +14,8 @@
                     </div>
                     <div>
                         <x-action-button type="primary" icon="far fa-save me-2" size="md"
-                            wireClick='set_group_permission' text="Enregistrer" loading="true" loading-target="set_group_permission"/>
+                            wireClick='set_group_permission' text="Enregistrer" loading="true"
+                            loading-target="set_group_permission" />
                     </div>
                 </div>
                 <table class="table table-nowrap align-middle table-hover align-middle table-nowrap mb-0"
@@ -42,7 +43,7 @@
                     </thead>
 
                     <tbody>
-                        @foreach ($permissions as $permission)
+                        @forelse ($permissions as $permission)
                             <tr class="odd">
                                 <td class="py-2">
                                     {{ $permission->name }}
@@ -59,7 +60,14 @@
                                     </div>
                                 </td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="2" class="text-center py-4">
+                                    <i class="fas fa-ban fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted mb-0">Aucune Permission trouvée</p>
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -71,21 +79,21 @@
     </div>
 
 
-    <div class="col-12 col-md-3">
-            <x-filter-card filterAction="get_permission">
-                {{-- Filtre par nom --}}
-                <div class="mb-3">
-                    <label for="name_searched" class="form-label">Nom</label>
-                    <input type="text" id="name_searched" class="form-control" placeholder="Rechercher par Nom..."
-                        wire:model.defer="name_searched">
-                </div>
-                {{-- Filtre par type --}}
-                <div class="mb-3">
-                    <label for="type_searched" class="form-label">Type</label>
-                    <input type="text" id="type_searched" class="form-control"
-                        placeholder="Rechercher par Type..." wire:model.defer="type_searched">
-                </div>
-            </x-filter-card>
-        </div>
+    <div class="col-12 col-lg-3">
+        <x-filter-card filterAction="get_permission">
+            {{-- Filtre par nom --}}
+            <div class="mb-3">
+                <label for="name_searched" class="form-label">Nom</label>
+                <input type="text" id="name_searched" class="form-control" placeholder="Rechercher par Nom..."
+                    wire:model.defer="name_searched">
+            </div>
+            {{-- Filtre par type --}}
+            <div class="mb-3">
+                <label for="type_searched" class="form-label">Type</label>
+                <input type="text" id="type_searched" class="form-control" placeholder="Rechercher par Type..."
+                    wire:model.defer="type_searched">
+            </div>
+        </x-filter-card>
     </div>
+</div>
 </div>
