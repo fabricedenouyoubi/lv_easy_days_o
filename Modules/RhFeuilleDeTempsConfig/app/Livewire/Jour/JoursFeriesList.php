@@ -132,12 +132,18 @@ class JoursFeriesList extends Component
         return AnneeFinanciere::where('actif', true)->first();
     }
 
+    public function getTitleModalProperty()
+    {
+        return strtolower($this->codeTravail->libelle);
+    }
+
     public function render()
     {
         return view('rhfeuilledetempsconfig::livewire.jour.jours-feries-list', [
             'joursFeries' => $this->joursFeries,
             'detailJourFerie' => $this->detailJourFerie,
-            'anneeBudgetaireActive' => $this->anneeBudgetaireActive
+            'anneeBudgetaireActive' => $this->anneeBudgetaireActive,
+            'titleModal' => $this->titleModal
         ]);
     }
     

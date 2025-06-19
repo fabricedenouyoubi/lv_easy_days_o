@@ -25,7 +25,7 @@
                         <div class="col">
                             <h4 class="card-title mb-0">
                                 <i class="fas fa-calendar-day me-2"></i>
-                                Liste des jours fériés
+                                Liste des {{ $titleModal }}
                             </h4>
                         </div>
                         <div class="col-auto">
@@ -34,7 +34,7 @@
                                 <i class="fas fa-arrow-left me-2"></i>Retour
                             </a>
                             <button type="button" class="btn btn-primary" wire:click="showCreateModal">
-                                <i class="fas fa-plus me-2"></i>Nouveau jour
+                                <i class="fas fa-plus me-2"></i>Nouveau
                             </button>
                         </div>
                     </div>
@@ -89,10 +89,10 @@
                                     <tr>
                                         <td colspan="3" class="text-center py-5">
                                             <i class="fas fa-calendar-day fa-3x text-muted mb-3"></i>
-                                            <p class="text-muted mb-0">Aucun jour férié configuré</p>
+                                            <p class="text-muted mb-0">Aucun(e) {{ $titleModal }} configuré</p>
                                             @if($anneeBudgetaireActive)
                                                 <small class="text-muted">
-                                                    Cliquez sur "Nouveau jour" pour ajouter un jour férié
+                                                    Cliquez sur "Nouveau" pour ajouter un(e) {{ $titleModal }}
                                                 </small>
                                             @endif
                                         </td>
@@ -162,29 +162,12 @@
                             </span>
                         </button>
                     </div>
-
-                    {{-- Information sur le code de travail --}}
-                    <div class="mt-3 p-3 border rounded">
-                        <h6 class="mb-2">
-                            <i class="fas fa-cog me-2"></i>Configuration actuelle
-                        </h6>
-                        <table class="table table-sm table-borderless mb-0">
-                            <tr>
-                                <td><strong>Code :</strong></td>
-                                <td><code class="bg-light px-2 py-1 rounded">{{ $codeTravail->code }}</code></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Libellé :</strong></td>
-                                <td>{{ $codeTravail->libelle }}</td>
-                            </tr>
-                        </table>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Modal Formulaire Amélioré --}}
+    {{-- Modal Formulaire --}}
     @if($showModal)
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
             <div class="modal-dialog modal-lg">
@@ -192,7 +175,7 @@
                     <div class="modal-header text-white">
                         <h5 class="modal-title">
                             <i class="fas fa-calendar-plus me-2"></i>
-                            {{ $editingId ? 'Modifier le jour férié' : 'Créer un jour férié' }}
+                            {{ $editingId ? 'Modifier '.$titleModal  : 'Créer '.$titleModal }}
                         </h5>
                         <button type="button" class="btn-close btn-close-primary" wire:click="closeModal"></button>
                     </div>
@@ -222,14 +205,14 @@
                     <div class="modal-header text-white">
                         <h5 class="modal-title">
                             <i class="fas fa-info-circle me-2"></i>
-                            Détails du jour férié
+                            Détails {{ $titleModal }}
                         </h5>
                         <button type="button" class="btn-close btn-close-primary" wire:click="closeDetailModal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="row">
                             <div class="col-md-6">
-                                <h6><i class="fas fa-calendar-day me-2"></i>Informations du jour férié</h6>
+                                <h6><i class="fas fa-calendar-day me-2"></i>Informations {{ $titleModal }}</h6>
                                 <table class="table table-borderless">
                                     <tr>
                                         <td><strong>Libellé :</strong></td>

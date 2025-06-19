@@ -6,51 +6,39 @@
             <div class="d-flex align-items-center">
                 <i class="fas fa-info-circle me-2"></i>
                 <div>
-                    <h6 class="mb-1">Veuillez remplir tous les champs obligatoires marqués d'un astérisque (*)</h6>
+                    <h6 class="mb-1">Modification du quota de {{ $configuration?->employe?->nom }} {{ $configuration?->employe?->prenom }}</h6>
                     <small class="text-muted">
-                        La configuration sera appliquée pour l'année financière active.
+                        Modifiez le nombre d'heures alloué à cet employé.
                     </small>
                 </div>
             </div>
         </div>
 
-        {{-- INFORMATIONS EMPLOYÉ --}}
-        <h6 class="mb-3">
-            <i class="fas fa-user me-2"></i>
-            INFORMATIONS EMPLOYÉ
-        </h6>
-        
-        <div class="row">
-            <div class="col-md-12">
-                <div class="mb-3">
-                    <label for="employe_id" class="form-label">
-                        Employé <span class="text-danger">*</span>
-                    </label>
-                    <select id="employe_id"
-                            class="form-select @error('employe_id') is-invalid @enderror"
-                            wire:model="employe_id"
-                            @if($configurationId) disabled @endif>
-                        <option value="">-- Sélectionner un employé --</option>
-                        @foreach($employes as $employe)
-                            <option value="{{ $employe->id }}">
-                                {{ $employe->nom }} {{ $employe->prenom }}
-                                @if($employe->matricule)
-                                    ({{ $employe->matricule }})
+        {{-- INFORMATIONS EMPLOYÉ (lecture seule) --}}
+        @if($configuration)
+            <h6 class="mb-3">
+                <i class="fas fa-user me-2"></i>
+                INFORMATIONS EMPLOYÉ
+            </h6>
+            
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="alert alert-light">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-user-circle fa-2x text-primary"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">{{ $configuration->employe->nom }} {{ $configuration->employe->prenom }}</h6>
+                                @if($configuration->employe->matricule)
+                                    <small class="text-muted">Matricule : {{ $configuration->employe->matricule }}</small>
                                 @endif
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('employe_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                    @if($configurationId)
-                        <small class="form-text text-muted">L'employé ne peut pas être modifié une fois créé</small>
-                    @else
-                        <small class="form-text text-muted">Choisissez l'employé à configurer</small>
-                    @endif
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+        @endif
 
         {{-- INFORMATIONS TEMPORELLES --}}
         <h6 class="mb-3 mt-4">
@@ -86,30 +74,29 @@
 
             {{-- Aperçu des informations --}}
             <div class="col-md-6">
-                @if($employe_id && $quota)
-                    @php
-                        $selectedEmploye = $employes->find($employe_id);
-                    @endphp
-                    @if($selectedEmploye)
-                        <div class="alert alert-success">
-                            <h6 class="mb-2">
-                                <i class="fas fa-eye me-2"></i>Aperçu de la configuration
-                            </h6>
-                            <p class="mb-1">
-                                <strong>Employé :</strong> {{ $selectedEmploye->nom }} {{ $selectedEmploye->prenom }}
-                            </p>
-                            <p class="mb-1">
-                                <strong>Quota :</strong> {{ number_format($quota, 2) }} heures
-                            </p>
-                            <p class="mb-0">
-                                <strong>Reste initial :</strong> {{ number_format($quota, 2) }} heures
-                            </p>
-                        </div>
-                    @endif
+                @if($configuration && $quota)
+                    <div class="alert alert-success">
+                        <h6 class="mb-2">
+                            <i class="fas fa-eye me-2"></i>Aperçu de la modification
+                        </h6>
+                        <p class="mb-1">
+                            <strong>Quota actuel :</strong> {{ number_format($configuration->quota, 2) }} heures
+                        </p>
+                        <p class="mb-1">
+                            <strong>Nouveau quota :</strong> {{ number_format($quota, 2) }} heures
+                        </p>
+                        <p class="mb-0">
+                            <strong>Différence :</strong> 
+                            @php $difference = $quota - $configuration->quota; @endphp
+                            <span class="{{ $difference >= 0 ? 'text-success' : 'text-danger' }}">
+                                {{ $difference >= 0 ? '+' : '' }}{{ number_format($difference, 2) }} heures
+                            </span>
+                        </p>
+                    </div>
                 @else
                     <div class="alert alert-light">
                         <i class="fas fa-info-circle me-2"></i>
-                        Sélectionnez un employé et saisissez le quota pour voir l'aperçu
+                        Saisissez le nouveau quota pour voir l'aperçu
                     </div>
                 @endif
             </div>

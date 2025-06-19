@@ -19,19 +19,11 @@ class IndividuelForm extends Component
     protected function rules()
     {
         return [
-            'employe_id' => [
-                'required',
-                'exists:employes,id',
-                'unique:configurations,employe_id,NULL,id,code_travail_id,' . $this->codeTravailId . ',annee_budgetaire_id,' . $this->getAnneeActiveId()
-            ],
             'quota' => 'required|numeric|min:0|max:9999.99',
         ];
     }
 
     protected $messages = [
-        'employe_id.required' => 'L\'employé est obligatoire.',
-        'employe_id.exists' => 'L\'employé sélectionné n\'existe pas.',
-        'employe_id.unique' => 'Cet employé a déjà une configuration pour ce code de travail cette année.',
         'quota.required' => 'Le nombre d\'heures est obligatoire.',
         'quota.numeric' => 'Le nombre d\'heures doit être un nombre.',
         'quota.min' => 'Le nombre d\'heures doit être positif.',
@@ -57,7 +49,7 @@ class IndividuelForm extends Component
     private function loadConfiguration()
     {
         if ($this->configurationId) {
-            $configuration = Configuration::findOrFail($this->configurationId);
+            $configuration = Configuration::with('employe')->findOrFail($this->configurationId);
             
             $this->employe_id = $configuration->employe_id;
             $this->quota = $configuration->quota;
@@ -75,46 +67,24 @@ class IndividuelForm extends Component
         $this->validate();
 
         try {
-            $anneeBudgetaire = AnneeFinanciere::where('actif', true)->first();
-            
-            if (!$anneeBudgetaire) {
-                session()->flash('error', 'Aucune année financière active trouvée.');
+            if (!$this->configurationId) {
+                session()->flash('error', 'Configuration non trouvée.');
                 return;
             }
 
-            $employe = Employe::findOrFail($this->employe_id);
-
-            $data = [
-                'libelle' => $employe->nom . ' ' . $employe->prenom, // Libellé automatique
+            // Modification uniquement (plus de création)
+            $configuration = Configuration::findOrFail($this->configurationId);
+            
+            // Recalculer le reste si le quota change
+            $nouveauReste = $this->quota - $configuration->consomme;
+            
+            $configuration->update([
                 'quota' => $this->quota,
-                'consomme' => 0, // Valeur par défaut
-                'reste' => $this->quota, // Reste = quota au début
-                'date' => null, // Pas de date pour individuel
-                'commentaire' => '',
-                'employe_id' => $this->employe_id,
-                'annee_budgetaire_id' => $anneeBudgetaire->id,
-                'code_travail_id' => $this->codeTravailId,
-            ];
-
-            if ($this->configurationId) {
-                // Modification
-                $configuration = Configuration::findOrFail($this->configurationId);
-                
-                // Recalculer le reste si le quota change
-                $nouveauReste = $this->quota - $configuration->consomme;
-                $data['reste'] = max(0, $nouveauReste); // Ne peut pas être négatif
-                
-                $configuration->update($data);
-                
-                $this->dispatch('configurationUpdated');
-            } else {
-                // Création
-                Configuration::create($data);
-                
-                $this->dispatch('configurationCreated');
-            }
-
-            $this->reset(['employe_id', 'quota']);
+                'reste' => max(0, $nouveauReste), // Ne peut pas être négatif
+            ]);
+            
+            $this->dispatch('configurationUpdated');
+            $this->reset(['quota']);
         } catch (\Exception $e) {
             session()->flash('error', 'Erreur lors de la sauvegarde : ' . $e->getMessage());
         }
@@ -122,13 +92,16 @@ class IndividuelForm extends Component
 
     public function cancel()
     {
-        $this->reset(['employe_id', 'quota']);
+        $this->reset(['quota']);
         $this->dispatch('modalClosed');
     }
 
-    public function getEmployesProperty()
+    public function getConfigurationProperty()
     {
-        return Employe::orderBy('nom')->orderBy('prenom')->get();
+        if ($this->configurationId) {
+            return Configuration::with('employe')->find($this->configurationId);
+        }
+        return null;
     }
 
     public function getAnneeBudgetaireActiveProperty()
@@ -139,7 +112,7 @@ class IndividuelForm extends Component
     public function render()
     {
         return view('rhfeuilledetempsconfig::livewire.individuel.individuel-form', [
-            'employes' => $this->employes,
+            'configuration' => $this->configuration,
             'anneeBudgetaireActive' => $this->anneeBudgetaireActive
         ]);
     }

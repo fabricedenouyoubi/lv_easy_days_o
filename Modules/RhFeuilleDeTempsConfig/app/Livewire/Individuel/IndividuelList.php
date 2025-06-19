@@ -5,9 +5,9 @@ namespace Modules\RhFeuilleDeTempsConfig\Livewire\Individuel;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Budget\Models\AnneeFinanciere;
+use Modules\Rh\Models\Employe\Employe;
 use Modules\RhFeuilleDeTempsConfig\Models\CodeTravail;
 use Modules\RhFeuilleDeTempsConfig\Models\Comportement\Configuration;
-
 
 class IndividuelList extends Component
 {
@@ -25,7 +25,6 @@ class IndividuelList extends Component
     protected $paginationTheme = 'bootstrap';
 
     protected $listeners = [
-        'configurationCreated' => 'handleConfigurationCreated',
         'configurationUpdated' => 'handleConfigurationUpdated',
         'refreshComponent' => '$refresh'
     ];
@@ -34,6 +33,47 @@ class IndividuelList extends Component
     {
         $this->codeTravailId = $codeTravailId;
         $this->codeTravail = CodeTravail::with('categorie')->findOrFail($codeTravailId);
+        
+        // Initialiser automatiquement tous les employés
+        $this->initialiserTousLesEmployes();
+    }
+
+    /**
+     * Initialiser automatiquement tous les employés avec quota 0 si pas déjà configurés
+     */
+    private function initialiserTousLesEmployes()
+    {
+        $anneeBudgetaire = AnneeFinanciere::where('actif', true)->first();
+        
+        if (!$anneeBudgetaire) {
+            return;
+        }
+
+        // Récupérer tous les employés
+        $employes = Employe::all();
+        
+        foreach ($employes as $employe) {
+            // Vérifier si l'employé a déjà une configuration pour ce code de travail cette année
+            $configurationExistante = Configuration::where('employe_id', $employe->id)
+                ->where('code_travail_id', $this->codeTravailId)
+                ->where('annee_budgetaire_id', $anneeBudgetaire->id)
+                ->first();
+
+            // Si pas de configuration existante, créer avec quota 0
+            if (!$configurationExistante) {
+                Configuration::create([
+                    'libelle' => $employe->nom . ' ' . $employe->prenom,
+                    'quota' => 0,
+                    'consomme' => 0,
+                    'reste' => 0,
+                    'date' => null,
+                    'commentaire' => '',
+                    'employe_id' => $employe->id,
+                    'annee_budgetaire_id' => $anneeBudgetaire->id,
+                    'code_travail_id' => $this->codeTravailId,
+                ]);
+            }
+        }
     }
 
     public function updatingSearchEmploye()
@@ -41,11 +81,8 @@ class IndividuelList extends Component
         $this->resetPage();
     }
 
-    public function showCreateModal()
-    {
-        $this->editingId = null;
-        $this->showModal = true;
-    }
+    // Supprimer la méthode showCreateModal car plus besoin de création manuelle
+    // public function showCreateModal() - SUPPRIMÉE
 
     public function showEditModal($id)
     {
@@ -71,16 +108,10 @@ class IndividuelList extends Component
         $this->detailConfigurationId = null;
     }
 
-    public function handleConfigurationCreated()
-    {
-        $this->closeModal();
-        session()->flash('success', 'Configuration employé ajoutée avec succès.');
-    }
-
     public function handleConfigurationUpdated()
     {
         $this->closeModal();
-        session()->flash('success', 'Configuration employé modifiée avec succès.');
+        session()->flash('success', 'Quota modifié avec succès.');
     }
 
     public function filter()

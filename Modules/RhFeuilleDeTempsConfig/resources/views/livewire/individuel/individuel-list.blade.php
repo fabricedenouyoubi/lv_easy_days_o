@@ -33,9 +33,7 @@
                                class="btn btn-outline-secondary me-2">
                                 <i class="fas fa-arrow-left me-2"></i>Retour
                             </a>
-                            <button type="button" class="btn btn-primary" wire:click="showCreateModal">
-                                <i class="fas fa-plus me-2"></i>Nouveau
-                            </button>
+                            {{-- Plus de bouton "Nouveau" car auto-initialisation --}}
                         </div>
                     </div>
                 </div>
@@ -48,9 +46,9 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Employé</th>
-                                    <th>Nombre d'heures</th>
-                                    <th>Nombre d'heures restant</th>
-                                    <th>Nombre d'heures pris</th>
+                                    <th>Quota (H)</th>
+                                    <th>Heures restant</th>
+                                    <th>Heures pris</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -65,7 +63,11 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="badge bg-primary">{{ number_format($configuration->quota, 2) }}h</span>
+                                            @if($configuration->quota > 0)
+                                                <span class="badge bg-primary">{{ number_format($configuration->quota, 2) }}h</span>
+                                            @else
+                                                <span class="badge bg-secondary">{{ number_format($configuration->quota, 2) }}h</span>
+                                            @endif
                                         </td>
                                         <td>
                                             <span class="badge bg-success">{{ number_format($configuration->reste, 2) }}h</span>
@@ -89,12 +91,10 @@
                                     <tr>
                                         <td colspan="5" class="text-center py-5">
                                             <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                                            <p class="text-muted mb-0">Aucune configuration d'employé trouvée</p>
-                                            @if($anneeBudgetaireActive)
-                                                <small class="text-muted">
-                                                    Cliquez sur "Nouveau" pour configurer.
-                                                </small>
-                                            @endif
+                                            <p class="text-muted mb-0">Aucun employé trouvé avec ces critères</p>
+                                            <small class="text-muted">
+                                                Modifiez vos filtres de recherche
+                                            </small>
                                         </td>
                                     </tr>
                                 @endforelse
@@ -162,27 +162,6 @@
                             </span>
                         </button>
                     </div>
-
-                    {{-- Information sur le code de travail --}}
-                    <div class="mt-3 p-3 border rounded">
-                        <h6 class="mb-2">
-                            <i class="fas fa-cog me-2"></i>Configuration actuelle
-                        </h6>
-                        <table class="table table-sm table-borderless mb-0">
-                            <tr>
-                                <td><strong>Code :</strong></td>
-                                <td><code class="bg-light px-2 py-1 rounded">{{ $codeTravail->code }}</code></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Libellé :</strong></td>
-                                <td>{{ $codeTravail->libelle }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Type :</strong></td>
-                                <td><span class="badge bg-info">{{ $codeTravail->categorie->valeur_config }}</span></td>
-                            </tr>
-                        </table>
-                    </div>
                 </div>
             </div>
         </div>
@@ -195,8 +174,8 @@
                 <div class="modal-content">
                     <div class="modal-header text-white">
                         <h5 class="modal-title">
-                            <i class="fas fa-user-plus me-2"></i>
-                            {{ $editingId ? 'Modifier la configuration' : $titleModal }}
+                            <i class="fas fa-edit me-2"></i>
+                            Modifier le quota de {{ $configurations->find($editingId)?->employe?->nom ?? 'l\'employé' }}
                         </h5>
                         <button type="button" class="btn-close btn-close-primary" wire:click="closeModal"></button>
                     </div>

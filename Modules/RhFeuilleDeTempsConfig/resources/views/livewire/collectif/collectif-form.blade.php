@@ -18,7 +18,7 @@
         </h6>
         
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-12">
                 <div class="mb-3">
                     <label for="libelle" class="form-label">
                         Libellé <span class="text-danger">*</span>
@@ -31,11 +31,11 @@
                     @error('libelle')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <small class="form-text text-muted">Nom de cette configuration collective</small>
+                    <small class="form-text text-muted">Nom de la configuration</small>
                 </div>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-12">
                 <div class="mb-3">
                     <label for="quota" class="form-label">
                         Nombre d'heures total <span class="text-danger">*</span>
@@ -55,35 +55,11 @@
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                     <small class="form-text text-muted">
-                        Quota total partagé entre tous les employés affectés
+                        Quota total partagé
                     </small>
                 </div>
             </div>
         </div>
-
-        {{-- Informations --}}
-        @if($anneeBudgetaireActive)
-            <div class="mt-4 p-3 bg-light rounded">
-                <h6 class="mb-2">
-                    <i class="fas fa-info-circle me-2"></i>
-                    Informations automatiques
-                </h6>
-                <div class="row">
-                    <div class="col-md-4">
-                        <small class="text-muted d-block">Heures consommées</small>
-                        <strong>0.00 heures</strong>
-                    </div>
-                    <div class="col-md-4">
-                        <small class="text-muted d-block">Heures restantes</small>
-                        <strong>{{ number_format($quota ?? 0, 2) }} heures</strong>
-                    </div>
-                    <div class="col-md-4">
-                        <small class="text-muted d-block">Année financière</small>
-                        <strong>{{ $anneeBudgetaireActive->libelle }}</strong>
-                    </div>
-                </div>
-            </div>
-        @endif
 
         {{-- Boutons d'action --}}
         <div class="d-flex justify-content-end gap-2 mt-4">

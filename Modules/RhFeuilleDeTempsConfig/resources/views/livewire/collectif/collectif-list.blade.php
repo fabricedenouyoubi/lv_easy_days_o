@@ -47,9 +47,9 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Libellé</th>
-                                    <th>Nombre d'heures</th>
-                                    <th>Nombre d'heures restant</th>
-                                    <th>Nombre d'heures pris</th>
+                                    <th>Quota (H)</th>
+                                    <th>Heures restant</th>
+                                    <th>Heures pris</th>
                                     <th>Employés affectés</th>
                                     <th>Action</th>
                                 </tr>
@@ -183,27 +183,6 @@
                                 Réinitialisation...
                             </span>
                         </button>
-                    </div>
-
-                    {{-- Information sur le code de travail --}}
-                    <div class="mt-3 p-3 border rounded">
-                        <h6 class="mb-2">
-                            <i class="fas fa-cog me-2"></i>Configuration actuelle
-                        </h6>
-                        <table class="table table-sm table-borderless mb-0">
-                            <tr>
-                                <td><strong>Code :</strong></td>
-                                <td><code class="bg-light px-2 py-1 rounded">{{ $codeTravail->code }}</code></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Libellé :</strong></td>
-                                <td>{{ $codeTravail->libelle }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Type :</strong></td>
-                                <td><span class="badge bg-info">{{ $codeTravail->categorie->valeur_config }}</span></td>
-                            </tr>
-                        </table>
                     </div>
                 </div>
             </div>
