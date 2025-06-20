@@ -16,18 +16,15 @@
             <i class="fas fa-clipboard-list me-2"></i>
             INFORMATIONS DE BASE
         </h6>
-        
+
         <div class="row">
             <div class="col-md-6">
                 <div class="mb-3">
                     <label for="libelle" class="form-label">
                         Libellé <span class="text-danger">*</span>
                     </label>
-                    <input type="text" 
-                           id="libelle"
-                           class="form-control @error('libelle') is-invalid @enderror" 
-                           wire:model="libelle"
-                           placeholder="Ex: Jour de Noël, Fête du Canada...">
+                    <input type="text" id="libelle" class="form-control @error('libelle') is-invalid @enderror"
+                        wire:model="libelle" placeholder="Ex: Jour de Noël, Fête du Canada...">
                     @error('libelle')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -37,11 +34,8 @@
             <div class="col-md-6">
                 <div class="mb-3">
                     <label for="commentaire" class="form-label">Commentaire</label>
-                    <textarea id="commentaire"
-                              class="form-control @error('commentaire') is-invalid @enderror" 
-                              wire:model="commentaire"
-                              rows="3"
-                              placeholder="Commentaire optionnel sur ce jour férié..."></textarea>
+                    <textarea id="commentaire" class="form-control @error('commentaire') is-invalid @enderror" wire:model="commentaire"
+                        rows="3" placeholder="Commentaire optionnel sur ce jour férié..."></textarea>
                     @error('commentaire')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -54,27 +48,23 @@
             <i class="fas fa-calendar me-2"></i>
             INFORMATIONS TEMPORELLES
         </h6>
-        
+
         <div class="row">
             <div class="col-md-6">
                 <div class="mb-3">
                     <label for="date" class="form-label">
                         Jour <span class="text-danger">*</span>
                     </label>
-                    <input type="date" 
-                           id="date"
-                           class="form-control @error('date') is-invalid @enderror" 
-                           wire:model="date"
-                           @if($anneeBudgetaireActive)
-                               min="{{ $anneeBudgetaireActive->debut->format('Y-m-d') }}"
-                               max="{{ $anneeBudgetaireActive->fin->format('Y-m-d') }}"
-                           @endif>
+                    <input type="date" id="date" class="form-control @error('date') is-invalid @enderror"
+                        wire:model="date"
+                        @if ($anneeBudgetaireActive) min="{{ $anneeBudgetaireActive->debut->format('Y-m-d') }}"
+                               max="{{ $anneeBudgetaireActive->fin->format('Y-m-d') }}" @endif>
                     @error('date')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                     <small class="form-text text-muted">
-                        @if($anneeBudgetaireActive)
-                            Période autorisée : {{ $anneeBudgetaireActive->debut->format('d/m/Y') }} 
+                        @if ($anneeBudgetaireActive)
+                            Période autorisée : {{ $anneeBudgetaireActive->debut->format('d/m/Y') }}
                             à {{ $anneeBudgetaireActive->fin->format('d/m/Y') }}
                         @else
                             Aucune année budgétaire active
@@ -85,17 +75,17 @@
 
             {{-- Aperçu de la date sélectionnée --}}
             <div class="col-md-6">
-                @if($date)
+                @if ($date)
                     @php
                         $dateCarbon = \Carbon\Carbon::parse($date);
                         $jours = [
                             'Monday' => 'Lundi',
-                            'Tuesday' => 'Mardi', 
+                            'Tuesday' => 'Mardi',
                             'Wednesday' => 'Mercredi',
                             'Thursday' => 'Jeudi',
                             'Friday' => 'Vendredi',
                             'Saturday' => 'Samedi',
-                            'Sunday' => 'Dimanche'
+                            'Sunday' => 'Dimanche',
                         ];
                         $jourFr = $jours[$dateCarbon->format('l')] ?? $dateCarbon->format('l');
                     @endphp
@@ -121,15 +111,11 @@
 
         {{-- Boutons d'action --}}
         <div class="d-flex justify-content-end gap-2 mt-4">
-            <button type="button" class="btn btn-secondary" wire:click="cancel">
-                Annuler
-            </button>
-            <button type="submit" 
-                    class="btn btn-primary"
-                    @if(!$anneeBudgetaireActive) disabled @endif>
-                <i class="fas fa-save me-2"></i>
-                {{ $jourFerieId ? 'Modifier' : 'Créer' }}
-            </button>
+            <x-action-button type="secondary" icon="fas fa-times me-2" size="md" wireClick='cancel'
+                text="Annuler" />
+            <x-action-button type="success" icon="fas fa-save me-2" size="md"
+                text="{{ $jourFerieId ? 'Modifier' : 'Créer' }}" typeButton='submit'
+                disabled={{ !$anneeBudgetaireActive ? true : false }} />
         </div>
     </form>
 </div>

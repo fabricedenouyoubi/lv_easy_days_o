@@ -6,12 +6,8 @@
             <label for="code" class="form-label">
                 Code <span class="text-danger">*</span>
             </label>
-            <input type="text"
-                   id="code"
-                   class="form-control @error('code') is-invalid @enderror"
-                   wire:model="code"
-                   placeholder="Ex: VAC, CSN, CAISS..."
-                   style="text-transform: uppercase;">
+            <input type="text" id="code" class="form-control @error('code') is-invalid @enderror" wire:model="code"
+                placeholder="Ex: VAC, CSN, CAISS..." style="text-transform: uppercase;">
             @error('code')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
@@ -26,11 +22,8 @@
             <label for="libelle" class="form-label">
                 Libellé <span class="text-danger">*</span>
             </label>
-            <input type="text"
-                   id="libelle"
-                   class="form-control @error('libelle') is-invalid @enderror"
-                   wire:model="libelle"
-                   placeholder="Ex: Vacances, Heure CSN, Banque de temps...">
+            <input type="text" id="libelle" class="form-control @error('libelle') is-invalid @enderror"
+                wire:model="libelle" placeholder="Ex: Vacances, Heure CSN, Banque de temps...">
             @error('libelle')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
@@ -41,14 +34,13 @@
             <label for="categorie_id" class="form-label">
                 Catégorie d'appartenance <span class="text-danger">*</span>
             </label>
-            <select id="categorie_id"
-                    class="form-select @error('categorie_id') is-invalid @enderror"
-                    wire:model="categorie_id">
+            <select id="categorie_id" class="form-select @error('categorie_id') is-invalid @enderror"
+                wire:model="categorie_id">
                 <option value="">-- Sélectionner une catégorie --</option>
-                @foreach($categories as $categorie)
+                @foreach ($categories as $categorie)
                     <option value="{{ $categorie->id }}">
                         {{ $categorie->intitule }}
-                        @if($categorie->configurable)
+                        @if ($categorie->configurable)
                             ({{ $categorie->valeur_config }})
                         @endif
                     </option>
@@ -76,15 +68,9 @@
 
         {{-- Boutons d'action --}}
         <div class="d-flex justify-content-end gap-2">
-            <button type="button" class="btn btn-secondary" wire:click="cancel">
-                <i class="fas fa-times me-2"></i>
-                Annuler
-            </button>
-
-            <button type="submit" class="btn btn-success">
-                <i class="fas fa-save me-2"></i>
-                {{ $codeTravailId ? 'Modifier' : 'Créer' }}
-            </button>
+            <x-action-button type="secondary" icon="fas fa-times me-2" size="md" wireClick='cancel'
+                text="Annuler" />
+            <x-action-button type="success" icon="fas fa-save me-2" size="md" text="{{ $codeTravailId ? 'Modifier' : 'Créer' }}" typeButton='submit' />
         </div>
     </form>
 

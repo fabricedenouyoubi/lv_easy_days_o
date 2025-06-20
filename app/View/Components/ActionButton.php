@@ -19,6 +19,7 @@ class ActionButton extends Component
     public $loading;
     public $loadingTarget;
     public $typeButton;
+    public $dataBsToogle;
 
     /**
      * Create a new component instance.
@@ -34,7 +35,8 @@ class ActionButton extends Component
         $disabled = false,
         $loading = false,
         $loadingTarget = null,
-        $typeButton = null
+        $typeButton = null,
+        $dataBsToogle = null,
     )
     {
         $this->type = $type;
@@ -48,6 +50,7 @@ class ActionButton extends Component
         $this->loading = $loading;
         $this->loadingTarget = $loadingTarget;
         $this->typeButton = $typeButton;
+        $this->dataBsToogle = $dataBsToogle;
     }
 
     /**

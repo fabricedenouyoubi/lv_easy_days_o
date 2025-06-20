@@ -39,9 +39,7 @@
                                     <td>
                                         <div class="d-flex gap-2">
                                             {{-- Boutons avec composant --}}
-                                            <x-action-button type="outline-info" icon="fas fa-eye"
-                                                tooltip="Voir détails"
-                                                href="{{ route('rh-employe.show', $employe->id) }}" />
+                                            <x-action-button type="outline-info" icon="fas fa-eye" tooltip="Voir détails" href="{{ route('rh-employe.show', $employe->id) }}" />
                                         </div>
                                     </td>
                                 </tr>

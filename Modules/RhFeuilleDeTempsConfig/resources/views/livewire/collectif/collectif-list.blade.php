@@ -1,19 +1,7 @@
 {{-- DIV RACINE UNIQUE --}}
 <div>
     {{-- Messages de feedback --}}
-    @if (session()->has('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
-    @if (session()->has('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
+    <x-alert-messages />
 
     {{-- Layout principal avec tableau à gauche et filtres à droite --}}
     <div class="row">
@@ -29,13 +17,10 @@
                             </h4>
                         </div>
                         <div class="col-auto">
-                            <a href="{{ route('rhfeuilledetempsconfig.codes-travail.codetravails') }}" 
-                               class="btn btn-outline-secondary me-2">
-                                <i class="fas fa-arrow-left me-2"></i>Retour
-                            </a>
-                            <button type="button" class="btn btn-primary" wire:click="showCreateModal">
-                                <i class="fas fa-plus me-2"></i>Nouveau
-                            </button>
+                            <x-action-button type="outline-secondary me-2" icon="fas fa-arrow-left me-2" text="Retour"
+                                href="{{ route('rhfeuilledetempsconfig.codes-travail.codetravails') }}" />
+                            <x-action-button type="primary" icon="fas fa-plus me-2" text="Nouveau"
+                                wireClick="showCreateModal" />
                         </div>
                     </div>
                 </div>
@@ -60,50 +45,48 @@
                                         <td>
                                             <div>
                                                 <strong>{{ $configuration->libelle }}</strong>
-                                                @if($configuration->commentaire)
-                                                    <br><small class="text-muted">{{ Str::limit($configuration->commentaire, 50) }}</small>
+                                                @if ($configuration->commentaire)
+                                                    <br><small
+                                                        class="text-muted">{{ Str::limit($configuration->commentaire, 50) }}</small>
                                                 @endif
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="badge bg-primary">{{ number_format($configuration->quota, 2) }}h</span>
+                                            <span
+                                                class="badge bg-primary">{{ number_format($configuration->quota, 2) }}h</span>
                                         </td>
                                         <td>
-                                            <span class="badge bg-success">{{ number_format($configuration->reste, 2) }}h</span>
+                                            <span
+                                                class="badge bg-success">{{ number_format($configuration->reste, 2) }}h</span>
                                         </td>
                                         <td>
-                                            <span class="badge bg-warning">{{ number_format($configuration->consomme, 2) }}h</span>
+                                            <span
+                                                class="badge bg-warning">{{ number_format($configuration->consomme, 2) }}h</span>
                                         </td>
                                         <td>
                                             <span class="badge bg-info">
-                                                <i class="fas fa-users me-1"></i>{{ $configuration->nombre_employes_affectes }}
+                                                <i
+                                                    class="fas fa-users me-1"></i>{{ $configuration->nombre_employes_affectes }}
                                             </span>
                                         </td>
                                         <td>
                                             <div class="d-flex gap-2">
                                                 {{-- Bouton Voir détails --}}
-                                                <button class="btn btn-sm btn-outline-info" 
-                                                        wire:click="showDetailModal({{ $configuration->id }})"
-                                                        data-bs-toggle="tooltip" 
-                                                        title="Voir détails">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
+                                                <x-action-button type="outline-info" icon="fas fa-eye"
+                                                    tooltip="Voir détails"
+                                                    wireClick="showDetailModal({{ $configuration->id }})" />
 
                                                 {{-- Bouton Modifier --}}
-                                                <button class="btn btn-sm btn-outline-primary" 
-                                                        wire:click="showEditModal({{ $configuration->id }})"
-                                                        data-bs-toggle="tooltip" 
-                                                        title="Modifier">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
+
+                                                <x-action-button type="outline-primary" icon="fas fa-edit"
+                                                    tooltip="Modifier"
+                                                    wireClick="showEditModal({{ $configuration->id }})" />
 
                                                 {{-- Bouton Affecter --}}
-                                                <button class="btn btn-sm btn-outline-success" 
-                                                        wire:click="showAffectationModal({{ $configuration->id }})"
-                                                        data-bs-toggle="tooltip" 
-                                                        title="Affecter des employés">
-                                                    <i class="fas fa-user-plus"></i>
-                                                </button>
+                                                <x-action-button type="outline-success" icon="fas fa-user-plus"
+                                                    tooltip="Affecter des employés"
+                                                    wireClick="showAffectationModal({{ $configuration->id }})" />
+
                                             </div>
                                         </td>
                                     </tr>
@@ -112,7 +95,7 @@
                                         <td colspan="6" class="text-center py-5">
                                             <i class="fas fa-users-cog fa-3x text-muted mb-3"></i>
                                             <p class="text-muted mb-0">Aucune configuration collective trouvée</p>
-                                            @if($anneeBudgetaireActive)
+                                            @if ($anneeBudgetaireActive)
                                                 <small class="text-muted">
                                                     Cliquez sur "Nouveau" pour créer une configuration
                                                 </small>
@@ -125,7 +108,7 @@
                     </div>
 
                     {{-- Pagination --}}
-                    @if($configurations->hasPages())
+                    @if ($configurations->hasPages())
                         <div class="mt-3">
                             {{ $configurations->links() }}
                         </div>
@@ -136,61 +119,19 @@
 
         {{-- Colonne latérale - Filtres --}}
         <div class="col-lg-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-filter me-2"></i>
-                        Filtres
-                    </h5>
+            <x-filter-card filterAction="filter">
+                {{-- Filtre par libellé --}}
+                <div class="mb-3">
+                    <label for="searchLibelle" class="form-label">Libellé de la configuration</label>
+                    <input type="text" id="searchLibelle" class="form-control"
+                        placeholder="Rechercher par libellé..." wire:model.defer="searchLibelle">
                 </div>
-                <div class="card-body">
-                    {{-- Filtre par libellé --}}
-                    <div class="mb-3">
-                        <label for="searchLibelle" class="form-label">Libellé de la configuration</label>
-                        <input type="text" 
-                               id="searchLibelle"
-                               class="form-control" 
-                               placeholder="Rechercher par libellé..." 
-                               wire:model.defer="searchLibelle">
-                    </div>
-
-                    {{-- Boutons d'action --}}
-                    <div class="d-flex gap-3">
-                        <button type="button" 
-                                class="btn btn-primary" 
-                                wire:click="filter"
-                                wire:loading.attr="disabled"
-                                wire:target="filter">
-                            <span wire:loading.remove wire:target="filter">
-                                <i class="fas fa-search me-2"></i>Filtrer
-                            </span>
-                            <span wire:loading wire:target="filter">
-                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                Filtrage...
-                            </span>
-                        </button>
-
-                        <button type="button" 
-                                class="btn btn-outline-secondary" 
-                                wire:click="resetFilters"
-                                wire:loading.attr="disabled"
-                                wire:target="resetFilters">
-                            <span wire:loading.remove wire:target="resetFilters">
-                                <i class="fas fa-refresh me-2"></i>Réinitialiser
-                            </span>
-                            <span wire:loading wire:target="resetFilters">
-                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                Réinitialisation...
-                            </span>
-                        </button>
-                    </div>
-                </div>
-            </div>
+            </x-filter-card>
         </div>
     </div>
 
     {{-- Modal Formulaire --}}
-    @if($showModal)
+    @if ($showModal)
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -199,18 +140,17 @@
                             <i class="fas fa-plus me-2"></i>
                             {{ $editingId ? 'Modifier la configuration' : 'Nouvelle configuration' }}
                         </h5>
-                        <button type="button" class="btn-close btn-close-primary" wire:click="closeModal"></button>
+                        <x-action-button type="close btn-close-primary"wireClick='closeModal' />
                     </div>
                     <div class="modal-body">
-                        @if(!$anneeBudgetaireActive)
+                        @if (!$anneeBudgetaireActive)
                             <div class="alert alert-warning">
                                 <i class="fas fa-exclamation-triangle me-2"></i>
-                                <strong>Attention :</strong> Aucune année financière active. Impossible de créer une configuration.
+                                <strong>Attention :</strong> Aucune année financière active. Impossible de créer une
+                                configuration.
                             </div>
                         @else
-                            <livewire:rh-comportement::collectif-form 
-                                :configurationId="$editingId" 
-                                :codeTravailId="$codeTravailId" 
+                            <livewire:rh-comportement::collectif-form :configurationId="$editingId" :codeTravailId="$codeTravailId"
                                 :key="$editingId" />
                         @endif
                     </div>
@@ -220,7 +160,7 @@
     @endif
 
     {{-- Modal Détail Configuration --}}
-    @if($showDetail && $detailConfiguration)
+    @if ($showDetail && $detailConfiguration)
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
@@ -229,7 +169,7 @@
                             <i class="fas fa-info-circle me-2"></i>
                             Détails de la configuration
                         </h5>
-                        <button type="button" class="btn-close btn-close-primary" wire:click="closeDetailModal"></button>
+                        <x-action-button type="close btn-close-primary"wireClick='closeDetailModal' />
                     </div>
                     <div class="modal-body">
                         <div class="row">
@@ -242,27 +182,35 @@
                                     </tr>
                                     <tr>
                                         <td><strong>Quota total :</strong></td>
-                                        <td><span class="badge bg-primary">{{ number_format($detailConfiguration->quota, 2) }}h</span></td>
+                                        <td><span
+                                                class="badge bg-primary">{{ number_format($detailConfiguration->quota, 2) }}h</span>
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td><strong>Heures consommées :</strong></td>
-                                        <td><span class="badge bg-warning">{{ number_format($detailConfiguration->consomme, 2) }}h</span></td>
+                                        <td><span
+                                                class="badge bg-warning">{{ number_format($detailConfiguration->consomme, 2) }}h</span>
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td><strong>Heures restantes :</strong></td>
-                                        <td><span class="badge bg-success">{{ number_format($detailConfiguration->reste, 2) }}h</span></td>
+                                        <td><span
+                                                class="badge bg-success">{{ number_format($detailConfiguration->reste, 2) }}h</span>
+                                        </td>
                                     </tr>
                                 </table>
                             </div>
                             <div class="col-md-6">
-                                <h6><i class="fas fa-users me-2"></i>Employés affectés ({{ $detailConfiguration->employes->count() }})</h6>
-                                @if($detailConfiguration->employes->count() > 0)
+                                <h6><i class="fas fa-users me-2"></i>Employés affectés
+                                    ({{ $detailConfiguration->employes->count() }})</h6>
+                                @if ($detailConfiguration->employes->count() > 0)
                                     <div class="list-group">
-                                        @foreach($detailConfiguration->employes as $employe)
-                                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        @foreach ($detailConfiguration->employes as $employe)
+                                            <div
+                                                class="list-group-item d-flex justify-content-between align-items-center">
                                                 <div>
                                                     <strong>{{ $employe->nom }} {{ $employe->prenom }}</strong>
-                                                    @if($employe->matricule)
+                                                    @if ($employe->matricule)
                                                         <br><small class="text-muted">{{ $employe->matricule }}</small>
                                                     @endif
                                                 </div>
@@ -282,9 +230,8 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" wire:click="closeDetailModal">
-                            <i class="fas fa-times me-2"></i>Fermer
-                        </button>
+                        <x-action-button type="secondary" wireClick='closeDetailModal' icon="fas fa-times me-2"
+                            text="Fermer" />
                     </div>
                 </div>
             </div>
@@ -292,7 +239,7 @@
     @endif
 
     {{-- Modal Affectation Employés --}}
-    @if($showAffectation)
+    @if ($showAffectation)
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
@@ -301,12 +248,10 @@
                             <i class="fas fa-user-plus me-2"></i>
                             Affecter des employés
                         </h5>
-                        <button type="button" class="btn-close btn-close-primary" wire:click="closeAffectationModal"></button>
+                        <x-action-button type="close btn-close-primary" wireClick='closeAffectationModal' />
                     </div>
                     <div class="modal-body">
-                        <livewire:rh-comportement::affectation-employes 
-                            :configurationId="$affectationConfigurationId" 
-                            :key="$affectationConfigurationId" />
+                        <livewire:rh-comportement::affectation-employes :configurationId="$affectationConfigurationId" :key="$affectationConfigurationId" />
                     </div>
                 </div>
             </div>

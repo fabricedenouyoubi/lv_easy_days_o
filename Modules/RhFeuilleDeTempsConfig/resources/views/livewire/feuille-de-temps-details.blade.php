@@ -1,18 +1,6 @@
 <div>
-    <!-- Messages de feedback -->
-    @if (session()->has('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
-    @if (session()->has('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
+    {{-- Messages de feedback --}}
+    <x-alert-messages />
 
     <!-- Filtres et recherche -->
     <div class="card mb-4">
@@ -26,21 +14,21 @@
             <div class="row align-items-end">
                 <div class="col-md-3">
                     <label class="form-label">Date début :</label>
-                    <input type="date" 
-                           class="form-control" 
+                    <input type="date"
+                           class="form-control"
                            wire:model="dateDebut">
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Date fin :</label>
-                    <input type="date" 
-                           class="form-control" 
+                    <input type="date"
+                           class="form-control"
                            wire:model="dateFin">
                 </div>
                 <div class="col-md-3">
                     <div class="form-check form-switch mt-2">
-                        <input class="form-check-input" 
-                               type="checkbox" 
-                               id="showOnlyActive" 
+                        <input class="form-check-input"
+                               type="checkbox"
+                               id="showOnlyActive"
                                wire:model="showOnlyActive">
                         <label class="form-check-label" for="showOnlyActive">
                             Semaines actives seulement
@@ -49,8 +37,8 @@
                 </div>
                 <div class="col-md-3">
                     <div class="d-flex gap-2">
-                        <button type="button" 
-                                class="btn btn-primary flex-fill" 
+                        <button type="button"
+                                class="btn btn-primary flex-fill"
                                 wire:click="applyFilters"
                                 wire:loading.attr="disabled"
                                 wire:target="applyFilters">
@@ -63,8 +51,8 @@
                                 Filtrage...
                             </span>
                         </button>
-                        <button type="button" 
-                                class="btn btn-outline-secondary flex-fill" 
+                        <button type="button"
+                                class="btn btn-outline-secondary flex-fill"
                                 wire:click="resetFilters"
                                 wire:loading.attr="disabled"
                                 wire:target="resetFilters">
@@ -146,15 +134,15 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="dropdown">
-                                        <button class="btn btn-light btn-sm dropdown-toggle" 
-                                                type="button" 
+                                        <button class="btn btn-light btn-sm dropdown-toggle"
+                                                type="button"
                                                 data-bs-toggle="dropdown">
                                             <i class="mdi mdi-dots-horizontal"></i>
                                         </button>
                                         <ul class="dropdown-menu">
                                             @if($feuille->actif)
                                                 <li>
-                                                    <button class="dropdown-item" 
+                                                    <button class="dropdown-item"
                                                             wire:click="desactiverFeuille({{ $feuille->id }})">
                                                         <i class="mdi mdi-pause-circle text-warning me-2"></i>
                                                         Désactiver
@@ -162,16 +150,16 @@
                                                 </li>
                                             @else
                                                 <li>
-                                                    <button class="dropdown-item" 
+                                                    <button class="dropdown-item"
                                                             wire:click="activerFeuille({{ $feuille->id }})">
                                                         <i class="mdi mdi-play-circle text-success me-2"></i>
                                                         Activer
                                                     </button>
                                                 </li>
                                             @endif
-                                            
+
                                             <li>
-                                                <button class="dropdown-item" 
+                                                <button class="dropdown-item"
                                                         wire:click="toggleSemaineDePaie({{ $feuille->id }})">
                                                     @if($feuille->est_semaine_de_paie)
                                                         <i class="mdi mdi-cash-remove text-secondary me-2"></i>
@@ -182,7 +170,7 @@
                                                     @endif
                                                 </button>
                                             </li>
-                                            
+
                                         </ul>
                                     </div>
                                 </td>
@@ -195,7 +183,7 @@
                                         <h6 class="text-muted">Aucune semaine trouvée</h6>
                                         @if($appliedDateDebut || $appliedDateFin || $appliedShowOnlyActive)
                                             <p class="text-muted small mb-3">Essayez de modifier vos filtres</p>
-                                            <button type="button" 
+                                            <button type="button"
                                                     class="btn btn-outline-primary btn-sm"
                                                     wire:click="resetFilters">
                                                 Réinitialiser les filtres
@@ -209,7 +197,7 @@
                 </table>
             </div>
         </div>
-        
+
         @if($feuilles->hasPages())
             <div class="card-footer">
                 {{ $feuilles->links() }}

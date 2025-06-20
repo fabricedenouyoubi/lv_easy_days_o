@@ -16,18 +16,15 @@
             <i class="fas fa-cogs me-2"></i>
             INFORMATIONS DE LA CONFIGURATION
         </h6>
-        
+
         <div class="row">
             <div class="col-md-12">
                 <div class="mb-3">
                     <label for="libelle" class="form-label">
                         Libellé <span class="text-danger">*</span>
                     </label>
-                    <input type="text" 
-                           id="libelle"
-                           class="form-control @error('libelle') is-invalid @enderror" 
-                           wire:model="libelle"
-                           placeholder="Ex: Formation équipe marketing">
+                    <input type="text" id="libelle" class="form-control @error('libelle') is-invalid @enderror"
+                        wire:model="libelle" placeholder="Ex: Formation équipe marketing">
                     @error('libelle')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -41,14 +38,8 @@
                         Nombre d'heures total <span class="text-danger">*</span>
                     </label>
                     <div class="input-group">
-                        <input type="number" 
-                               id="quota"
-                               class="form-control @error('quota') is-invalid @enderror" 
-                               wire:model="quota"
-                               step="0.01"
-                               min="0"
-                               max="9999.99"
-                               placeholder="Ex: 40.00">
+                        <input type="number" id="quota" class="form-control @error('quota') is-invalid @enderror"
+                            wire:model="quota" step="0.01" min="0" max="9999.99" placeholder="Ex: 40.00">
                         <span class="input-group-text">heures</span>
                     </div>
                     @error('quota')
@@ -63,15 +54,12 @@
 
         {{-- Boutons d'action --}}
         <div class="d-flex justify-content-end gap-2 mt-4">
-            <button type="button" class="btn btn-secondary" wire:click="cancel">
-                Annuler
-            </button>
-            <button type="submit" 
-                    class="btn btn-primary"
-                    @if(!$anneeBudgetaireActive) disabled @endif>
-                <i class="fas fa-save me-2"></i>
-                {{ $configurationId ? 'Modifier' : 'Créer' }}
-            </button>
+
+            <x-action-button type="secondary" icon="fas fa-times me-2" size="md" wireClick='cancel'
+                text="Annuler" />
+            <x-action-button type="success" icon="fas fa-save me-2" size="md"
+                text="{{ $configurationId ? 'Modifier' : 'Créer' }}" typeButton='submit'
+                disabled="{{ !$anneeBudgetaireActive ? true : false }}" />
         </div>
     </form>
 </div>

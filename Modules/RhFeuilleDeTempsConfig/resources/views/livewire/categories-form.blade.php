@@ -6,11 +6,8 @@
             <label for="intitule" class="form-label">
                 Intitulé de la catégorie <span class="text-danger">*</span>
             </label>
-            <input type="text" 
-                   id="intitule"
-                   class="form-control @error('intitule') is-invalid @enderror" 
-                   wire:model="intitule"
-                   placeholder="Saisir l'intitulé de la catégorie">
+            <input type="text" id="intitule" class="form-control @error('intitule') is-invalid @enderror"
+                wire:model="intitule" placeholder="Saisir l'intitulé de la catégorie">
             @error('intitule')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
@@ -19,11 +16,9 @@
         {{-- Switch Configurable --}}
         <div class="mb-4">
             <div class="form-check form-switch">
-                <input type="checkbox" 
-                       id="configurable"
-                       class="form-check-input @error('configurable') is-invalid @enderror" 
-                       wire:model.live="configurable"
-                       role="switch">
+                <input type="checkbox" id="configurable"
+                    class="form-check-input @error('configurable') is-invalid @enderror" wire:model.live="configurable"
+                    role="switch">
                 <label class="form-check-label" for="configurable">
                     <strong>Est configurable</strong>
                     <small class="text-muted d-block">
@@ -40,23 +35,21 @@
         <div class="mb-4">
             <label for="valeur_config" class="form-label">
                 Valeur de configuration
-                @if($configurable)
+                @if ($configurable)
                     <span class="text-danger">*</span>
                 @endif
             </label>
-            <select id="valeur_config"
-                    class="form-select @error('valeur_config') is-invalid @enderror"
-                    wire:model="valeur_config"
-                    @if(!$configurable) disabled @endif>
+            <select id="valeur_config" class="form-select @error('valeur_config') is-invalid @enderror"
+                wire:model="valeur_config" @if (!$configurable) disabled @endif>
                 <option value="">
-                    @if($configurable)
+                    @if ($configurable)
                         -- Sélectionner une valeur --
                     @else
                         Non applicable (configurable désactivé)
                     @endif
                 </option>
-                @if($configurable)
-                    @foreach($valeurConfigOptions as $value => $label)
+                @if ($configurable)
+                    @foreach ($valeurConfigOptions as $value => $label)
                         <option value="{{ $value }}">{{ $label }}</option>
                     @endforeach
                 @endif
@@ -64,14 +57,14 @@
             @error('valeur_config')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
-            
+
             {{-- Aide contextuelle --}}
             <div class="form-text">
-                @if($configurable)
+                @if ($configurable)
                     <i class="fas fa-info-circle me-1"></i>
-                    Choisissez le type de configuration : 
-                    <strong>Individuel</strong> (pour personne), 
-                    <strong>Collectif</strong> (pour groupes), 
+                    Choisissez le type de configuration :
+                    <strong>Individuel</strong> (pour personne),
+                    <strong>Collectif</strong> (pour groupes),
                     <strong>Jour</strong> (pour jour fermé)
                 @else
                     <i class="fas fa-lock me-1 text-muted"></i>
@@ -83,13 +76,13 @@
         </div>
 
         {{-- Aperçu de la configuration --}}
-        @if($configurable && $valeur_config)
+        @if ($configurable && $valeur_config)
             <div class="alert alert-info mb-4">
                 <h6 class="mb-2">
                     <i class="fas fa-eye me-2"></i>Aperçu de la configuration
                 </h6>
                 <p class="mb-0">
-                    La catégorie <strong>"{{ $intitule ?: 'Sans nom' }}"</strong> 
+                    La catégorie <strong>"{{ $intitule ?: 'Sans nom' }}"</strong>
                     sera configurée en mode <strong>{{ $valeur_config }}</strong>.
                 </p>
             </div>
@@ -97,14 +90,9 @@
 
         {{-- Boutons d'action --}}
         <div class="d-flex justify-content-end gap-2">
-            <button type="button" class="btn btn-secondary" wire:click="cancel">
-                <i class="fas fa-times me-2"></i>
-                Annuler
-            </button>
-            <button type="submit" class="btn btn-success">
-                <i class="fas fa-save me-2"></i>
-                {{ $categorieId ? 'Modifier' : 'Créer' }}
-            </button>
+            <x-action-button type="secondary" icon="fas fa-times me-2" size="md" wireClick='cancel'
+                text="Annuler" />
+            <x-action-button type="success" icon="fas fa-save me-2" size="md" text="{{ $categorieId ? 'Modifier' : 'Créer' }}" typeButton='submit' />
         </div>
     </form>
 

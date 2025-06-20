@@ -1,6 +1,6 @@
 {{-- DIV RACINE UNIQUE POUR TOUT LE COMPOSANT --}}
 <div>
-    @if($configuration)
+    @if ($configuration)
         {{-- Information sur la configuration --}}
         <div class="alert alert-info mb-4">
             <div class="row align-items-center">
@@ -9,8 +9,8 @@
                         <i class="fas fa-cogs me-2"></i>{{ $configuration->libelle }}
                     </h6>
                     <small class="text-muted">
-                        Quota total : <strong>{{ number_format($configuration->quota, 2) }}h</strong> | 
-                        Consommé : <strong>{{ number_format($configuration->consomme, 2) }}h</strong> | 
+                        Quota total : <strong>{{ number_format($configuration->quota, 2) }}h</strong> |
+                        Consommé : <strong>{{ number_format($configuration->consomme, 2) }}h</strong> |
                         Restant : <strong>{{ number_format($configuration->reste, 2) }}h</strong>
                     </small>
                 </div>
@@ -29,10 +29,8 @@
                     <span class="input-group-text">
                         <i class="fas fa-search"></i>
                     </span>
-                    <input type="text" 
-                           class="form-control" 
-                           placeholder="Rechercher un employé..." 
-                           wire:model.live.debounce.300ms="searchEmploye">
+                    <input type="text" class="form-control" placeholder="Rechercher un employé..."
+                        wire:model.live.debounce.300ms="searchEmploye">
                 </div>
             </div>
         </div>
@@ -43,9 +41,7 @@
                 <thead class="table-light">
                     <tr>
                         <th width="50">
-                            <input type="checkbox" 
-                                   class="form-check-input" 
-                                   id="selectAll">
+                            <input type="checkbox" class="form-check-input" id="selectAll">
                         </th>
                         <th>Employé</th>
                         <th>Quota consommé</th>
@@ -60,11 +56,10 @@
                         @endphp
                         <tr class="{{ $isSelected ? 'table-success' : '' }}">
                             <td>
-                                <input class="form-check-input {{ $isSelected ? '' : 'bg-white border-secondary' }}" 
-                                       type="checkbox" 
-                                       id="employe_{{ $employe->id }}"
-                                       wire:click="toggleEmploye({{ $employe->id }})"
-                                       @if($isSelected) checked @endif>
+                                <input class="form-check-input {{ $isSelected ? '' : 'bg-white border-secondary' }}"
+                                    type="checkbox" id="employe_{{ $employe->id }}"
+                                    wire:click="toggleEmploye({{ $employe->id }})"
+                                    @if ($isSelected) checked @endif>
                             </td>
                             <td>
                                 <div>
@@ -72,7 +67,7 @@
                                 </div>
                             </td>
                             <td>
-                                @if($employeAffecte)
+                                @if ($employeAffecte)
                                     <span class="text-info">
                                         {{ number_format($employeAffecte->pivot->consomme_individuel, 2) }}h
                                     </span>
@@ -81,7 +76,7 @@
                                 @endif
                             </td>
                             <td>
-                                @if($isSelected)
+                                @if ($isSelected)
                                     <span class="badge bg-success">Sélectionné</span>
                                 @else
                                     <span class="badge bg-secondary">Non sélectionné</span>
@@ -93,7 +88,7 @@
                             <td colspan="4" class="text-center py-4">
                                 <i class="fas fa-users fa-2x text-muted mb-2"></i>
                                 <p class="text-muted mb-0">
-                                    @if($searchEmploye)
+                                    @if ($searchEmploye)
                                         Aucun employé trouvé pour "{{ $searchEmploye }}"
                                     @else
                                         Aucun employé disponible
@@ -115,24 +110,11 @@
                 </small>
             </div>
             <div class="d-flex gap-2">
-                <button type="button" 
-                        class="btn btn-outline-secondary"
-                        wire:click="cancel">
-                    <i class="fas fa-times me-2"></i>Annuler
-                </button>
-                <button type="button" 
-                        class="btn btn-success"
-                        wire:click="sauvegarderAffectations"
-                        wire:loading.attr="disabled">
-                    <span wire:loading.remove>
-                        <i class="fas fa-save me-2"></i>
-                        Sauvegarder ({{ $nombreEmployesSelectionnes }})
-                    </span>
-                    <span wire:loading>
-                        <span class="spinner-border spinner-border-sm me-2"></span>
-                        Sauvegarde...
-                    </span>
-                </button>
+                <x-action-button type="outline-secondary" icon="fas fa-times me-2" wireClick="cancel" text="Annuler" />
+
+                <x-action-button type="success" icon="fas fa-save me-2" wireClick="sauvegarderAffectations"
+                    loadingTarget="sauvegarderAffectations" text="Sauvegarder ({{ $nombreEmployesSelectionnes }})"
+                    loading="true" />
             </div>
         </div>
     @else

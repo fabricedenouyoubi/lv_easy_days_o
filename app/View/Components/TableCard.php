@@ -14,6 +14,7 @@ class TableCard extends Component
     public $buttonIcon;
     public $buttonAction;
     public $canAdd;
+    public $link;
 
     /**
      * Create a new component instance.
@@ -24,7 +25,8 @@ class TableCard extends Component
         $buttonText = null,
         $buttonIcon = 'fas fa-plus',
         $buttonAction = null,
-        $canAdd = true
+        $canAdd = true,
+        $link = null
     )
     {
         $this->title = $title;
@@ -33,6 +35,7 @@ class TableCard extends Component
         $this->buttonIcon = $buttonIcon;
         $this->buttonAction = $buttonAction;
         $this->canAdd = $canAdd;
+        $this->link = $link;
     }
 
     /**
