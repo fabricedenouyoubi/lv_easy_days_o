@@ -4,6 +4,12 @@ namespace Modules\Rh\Providers;
 
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
+use Modules\Rh\Livewire\Employe\EmployeDetails;
+use Modules\Rh\Livewire\Employe\EmployeEdit;
+use Modules\Rh\Livewire\Employe\EmployeForm;
+use Modules\Rh\Livewire\Employe\EmployeList;
+use Modules\Rh\Livewire\Employe\HistoriqueGestionnaireForm;
 use Nwidart\Modules\Traits\PathNamespace;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -56,6 +62,22 @@ class RhServiceProvider extends ServiceProvider
         //     $schedule->command('inspire')->hourly();
         // });
     }
+
+        /**
+     * Register Livewire components.
+     *
+     * @return void
+     */
+    protected function registerLivewireComponents()
+    {
+
+        Livewire::component('rh::employe.employe-list', EmployeList::class);
+        Livewire::component('rh::employe.employe-form', EmployeForm::class);
+        Livewire::component('rh::employe.employe-details', EmployeDetails::class);
+        Livewire::component('rh::rh::employe.employe-edit', EmployeEdit::class);
+        Livewire::component('rh::employe.historique-gestionnaire-form', HistoriqueGestionnaireForm::class);
+    }
+
 
     /**
      * Register translations.
