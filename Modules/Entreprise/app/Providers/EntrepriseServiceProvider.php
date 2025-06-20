@@ -68,7 +68,7 @@ class EntrepriseServiceProvider extends ServiceProvider
     {
         Livewire::component('entreprise::entreprise-presentation', EntrepriseInfo::class);
         
-        Livewire::component('entreprise::site-list', SitesList::class);
+        Livewire::component('entreprise::sites-list', SitesList::class);
         
         Livewire::component('entreprise::site-form', SiteForm::class);
     }
