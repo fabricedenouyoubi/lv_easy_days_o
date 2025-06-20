@@ -33,6 +33,9 @@ class RhServiceProvider extends ServiceProvider
         $this->registerConfig();
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->name, 'database/migrations'));
+
+        // --- enregistrement des composant
+        $this->registerLivewireComponents();
     }
 
     /**
