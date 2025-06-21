@@ -104,7 +104,7 @@
             <x-action-button type="secondary" icon="fas fa-times me-2" size="md" wireClick='cancel'
                 text="Annuler" />
             <x-action-button type="success" icon="fas fa-save me-2" size="md" text="Modifier" typeButton='submit'
-                disabled={{ !$anneeBudgetaireActive ? true : false }} />
+                :disabled="!$anneeBudgetaireActive" />
 
         </div>
     </form>
