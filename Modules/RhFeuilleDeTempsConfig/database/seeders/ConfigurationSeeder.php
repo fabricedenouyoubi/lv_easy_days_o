@@ -26,9 +26,6 @@ class ConfigurationSeeder extends Seeder
         // Seeder pour INDIVIDUEL 
         $this->seedIndividuel($anneeFinanciere);
 
-        // Seeder pour COLLECTIF
-        $this->seedCollectif($anneeFinanciere);
-
         $this->command->info('Configurations créées avec succès !');
     
     }
@@ -177,102 +174,5 @@ class ConfigurationSeeder extends Seeder
         }
 
         $this->command->info('Configurations individuelles créées');
-    }
-
-    /**
-     * Seeder pour les configurations collectives
-     */
-    private function seedCollectif($anneeFinanciere)
-    {
-        $this->command->info('Création des configurations collectives...');
-
-        // Trouver un code de travail avec valeur_config = 'Collectif'
-        $codeTravailCollectif = CodeTravail::whereHas('categorie', function($query) {
-            $query->where('configurable', true)->where('valeur_config', 'Collectif');
-        })->first();
-
-/*         if (!$codeTravailCollectif) {
-            $this->command->warn('Création d\'un exemple de code de travail "Collectif"');
-            
-            // Créer une catégorie et un code de travail pour l'exemple
-            $categorieCollectif = Categorie::firstOrCreate([
-                'intitule' => 'Formation',
-                'configurable' => true,
-                'valeur_config' => 'Collectif'
-            ]);
-
-            $codeTravailCollectif = CodeTravail::firstOrCreate([
-                'code' => 'FOR',
-                'libelle' => 'Formation',
-                'categorie_id' => $categorieCollectif->id
-            ]);
-        } */
-
-        // Récupérer des employés
-        $employes = Employe::take(6)->get();
-
-        if ($employes->count() < 3) {
-            $this->command->error('Pas assez d\'employés pour les configurations collectives.');
-            return;
-        }
-
-        // Créer les configurations collectives
-        $configurationsCollectives = [
-            [
-                'libelle' => 'Formation Sécurité au Travail',
-                'quota' => 80,
-                'commentaire' => 'Formation obligatoire sur la sécurité',
-                'employes' => $employes->take(3)->pluck('id')->toArray()
-            ],
-            [
-                'libelle' => 'Formation Outils Numériques',
-                'quota' => 120,
-                'commentaire' => 'Formation sur les nouveaux outils informatiques',
-                'employes' => $employes->skip(2)->take(4)->pluck('id')->toArray()
-            ]
-        ];
-
-        foreach ($configurationsCollectives as $configData) {
-            // Créer la configuration principale
-            $configuration = Configuration::firstOrCreate([
-                'code_travail_id' => $codeTravailCollectif->id,
-                'annee_budgetaire_id' => $anneeFinanciere->id,
-                'libelle' => $configData['libelle'],
-                'employe_id' => null,
-                'date' => null
-            ], [
-                'quota' => $configData['quota'],
-                'consomme' => 0,
-                'reste' => $configData['quota'],
-                'commentaire' => $configData['commentaire']
-            ]);
-
-            // Affecter les employés avec des consommations aléatoires
-            $totalConsomme = 0;
-            $affectations = [];
-
-            foreach ($configData['employes'] as $employeId) {
-                // 0-15h consommées par employé
-                $consommeIndividuel = rand(0, 15); 
-                $totalConsomme += $consommeIndividuel;
-                
-                $affectations[$employeId] = [
-                    'consomme_individuel' => $consommeIndividuel,
-                    'created_at' => now(),
-                    'updated_at' => now()
-                ];
-            }
-
-            // Synchroniser les employés avec leurs consommations
-            $configuration->employes()->sync($affectations);
-
-            // Mettre à jour les totaux de la configuration
-            $configuration->update([
-                'consomme' => $totalConsomme,
-                'reste' => max(0, $configData['quota'] - $totalConsomme)
-            ]);
-        }
-
-        $this->command->info('Configurations collectives créées');
     }
 }

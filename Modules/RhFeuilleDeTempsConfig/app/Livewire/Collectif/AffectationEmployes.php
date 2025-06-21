@@ -56,10 +56,24 @@ class AffectationEmployes extends Component
                 return;
             }
 
-            // Synchroniser les employés affectés
-            $this->configuration->employes()->sync($this->employesSelectionnes);
+            // Préparer les données pour la synchronisation
+            $syncData = [];
+            foreach ($this->employesSelectionnes as $employeId) {
+                // Récupérer la consommation existante ou initialiser à 0
+                $existingPivot = $this->configuration->employes()->where('employe_id', $employeId)->first();
+                $consommeIndividuel = $existingPivot ? $existingPivot->pivot->consomme_individuel : 0;
+                
+                $syncData[$employeId] = [
+                    'consomme_individuel' => $consommeIndividuel,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ];
+            }
 
-            // Recalculer les totaux si nécessaire
+            // Synchroniser les employés affectés
+            $this->configuration->employes()->sync($syncData);
+
+            // Recalculer les totaux
             $this->recalculerTotaux();
 
             $this->dispatch('employesAffected');
@@ -77,6 +91,9 @@ class AffectationEmployes extends Component
             'consomme' => $totalConsomme,
             'reste' => max(0, $this->configuration->quota - $totalConsomme)
         ]);
+
+        // Recharger la configuration avec les nouvelles données
+        $this->configuration->refresh();
     }
 
     public function cancel()
