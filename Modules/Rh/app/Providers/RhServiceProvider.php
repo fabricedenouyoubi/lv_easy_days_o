@@ -77,7 +77,7 @@ class RhServiceProvider extends ServiceProvider
         Livewire::component('rh::employe.employe-list', EmployeList::class);
         Livewire::component('rh::employe.employe-form', EmployeForm::class);
         Livewire::component('rh::employe.employe-details', EmployeDetails::class);
-        Livewire::component('rh::rh::employe.employe-edit', EmployeEdit::class);
+        Livewire::component('rh::employe.employe-edit', EmployeEdit::class);
         Livewire::component('rh::employe.historique-gestionnaire-form', HistoriqueGestionnaireForm::class);
     }
 

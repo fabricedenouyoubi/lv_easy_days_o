@@ -70,8 +70,10 @@
                                             <i class="fa fa-user-circle me-2 text-primary"></i>
                                             Informations personnelles
                                         </h5>
-                                        <x-action-button type="primary" icon="fa fa-edit me-2" size="sm"
+                                        @can('Modifier Employe')
+                                            <x-action-button type="primary" icon="fa fa-edit me-2" size="sm"
                                             wireClick='showEditModal' text=" Modifier les informations de l'employé" />
+                                        @endcan
                                     </div>
                                 </div>
                                 <div class="card-body pt-3 pb-3">
@@ -235,7 +237,7 @@
         <div class="col-12" id="profil-body">
 
             <x-table-card title="Historique des gestionnaires" icon="fas fa-users"
-                button-text="Assigner un gestionnaire" button-action="showGestModal">
+                button-text="Assigner un gestionnaire" button-action="{{ auth()->user()->can('Changer Gestionnaire Employe')  ?? 'showGestModal'}}">
                 {{-- Contenu du tableau --}}
                 <div class="table-responsive">
                     <table class="table table-nowrap align-middle">

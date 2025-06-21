@@ -7,7 +7,7 @@
         {{-- Colonne principale - Tableau --}}
         <div class="col-lg-8">
             <x-table-card title="Liste des employés" icon="fas fa-users" button-text="Nouveau employé"
-                button-action="showCreateModal">
+                button-action="{{ auth()->user()->can('Ajouter Employe') ?? 'showCreateModal' }}">
 
                 {{-- Contenu du tableau --}}
                 <div class="table-responsive">
@@ -39,7 +39,11 @@
                                     <td>
                                         <div class="d-flex gap-2">
                                             {{-- Boutons avec composant --}}
-                                            <x-action-button type="outline-info" icon="fas fa-eye" tooltip="Voir détails" href="{{ route('rh-employe.show', $employe->id) }}" />
+                                            @can('Voir Detail Employe')
+                                                <x-action-button type="outline-info" icon="fas fa-eye"
+                                                    tooltip="Voir détails"
+                                                    href="{{ route('rh-employe.show', $employe->id) }}" />
+                                            @endcan
                                         </div>
                                     </td>
                                 </tr>
