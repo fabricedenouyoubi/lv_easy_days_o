@@ -17,5 +17,10 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(['name' => 'Voir Detail Employe', 'module' => 'RH', 'guard_name' => 'web']);
         Permission::firstOrCreate(['name' => 'Modifier Employe', 'module' => 'RH', 'guard_name' => 'web']);
         Permission::firstOrCreate(['name' => 'Changer Gestionnaire Employe', 'module' => 'RH', 'guard_name' => 'web']);
+
+
+        Permission::firstOrCreate(['name' => 'Voir Entreprise', 'module' => 'ENTREPRISE', 'guard_name' => 'web']);
+        Permission::firstOrCreate(['name' => 'Ajouter Entreprise', 'module' => 'ENTREPRISE', 'guard_name' => 'web']);
+        Permission::firstOrCreate(['name' => 'Modifier Entreprise', 'module' => 'ENTREPRISE', 'guard_name' => 'web']);
     }
 }

@@ -64,6 +64,7 @@
                 </li>
 
                 <!-- RH -->
+                @can('Voir Employe')
                     <li class="menu-title" data-key="t-budget">RH</li>
                     <li>
                         <a href="{{ route('rh-employe.list') }}">
@@ -71,6 +72,7 @@
                             <span class="menu-item" data-key="t-employes">Employés</span>
                         </a>
                     </li>
+                @endcan
 
                 <!-- FEUILLES DE TEMPS -->
                 <li class="menu-title" data-key="t-feuilles-temps">FEUILLES DE TEMPS</li>
@@ -130,9 +132,9 @@
                         <span class="menu-item" data-key="t-gestion_autorisation">Gestion autorisations</span>
                     </a>
                     <ul class="sub-menu" aria-expanded="false">
-                        <li>
+                        {{-- <li>
                             <a href="{{ route('permission.index') }}"data-key="t-permissions">Permissions</a>
-                        </li>
+                        </li> --}}
                         <li>
                             <a href="{{ route('group.index') }}"data-key="t-groups">Groupes</a>
                         </li>

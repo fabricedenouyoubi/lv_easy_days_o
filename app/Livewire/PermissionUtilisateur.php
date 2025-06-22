@@ -94,6 +94,14 @@ class PermissionUtilisateur extends Component
         $this->reset(['name_searched', 'type_searched']);
     }
 
+    public function get_permission_groups()
+    {
+        $user = User::findOrFail($this->userId);
+        return Permission::whereHas('roles', function ($query) use ($user) {
+            $query->whereIn('roles.id', $user->roles->pluck('id'));
+        })->orderBy('module')->get()->groupBy('module');
+    }
+
     public function render()
     {
         //dd($this->checkedPermissions);
@@ -101,6 +109,7 @@ class PermissionUtilisateur extends Component
             'livewire.permission-utilisateur',
             [
                 'permissions' => $this->get_permission(),
+                'permissionGroups' => $this->get_permission_groups()
             ]
         );
     }

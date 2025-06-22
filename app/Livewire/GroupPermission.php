@@ -16,6 +16,7 @@ class GroupPermission extends Component
     public $code_searched;
     public $type_searched;
     public $checkedPermissions = [];
+    public $role;
 
     protected $paginationTheme = 'bootstrap';
 
@@ -40,6 +41,7 @@ class GroupPermission extends Component
     public function mount()
     {
         $this->checkedPermissions = $this->get_group_permission();
+        $this->role = Role::query()->where('id', $this->groupId)->first();
     }
 
     //--- fonction de selection de toutes les permissions pour un groupe
@@ -90,9 +92,13 @@ class GroupPermission extends Component
         $this->reset(['name_searched', 'type_searched']);
     }
 
+    public function get_permission_groups()
+    {
+        return Permission::orderBy('module')->get()->groupBy('module');
+    }
 
     public function render()
     {
-        return view('livewire.group-permission', ['permissions' => $this->get_permission()]);
+        return view('livewire.group-permission', ['permissions' => $this->get_permission(), 'permissionGroups' => $this->get_permission_groups()]);
     }
 }
