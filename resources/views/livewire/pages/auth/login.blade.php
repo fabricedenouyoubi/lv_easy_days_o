@@ -16,7 +16,7 @@ new #[Layout('layouts.auth-layout')] class extends Component {
 
         Session::regenerate();
 
-        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: false);
+        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
     }
 };
 ?>

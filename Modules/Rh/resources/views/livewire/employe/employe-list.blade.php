@@ -7,7 +7,12 @@
         {{-- Colonne principale - Tableau --}}
         <div class="col-lg-8">
             <x-table-card title="Liste des employés" icon="fas fa-users" button-text="Nouveau employé"
-                button-action="{{ auth()->user()->can('Ajouter Employe') ?? 'showCreateModal' }}">
+                button-action="showCreateModal">
+
+                {{--s
+                    <x-table-card title="Liste des employés" icon="fas fa-users" button-text="Nouveau employé"
+                    button-action="{{ auth()->user()->can('Ajouter Employe') ?? 'showCreateModal' }}">
+                --}}
 
                 {{-- Contenu du tableau --}}
                 <div class="table-responsive">
