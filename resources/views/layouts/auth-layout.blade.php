@@ -31,10 +31,11 @@
     <script src="{{ asset('assets/borex/libs/metismenujs/metismenujs.min.js') }}"></script>
     <script src="{{ asset('assets/borex/libs/simplebar/simplebar.min.js') }}"></script>
     <script src="{{ asset('assets/borex/libs/eva-icons/eva.min.js') }}"></script>
+{{--     <script src="{{ asset('assets/borex/js/app.js') }}"></script> --}}
 
     @stack('scripts')
     @livewireScripts
-    <script src="{{ asset('assets/borex/js/app.js') }}"></script>
+
 </body>
 
 </html>

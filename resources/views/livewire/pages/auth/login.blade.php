@@ -5,7 +5,8 @@ use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 
-new #[Layout('layouts.auth-layout')] class extends Component {
+new #[Layout('layouts.auth-layout')]
+class extends Component {
     public LoginForm $form;
 
     public function login(): void
@@ -16,11 +17,10 @@ new #[Layout('layouts.auth-layout')] class extends Component {
 
         Session::regenerate();
 
-        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: false);
     }
 };
 ?>
-
 <div class="auth-page">
     <div class="container-fluid p-0">
         <div class="row g-0 align-items-center">
@@ -63,7 +63,7 @@ new #[Layout('layouts.auth-layout')] class extends Component {
                                                                 class="form-label requiredField">
                                                                 Email<span class="asteriskField text-danger">*</span>
                                                             </label> <input type="email" name="login"
-                                                                wire:model="form.email"
+                                                                wire:model="form.email" autocomplete="email"
                                                                 class="form-control @error('form.email') is-invalid @enderror">
 
                                                             @error('form.email')
@@ -77,7 +77,7 @@ new #[Layout('layouts.auth-layout')] class extends Component {
                                                                 for="id_password" class="form-label requiredField">
                                                                 Mot de Passe<span class="asteriskField text-danger">*</span>
                                                             </label> <input type="password" name="password"
-                                                                wire:model="form.password"
+                                                                wire:model="form.password" autocomplete="password"
                                                                 class="form-control @error('form.password') is-invalid @enderror">
                                                             @error('form.password')
                                                                 <div class="invalid-feedback">

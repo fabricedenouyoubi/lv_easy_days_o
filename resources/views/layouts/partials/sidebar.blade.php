@@ -17,7 +17,7 @@
             <span class="logo-sm">
                 <img src="{{ asset('assets/borex/images/logo-gcs.png') }}" alt="" height="22">
             </span>
-            <span class="menu-item text-white" >ChronoTemps</span>
+            <span class="menu-item text-white">ChronoTemps</span>
         </a>
     </div>
 
@@ -64,15 +64,19 @@
                 </li>
 
                 <!-- RH -->
-                @can('Voir Employe')
+                @can('Voir Module RH')
                     <li class="menu-title" data-key="t-budget">RH</li>
-                    <li>
-                        <a href="{{ route('rh-employe.list') }}">
-                            <i class="icon nav-icon" data-eva="people-outline"></i>
-                            <span class="menu-item" data-key="t-employes">Employés</span>
-                        </a>
-                    </li>
+                    @can('Voir Employé')
+                        <li>
+                            <a href="{{ route('rh-employe.list') }}">
+                                <i class="icon nav-icon" data-eva="people-outline"></i>
+                                <span class="menu-item" data-key="t-employes">Employés</span>
+                            </a>
+                        </li>
+                    @endcan
                 @endcan
+
+
 
                 <!-- FEUILLES DE TEMPS -->
                 <li class="menu-title" data-key="t-feuilles-temps">FEUILLES DE TEMPS</li>
