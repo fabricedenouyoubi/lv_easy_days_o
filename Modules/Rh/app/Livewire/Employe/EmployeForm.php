@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Support\Carbon;
 use Livewire\Component;
 use Modules\Rh\Models\Employe\Employe;
+use Modules\Rh\Models\Employe\HistoriqueGestionnaire;
+use Modules\Rh\Models\Employe\HistoriqueHeuresSemaines;
 use Spatie\Permission\Models\Role;
 
 class EmployeForm extends Component
@@ -22,6 +24,8 @@ class EmployeForm extends Component
     public $email;
     public $groups;
     public $groups_list;
+    public $gestionnaire_list;
+    public $est_gestionnaire = false;
 
     //--- Règles de validation pour l'ajout d'un employe
     protected function rules()
@@ -33,7 +37,7 @@ class EmployeForm extends Component
             'date_de_naissance' => 'nullable|date|before:today',
             'entreprise_id' => 'nullable|exists:entreprises,id',
             'gestionnaire_id' => 'nullable|exists:employes,id',
-            'nombre_d_heure_semaine' => 'required|integer|min:1|max:100',
+            'nombre_d_heure_semaine' => 'required|numeric|min:1|max:100',
             'email' => 'required|email|unique:users,email',
             'groups' => 'required'
         ];
@@ -51,7 +55,7 @@ class EmployeForm extends Component
             'date_de_naissance.before' => 'La date de naissance doit être antérieure à aujourd\'hui.',
             'entreprise_id.exists' => 'L\'entreprise sélectionnée est invalide.',
             'gestionnaire_id.exists' => 'Le gestionnaire sélectionné est invalide.',
-            'nombre_d_heure_semaine.integer' => 'Le nombre d’heures doit être un entier.',
+            'nombre_d_heure_semaine.numeric' => 'Le nombre d’heures doit être un entier.',
             'nombre_d_heure_semaine.required' => 'Le nombre d’heures est obligatoire.',
             'email.required' => 'L’adresse e-mail est obligatoire.',
             'email.email' => 'L’adresse e-mail doit être valide.',
@@ -73,6 +77,7 @@ class EmployeForm extends Component
     public function mount()
     {
         $this->groups_list = $this->get_groups();
+        $this->gestionnaire_list = Employe::where('est_gestionnaire', true)->get();
     }
 
     //--- fonction de generation du matricule d'un employé
@@ -95,13 +100,14 @@ class EmployeForm extends Component
                 'name' => $this->nom . ' ' . $this->prenom,
             ]);
 
+            //--- synchronisation des groupes/permission de l'utilisateur
             $user->syncRoles($this->groups);
 
             if (!$this->matricule) {
                 $this->matricule = $this->generateMatricule();
             }
 
-            Employe::create([
+            $employe = Employe::create([
                 'matricule' => $this->matricule,
                 'nom' => $this->nom,
                 'prenom' => $this->prenom,
@@ -109,9 +115,25 @@ class EmployeForm extends Component
                 'user_id' => $user->id,
                 'entreprise_id' => $this->entreprise_id ?? null,
                 'gestionnaire_id' => $this->gestionnaire_id ?? null,
-                'nombre_d_heure_semaine' => $this->nombre_d_heure_semaine,
                 'adresse_id' => $this->adresse_id ?? null,
-                'date_embauche' => Carbon::now()
+                'date_embauche' => Carbon::now(),
+                'est_gestionnaire' => $this->est_gestionnaire,
+            ]);
+
+            //--- Sauvegarde de l'historique des gestionnaires d'un employe
+            if ($this->gestionnaire_id) {
+                HistoriqueGestionnaire::create([
+                    'employe_id' => $employe->id,
+                    'gestionnaire_id' => $this->gestionnaire_id,
+                    'date_debut' => Carbon::now(),
+                ]);
+            }
+
+            //--- Sauvegarde de l'historique des heures d'un employe
+            HistoriqueHeuresSemaines::create([
+                'employe_id' => $employe->id,
+                'nombre_d_heure_semaine' => $this->nombre_d_heure_semaine,
+                'date_debut' => Carbon::now(),
             ]);
 
             $this->dispatch('employeCreated');

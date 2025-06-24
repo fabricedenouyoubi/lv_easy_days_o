@@ -25,6 +25,7 @@ class EmployeEdit extends Component
     public $groups_array;
     public $showModal = false;
     public $groups_list;
+    public $est_gestionnaire = false;
 
     //--- recuperation des groupes
     public function get_groups()
@@ -52,6 +53,7 @@ class EmployeEdit extends Component
             $this->email = $employe->email();
             //--- $this->groups = $employe->employe_groups()->pluck('id')->toArray();
             $this->groups = $employe->employe_groups()->pluck('name')->toArray();
+            $this->est_gestionnaire = $employe->est_gestionnaire;
         }
         $this->groups_list = $this->get_groups();
     }
@@ -71,7 +73,6 @@ class EmployeEdit extends Component
             'date_de_naissance' => 'nullable|date|before:today',
             'entreprise_id' => 'nullable|exists:entreprises,id',
             'gestionnaire_id' => 'nullable|exists:employes,id',
-            'nombre_d_heure_semaine' => 'required|integer|min:1|max:100',
             'email' => [
                 'required',
                 'email',
@@ -93,8 +94,6 @@ class EmployeEdit extends Component
             'date_de_naissance.before' => 'La date de naissance doit être antérieure à aujourd\'hui.',
             'entreprise_id.exists' => 'L\'entreprise sélectionnée est invalide.',
             'gestionnaire_id.exists' => 'Le gestionnaire sélectionné est invalide.',
-            'nombre_d_heure_semaine.integer' => 'Le nombre d’heures doit être un entier.',
-            'nombre_d_heure_semaine.required' => 'Le nombre d’heures est obligatoire.',
             'email.required' => 'L’adresse e-mail est obligatoire.',
             'email.email' => 'L’adresse e-mail doit être valide.',
             'email.unique' => 'Cette adresse e-mail est déjà utilisée.',
@@ -115,6 +114,8 @@ class EmployeEdit extends Component
     {
         $this->validate();
 
+
+
         try {
 
             $employe = Employe::findOrFail($this->employeId);
@@ -134,13 +135,13 @@ class EmployeEdit extends Component
                 'prenom' => $this->prenom,
                 'date_de_naissance' => $this->date_de_naissance,
                 'entreprise_id' => $this->entreprise_id,
-                'gestionnaire_id' => $this->gestionnaire_id,
-                'nombre_d_heure_semaine' => $this->nombre_d_heure_semaine,
                 'adresse_id' => $this->adresse_id,
+                'est_gestionnaire' => $this->est_gestionnaire,
             ]);
 
             $this->dispatch('employeUpdated');
         } catch (\Throwable $th) {
+            dd($th->getMessage());
             session()->flash('error', 'Erreur lors de l’enregistrement : ' . $th->getMessage());
         }
     }
@@ -156,8 +157,6 @@ class EmployeEdit extends Component
             $this->date_de_naissance = $employe->date_de_naissance;
             $this->user_id = $employe->user_id;
             $this->entreprise_id = $employe->entreprise_id;
-            $this->gestionnaire_id = $employe->gestionnaire_id;
-            $this->nombre_d_heure_semaine = $employe->nombre_d_heure_semaine;
             $this->adresse_id = $employe->adresse_id;
             $this->email = $employe->email();
             $this->groups = $employe->employe_groups()->pluck('name')->toArray();

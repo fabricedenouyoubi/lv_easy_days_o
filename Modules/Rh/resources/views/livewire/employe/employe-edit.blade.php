@@ -57,6 +57,19 @@
         @enderror
     </div>
 
+    {{-- est un gestionnaire ? --}}
+    <div class="mb-3">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="est_gestionnaire" wire:model="est_gestionnaire">
+            <label class="form-check-label font-size-13" for="est_gestionnaire">
+                Est un gestionnaire ?
+            </label>
+            @error('est_gestionnaire')
+                <span class="text-danger">{{ $message }}</span>
+            @enderror
+        </div>
+    </div>
+
     {{-- Groupes --}}
     <div class="mb-3" id="div_id_group">
         <label for="id_group" class="form-label requiredField">
@@ -73,10 +86,11 @@
         @error('groups')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
+    </div>
 
-        {{-- Boutons --}}
-        <div class="modal-footer">
-            <x-action-button type="secondary" icon="fas fa-times me-2" size="md" wireClick='cancel' text="Annuler" />
-            <x-action-button type="success" icon="fas fa-save me-2" size="md" text="Modifier" typeButton='submit' />
-        </div>
+    {{-- Boutons --}}
+    <div class="modal-footer">
+        <x-action-button type="secondary" icon="fas fa-times me-2" size="md" wireClick='cancel' text="Annuler" />
+        <x-action-button type="success" icon="fas fa-save me-2" size="md" text="Modifier" typeButton='submit' />
+    </div>
 </form>

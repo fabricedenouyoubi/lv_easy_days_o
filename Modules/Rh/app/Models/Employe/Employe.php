@@ -19,7 +19,7 @@ class Employe extends Model
     /**
      * The attributes that are mass assignable.
      */
-        protected $fillable = [
+    protected $fillable = [
         'matricule',
         'nom',
         'prenom',
@@ -27,9 +27,9 @@ class Employe extends Model
         'user_id',
         'entreprise_id',
         'gestionnaire_id',
-        'nombre_d_heure_semaine',
         'adresse_id',
         'date_embauche',
+        'est_gestionnaire'
     ];
 
     protected $dates = [
@@ -82,6 +82,12 @@ class Employe extends Model
     public function historiques_gestionnaire_gest()
     {
         return $this->hasMany(HistoriqueGestionnaire::class, 'gestionnaire_id');
+    }
+
+    public function heure_semaines_employe()
+    {
+        $heure = HistoriqueHeuresSemaines::where('employe_id', $this->id)->orderByDesc('date_debut')->first();
+        return $heure->nombre_d_heure_semaine;
     }
 
     // protected static function newFactory(): Employe/EmployeFactory

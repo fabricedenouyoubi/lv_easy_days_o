@@ -13,13 +13,16 @@ class PermissionSeeder extends Seeder
     public function run(): void
 
     {
+        //--- Permission du module RH ---
         Permission::firstOrCreate(['name' => 'Voir Module RH', 'module' => 'RH', 'guard_name' => 'web']);
 
+        //--- Permission liés à l'employé ---
         Permission::firstOrCreate(['name' => 'Voir Employé', 'module' => 'RH', 'guard_name' => 'web']);
         Permission::firstOrCreate(['name' => 'Ajouter Employé', 'module' => 'RH', 'guard_name' => 'web']);
         Permission::firstOrCreate(['name' => 'Voir Detail Employé', 'module' => 'RH', 'guard_name' => 'web']);
         Permission::firstOrCreate(['name' => 'Modifier Employé', 'module' => 'RH', 'guard_name' => 'web']);
         Permission::firstOrCreate(['name' => 'Changer Gestionnaire Employé', 'module' => 'RH', 'guard_name' => 'web']);
+        Permission::firstOrCreate(['name' => 'Changer Heure Semaine Employé', 'module' => 'RH', 'guard_name' => 'web']);
 
 
         Permission::firstOrCreate(['name' => 'Voir Entreprise', 'module' => 'ENTREPRISE', 'guard_name' => 'web']);

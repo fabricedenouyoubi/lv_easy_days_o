@@ -20,6 +20,7 @@ Route::view('profile', 'profile')
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [AuthController::class, 'index'])->name('dashboard')->middleware('verified');
+    Route::get('/profile', [AuthController::class, 'profile'])->name('profile');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::prefix('permissions')->name('permission.')->group(function () {

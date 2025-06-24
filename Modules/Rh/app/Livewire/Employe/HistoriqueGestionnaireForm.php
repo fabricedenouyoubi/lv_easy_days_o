@@ -23,7 +23,7 @@ class HistoriqueGestionnaireForm extends Component
     public function mount()
     {
         try {
-            $this->gestionnaire_list = Employe::where('id', '!=', $this->employeId)->get();
+            $this->gestionnaire_list = Employe::where('id', '!=', $this->employeId)->where('est_gestionnaire', true)->get();
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors de la selection des gestionnaires : ' . $th->getMessage());
         }

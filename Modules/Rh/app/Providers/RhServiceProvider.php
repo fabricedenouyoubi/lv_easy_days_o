@@ -10,6 +10,7 @@ use Modules\Rh\Livewire\Employe\EmployeEdit;
 use Modules\Rh\Livewire\Employe\EmployeForm;
 use Modules\Rh\Livewire\Employe\EmployeList;
 use Modules\Rh\Livewire\Employe\HistoriqueGestionnaireForm;
+use Modules\Rh\Livewire\Employe\HistoriqueHeuresSemainesForm;
 use Nwidart\Modules\Traits\PathNamespace;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -79,6 +80,7 @@ class RhServiceProvider extends ServiceProvider
         Livewire::component('rh::employe.employe-details', EmployeDetails::class);
         Livewire::component('rh::employe.employe-edit', EmployeEdit::class);
         Livewire::component('rh::employe.historique-gestionnaire-form', HistoriqueGestionnaireForm::class);
+        Livewire::component('rh::employe.historique-heures-semaines-form', HistoriqueHeuresSemainesForm::class);
     }
 
 

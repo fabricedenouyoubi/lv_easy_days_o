@@ -7,6 +7,8 @@ use Carbon\Carbon;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Modules\Rh\Models\Employe\Employe;
+use Modules\Rh\Models\Employe\HistoriqueGestionnaire;
+use Modules\Rh\Models\Employe\HistoriqueHeuresSemaines;
 
 class EmployeSeeder extends Seeder
 {
@@ -24,7 +26,7 @@ class EmployeSeeder extends Seeder
                 'adresse_id' => null,
                 'user_id' => 1,
                 'matricule' => 'EMP2025-001',
-                'nombre_d_heure_semaine' => 35
+                'est_gestionnaire' => true,
             ],
             [
                 'nom' => 'Gravel',
@@ -34,7 +36,6 @@ class EmployeSeeder extends Seeder
                 'adresse_id' => null,
                 'user_id' => 2,
                 'matricule' => 'EMP2025-0011',
-                'nombre_d_heure_semaine' => 35
             ],
             [
                 'nom' => 'Duval',
@@ -44,7 +45,7 @@ class EmployeSeeder extends Seeder
                 'adresse_id' => null,
                 'user_id' => 3,
                 'matricule' => 'EMP2025-002',
-                'nombre_d_heure_semaine' => 35
+                'est_gestionnaire' => true,
             ],
             [
                 'nom' => 'Gagnon',
@@ -53,9 +54,7 @@ class EmployeSeeder extends Seeder
                 'date_embauche' => Carbon::parse('2021-03-10 06:00:00+01'),
                 'adresse_id' => null,
                 'user_id' => 4,
-                'gestionnaire_id' => 3,
                 'matricule' => 'EMP2025-003',
-                'nombre_d_heure_semaine' => 35
             ],
             [
                 'nom' => 'Beaulieu',
@@ -64,9 +63,7 @@ class EmployeSeeder extends Seeder
                 'date_embauche' => Carbon::parse('2022-09-01 06:00:00+02'),
                 'adresse_id' => null,
                 'user_id' => 5,
-                'gestionnaire_id' => 3,
                 'matricule' => 'EMP2025-004',
-                'nombre_d_heure_semaine' => 35
             ],
             [
                 'nom' => 'Tremblay',
@@ -75,14 +72,20 @@ class EmployeSeeder extends Seeder
                 'date_embauche' => Carbon::parse('2023-02-28 06:00:00+01'),
                 'adresse_id' => null,
                 'user_id' => 6,
-                'gestionnaire_id' => 3,
                 'matricule' => 'EMP2025-005',
-                'nombre_d_heure_semaine' => 35
             ],
         ];
 
+        $date_debut = Carbon::now()->format('Y-m-d\TH:i');
+
+
         foreach ($employees as $employeeData) {
-            Employe::create($employeeData);
+            $employe = Employe::create($employeeData);
+            HistoriqueHeuresSemaines::create([
+                'employe_id' => $employe->id,
+                'nombre_d_heure_semaine' => 35,
+                'date_debut' => $date_debut,
+            ]);
         }
     }
 }

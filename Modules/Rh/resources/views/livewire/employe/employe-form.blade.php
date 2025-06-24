@@ -65,7 +65,7 @@
         <i class="fas fa-briefcase me-1"></i>
         Informations professionnelles
     </h6>
-    <div class="row">
+    <div class="row align-items-center">
         <div class="col-sm-6 mb-2">
             <div id="div_id_matricule" class="mb-3">
                 <label for="id_matricule" class="form-label form-label fw-semibold">
@@ -86,11 +86,43 @@
                     H/semaine <span class="asteriskField text-danger">*</span> </label>
                 <input type="number" name="nombre_d_heure_semaine" placeholder="35"
                     class="form-control  @error('nombre_d_heure_semaine') is-invalid @enderror"
-                    id="id_nombre_d_heure_semaine" wire:model="nombre_d_heure_semaine" min="1">
+                    id="id_nombre_d_heure_semaine" wire:model="nombre_d_heure_semaine" min="1" step="any">
                 <div id="id_nombre_d_heure_semaine_helptext" class="form-text">Heures standard</div>
                 @error('nombre_d_heure_semaine')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
+            </div>
+        </div>
+
+        <div class="col-sm-6 mb-2">
+            <label for="gestionnaire_id" class="form-label requiredField">
+                Gestionnaire <span class="asteriskField text-danger">*</span> </label> <select name="gestionnaire_id"
+                class="select form-select @error('gestionnaire_id')  is-invalid @enderror" id="gestionnaire_id"
+                wire:model="gestionnaire_id">
+                <option value="" selected="">---------</option>
+                @foreach ($gestionnaire_list as $gestionnaire)
+                    <option value="{{ $gestionnaire->id }}">{{ $gestionnaire->nom . ' ' . $gestionnaire->prenom }}
+                    </option>
+                @endforeach
+            </select>
+            @error('gestionnaire')
+                <span class="text-danger">{{ $message }}</span>
+            @enderror
+        </div>
+
+        <div class="col-sm-6 mb-2">
+            <div class="d-flex justify-content-start align-items-center gap-2">
+                <div class="form-check">
+                    <br>
+                    <input class="form-check-input" type="checkbox" id="est_gestionnaire"
+                        wire:model="est_gestionnaire">
+                    <label class="form-check-label font-size-13" for="est_gestionnaire">
+                        Est un gestionnaire ?
+                    </label>
+                    @error('est_gestionnaire')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
             </div>
         </div>
 
@@ -123,7 +155,9 @@
 
 
     <div class="modal-footer">
-        <x-action-button type="secondary" icon="fas fa-times me-2" size="md" wireClick='cancel' text="Annuler"/>
-        <x-action-button type="success" icon="fas fa-save me-2" size="md" text="Créer" typeButton='submit'/>
+        <x-action-button type="secondary" icon="fas fa-times me-2" size="md" wireClick='cancel'
+            text="Annuler" />
+        <x-action-button type="success" icon="fas fa-save me-2" size="md" text="Créer"
+            typeButton='submit' />
     </div>
 </form>

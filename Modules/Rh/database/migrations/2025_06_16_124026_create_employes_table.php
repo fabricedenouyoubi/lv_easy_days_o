@@ -26,7 +26,7 @@ return new class extends Migration
             $table->string('prenom');
             $table->date('date_de_naissance');
             $table->date('date_embauche');
-            $table->integer('nombre_d_heure_semaine');
+            $table->boolean('est_gestionnaire')->default(false);
             $table->timestamps();
         });
     }

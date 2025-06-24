@@ -10,6 +10,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Rh\Models\Employe\Employe;
 use Modules\Rh\Models\Employe\HistoriqueGestionnaire;
+use Modules\Rh\Models\Employe\HistoriqueHeuresSemaines;
 
 class EmployeDetails extends Component
 {
@@ -17,9 +18,13 @@ class EmployeDetails extends Component
 
     public $employeId;
     public $employe;
-    public $showInfoEdit = true;
     public $showModal = false;
     public $showGestM = false;
+    public $showHeuresM = false;
+
+    public $countHistGestio = 0;
+    public $countHistHeures = 0;
+
 
     public $current_password;
     public $new_password;
@@ -34,7 +39,8 @@ class EmployeDetails extends Component
         'closeEditModal' => 'closeModal',
         'closeGestModal' => 'closeGestModal',
         'employeUpdated' => 'handleEmployeUpdated',
-        'gestionnaireAjoute' => 'gestionnaireAjoute'
+        'gestionnaireAjoute' => 'gestionnaireAjoute',
+        'HeureAjoute' => 'HeureAjoute'
     ];
 
 
@@ -45,52 +51,8 @@ class EmployeDetails extends Component
     public function mount()
     {
         $this->employe =  Employe::with('gestionnaire')->findOrFail($this->employeId);
-    }
-
-    //--- Règles de validation pour la modification du mot de passe d'un employe
-    public function rules()
-    {
-        return [
-            'current_password' => ['required'],
-            'new_password' => [
-                'required',
-                'confirmed',
-                Password::min(8)
-                    ->letters()
-                    ->numbers()
-                    ->mixedCase()
-                    ->symbols()
-            ],
-            'new_password_confirmation' => 'required'
-        ];
-    }
-
-    //--- Messages de validation pour la modification du mot de passe d'un employe
-    public function messages()
-    {
-        return [
-            'current_password.required' => 'Le mot de passe actuel est obligatoire.',
-            'new_password.required' => 'Le nouveau mot de passe est obligatoire.',
-            'new_password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
-            'new_password.min' => 'Le nouveau mot de passe doit contenir au moins :min caractères.',
-            'new_password.letters' => 'Le nouveau mot de passe doit contenir au moins une lettre.',
-            'new_password.numbers' => 'Le nouveau mot de passe doit contenir au moins un chiffre.',
-            'new_password.mixed' => 'Le nouveau mot de passe doit contenir des majuscules et des minuscules.',
-            'new_password.symbols' => 'Le nouveau mot de passe doit contenir au moins un caractère spécial.',
-            'new_password_confirmation.required' => 'La confirmation du mot de passe est obligatoire.'
-        ];
-    }
-
-    //--- fonction d'affichage de la partie des infos de l'employe
-    public function toogle_info()
-    {
-        $this->showInfoEdit = true;
-    }
-
-    //--- fonction d'affichage de la partie de la modification du mot de passe de l'employe
-    public function toogle_pwd()
-    {
-        $this->showInfoEdit = false;
+        $this->countHistGestio = HistoriqueGestionnaire::where('employe_id', $this->employeId)->count();
+        $this->countHistHeures = HistoriqueHeuresSemaines::where('employe_id', $this->employeId)->count();
     }
 
     //--- Affichage du formulaire de modification des infos d'un employe
@@ -105,10 +67,16 @@ class EmployeDetails extends Component
         $val ? $this->showModal = $this->val : $this->showModal = !$this->showModal;
     }
 
-    //--- Affichage du formulaire d'ajout d'un gestionnaire
+    //--- Affichage du formulaire ajout/modification d'un gestionnaire
     public function showGestModal()
     {
         $this->showGestM = !$this->showGestM;
+    }
+
+    //--- Affichage du formulaire d'ajout/mofication des heures d'un employe
+    public function showHeuresModal()
+    {
+        $this->showHeuresM = !$this->showHeuresM;
     }
 
     //--- fermeture du formulaire d'ajout d'un gestionnaire
@@ -124,31 +92,18 @@ class EmployeDetails extends Component
         session()->flash('success', 'Les informations de l\'employé ont été modifiés avec succès.');
     }
 
-    //--- fonction d'affichage du message d'ajout d'un employe
+    //--- fonction d'affichage du message d'ajout/modification des infos du gestionnaire d'un employe
     public function gestionnaireAjoute()
     {
         $this->closeGestModal();
         session()->flash('success', 'Le nouveau gestionaire a été ajouté avec succès.');
     }
 
-    //---  fonction de modification du mot de passe
-    public function changePassword()
+    //--- fonction d'affichage du message d'ajout d'un employe
+    public function HeureAjoute()
     {
-        $this->validate();
-
-        $user = User::findOrFail($this->employe->user_id);
-        if (!Hash::check($this->current_password, $user->password)) {
-            throw ValidationException::withMessages([
-                'current_password' => __('L\'ancien mot de passe est incorrect.'),
-            ]);
-        }
-        $user->update([
-            'password' => $this->new_password
-        ]);
-
-        session()->flash('success', 'Mot de passe mis à jour avec succès.');
-
-        $this->reset(['current_password', 'new_password', 'new_password_confirmation']);
+        $this->showHeuresM = !$this->showHeuresM;
+        session()->flash('success', 'L\'heure a été mis à jour avec succès.');
     }
 
     //---  recuperation de l'historique des gestionnaires d'un employe
@@ -157,9 +112,21 @@ class EmployeDetails extends Component
         return HistoriqueGestionnaire::with('gestionnaire')->where('employe_id', $this->employeId)->paginate(10);
     }
 
+    //---  recuperation de l'historique des heures par semaine d'un employe
+    public function get_historique_heure_par_semaine()
+    {
+        return HistoriqueHeuresSemaines::where('employe_id', $this->employeId)->paginate(10);
+    }
+
     public function render()
     {
 
-        return view('rh::livewire.employe.employe-details', ['gestionnaire_historique' => $this->get_historique_gestionnaire()]);
+        return view(
+            'rh::livewire.employe.employe-details',
+            [
+                'gestionnaire_historique' => $this->get_historique_gestionnaire(),
+                'heure_historique' => $this->get_historique_heure_par_semaine()
+            ]
+        );
     }
 }
