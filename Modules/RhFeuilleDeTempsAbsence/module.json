@@ -1,0 +1,11 @@
+{
+    "name": "RhFeuilleDeTempsAbsence",
+    "alias": "rhfeuilledetempsabsence",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\RhFeuilleDeTempsAbsence\\Providers\\RhFeuilleDeTempsAbsenceServiceProvider"
+    ],
+    "files": []
+}

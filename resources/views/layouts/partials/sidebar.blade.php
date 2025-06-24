@@ -82,7 +82,7 @@
                 <li class="menu-title" data-key="t-feuilles-temps">FEUILLES DE TEMPS</li>
 
                 <li>
-                    <a href="#" onclick="return false;">
+                    <a href="{{ route('absence.list') }}">
                         <i class="icon nav-icon" data-eva="clock-outline"></i>
                         <span class="menu-item" data-key="t-mes-absences">Mes Absences</span>
                     </a>

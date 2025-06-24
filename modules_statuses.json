@@ -3,5 +3,6 @@
     "Entreprise": true,
     "RhFeuilleDeTempsConfig": true,
     "Roles": true,
-    "Rh": true
+    "Rh": true,
+    "RhFeuilleDeTempsAbsence": true
 }

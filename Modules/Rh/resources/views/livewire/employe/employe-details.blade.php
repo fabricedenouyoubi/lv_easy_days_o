@@ -133,9 +133,9 @@
                     <table class="table table-nowrap align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th>Heure</th>
-                                <th>DateDeDebut</th>
-                                <th>DateDeFin</th>
+                                <th>Nombre d'heure</th>
+                                <th>Date de début</th>
+                                <th>Date de fin</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -181,8 +181,8 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Gestionnaire</th>
-                                <th>DateDeDebut</th>
-                                <th>DateDeFin</th>
+                                <th>Date de début</th>
+                                <th>Date de fin</th>
                             </tr>
                         </thead>
                         <tbody>

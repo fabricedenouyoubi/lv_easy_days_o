@@ -6,12 +6,12 @@
     <div class="row">
         {{-- Colonne principale - Tableau --}}
         <div class="col-lg-8">
-            <x-table-card 
+            <x-table-card
                 title="Liste des codes de travail"
                 icon="fas fa-clipboard-list"
                 button-text="Nouveau Code"
                 button-action="showCreateModal">
-                
+
                 {{-- Contenu du tableau --}}
                 <div class="table-responsive">
                     <table class="table table-nowrap align-middle">
@@ -38,20 +38,20 @@
                                     <td>
                                         <div class="d-flex gap-2">
                                             {{-- Boutons avec composant --}}
-                                            <x-action-button 
+                                            <x-action-button
                                                 type="outline-info"
                                                 icon="fas fa-eye"
                                                 tooltip="Voir détails"
                                                 wire-click="showDetailModal({{ $codeTravail->id }})" />
-                                            
-                                            <x-action-button 
+
+                                            <x-action-button
                                                 type="outline-success"
                                                 icon="fas fa-edit"
                                                 tooltip="Modifier"
                                                 wire-click="showEditModal({{ $codeTravail->id }})" />
-                                            
+
                                             @if($codeTravail->isConfigurable())
-                                                <x-action-button 
+                                                <x-action-button
                                                     type="outline-primary"
                                                     icon="fas fa-cog"
                                                     tooltip="Configuration"
@@ -85,28 +85,28 @@
                 {{-- Filtre par code --}}
                 <div class="mb-3">
                     <label for="searchCode" class="form-label">Code</label>
-                    <input type="text" 
+                    <input type="text"
                            id="searchCode"
-                           class="form-control" 
-                           placeholder="Rechercher par code..." 
+                           class="form-control"
+                           placeholder="Rechercher par code..."
                            wire:model.defer="searchCode">
                 </div>
 
                 {{-- Filtre par libellé --}}
                 <div class="mb-3">
                     <label for="searchLibelle" class="form-label">Libellé du code</label>
-                    <input type="text" 
+                    <input type="text"
                            id="searchLibelle"
-                           class="form-control" 
-                           placeholder="Rechercher par libellé..." 
+                           class="form-control"
+                           placeholder="Rechercher par libellé..."
                            wire:model.defer="searchLibelle">
                 </div>
 
                 {{-- Filtre par catégorie --}}
                 <div class="mb-3">
                     <label for="filterCategorie" class="form-label">Catégorie</label>
-                    <select id="filterCategorie" 
-                            class="form-select" 
+                    <select id="filterCategorie"
+                            class="form-select"
                             wire:model.defer="filterCategorie">
                         <option value="">-- Toutes --</option>
                         @foreach($categories as $categorie)
@@ -128,7 +128,7 @@
                             {{ $editingId ? 'Modifier le Code de travail' : 'Nouveau Code de travail' }}
                         </h5>
                         {{-- Utilisation du composant pour le bouton de fermeture --}}
-                        <x-action-button 
+                        <x-action-button
                             type="close"
                             wire-click="closeModal"
                             aria-label="Close" />
@@ -152,7 +152,7 @@
                             Détails du Code de travail
                         </h5>
                         {{-- Bouton de fermeture avec composant --}}
-                        <x-action-button 
+                        <x-action-button
                             type="close"
                             wire-click="closeDetailModal"
                             aria-label="Close" />
@@ -192,18 +192,18 @@
                                     </tr>
                                 </table>
                             </div>
-                    
+
                         </div>
                     </div>
                     <div class="modal-footer">
                         {{-- Utilisation des composants pour les boutons du footer --}}
                         <div class="d-flex gap-2">
-                            <x-action-button 
+                            <x-action-button
                                 type="secondary"
                                 text="Fermer"
                                 wire-click="closeDetailModal" />
-                            
-                            <x-action-button 
+
+                            <x-action-button
                                 type="success"
                                 icon="fas fa-edit"
                                 text="Modifier"
