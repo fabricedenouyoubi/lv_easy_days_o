@@ -15,43 +15,53 @@
                             </h4>
                         </div>
                         <div class="col-auto">
+                            {{-- Bounton retour --}}
                             <x-action-button type="secondary" size="sm" icon="fas fa-arrow-left"
                                 text="Retour à la liste" href="{{ route('absence.list') }}" />
                         </div>
-                        @if ($demandeAbsence->status == 'En cours')
+                        @if ($demandeAbsence->status == 'En cours' && $demandeAbsence->employe_id == auth()->user()->employe->id)
+                            {{-- Bounton Nodifier --}}
                             <div class="col-auto">
                                 <x-action-button type="primary" size="sm" icon="fas fa-edit" text="Modifier"
                                     wireClick="toogle_edit_absence_modal" />
                             </div>
+                            {{-- Bounton Soumettre --}}
                             <div class="col-auto">
                                 <x-action-button type="success" size="sm" icon="fas fa-paper-plane"
                                     text="Soumettre" wireClick="toogle_soumission_modal" />
                             </div>
                         @endif
-                        @if ($demandeAbsence->status == 'Soumis')
-                            <div class="col-auto">
-                                <x-action-button type="primary" size="sm" icon="fas fa-undo-alt" text="Rappeller"
-                                    wireClick="toogle_rappeler_modal" />
-                            </div>
-                            <div class="col-auto">
-                                <x-action-button type="success" size="sm" icon="fas fa-check-circle" text="Valider"
-                                    wireClick="toogle_approve_modal" />
-                            </div>
-                            <div class="col-auto">
-                                <x-action-button type="danger" size="sm" icon="fas fa-times-circle" text="Rejeter"
-                                    wireClick="toogle_rejeter_modal" />
-                            </div>
-                        @endif
+                        @if ($demandeAbsence->employe->gestionnaire_id == auth()->user()->employe->id)
+                            @if ($demandeAbsence->status == 'Soumis')
+                                {{-- Bounton Rappeller --}}
+                                <div class="col-auto">
+                                    <x-action-button type="primary" size="sm" icon="fas fa-undo-alt"
+                                        text="Rappeller" wireClick="toogle_rappeler_modal" />
+                                </div>
+                                {{-- Bounton Valider --}}
+                                <div class="col-auto">
+                                    <x-action-button type="success" size="sm" icon="fas fa-check-circle"
+                                        text="Valider" wireClick="toogle_approve_modal" />
+                                </div>
+                                {{-- Bounton Rejeter --}}
+                                <div class="col-auto">
+                                    <x-action-button type="danger" size="sm" icon="fas fa-times-circle"
+                                        text="Rejeter" wireClick="toogle_rejeter_modal" />
+                                </div>
+                            @endif
 
-                        @if ($demandeAbsence->status == 'Validé')
-                            <div class="col-auto">
-                                <x-action-button type="warning" size="sm" icon="fas fa-reply" text="Retrourner"
-                                    wireClick="toogle_retrouner_modal" />
-                            </div>
-                            <div class="col-auto">
-                                <x-action-button type="danger" size="sm" icon="fas fa-times-circle" text="Rejeter"
-                                    wireClick="toogle_rejeter_modal" />
-                            </div>
+                            @if ($demandeAbsence->status == 'Validé')
+                                {{-- Bounton Retourner --}}
+                                <div class="col-auto">
+                                    <x-action-button type="warning" size="sm" icon="fas fa-reply" text="Retrourner"
+                                        wireClick="toogle_retrouner_modal" />
+                                </div>
+                                {{-- Bounton Rejeter --}}
+                                <div class="col-auto">
+                                    <x-action-button type="danger" size="sm" icon="fas fa-times-circle"
+                                        text="Rejeter" wireClick="toogle_rejeter_modal" />
+                                </div>
+                            @endif
                         @endif
                     </div>
                 </div>
@@ -124,6 +134,7 @@
         <div class="col col-lg-3">
             {{-- Statut de la demande --}}
             <x-table-card title="Statut actuel" icon="fas fa-battery-half">
+                {{-- statut en cours --}}
                 @if ($demandeAbsence->status == 'En cours')
                     <div class="row">
                         <div class="d-flex justify-content-center mb-2">
@@ -145,6 +156,7 @@
                         </div>
                     </div>
                 @endif
+                {{-- Statut soumis --}}
                 @if ($demandeAbsence->status == 'Soumis')
                     <div class="row">
                         <div class="d-flex justify-content-center mb-2">
@@ -168,6 +180,7 @@
                     </div>
                 @endif
 
+                {{-- Statut approuvée --}}
                 @if ($demandeAbsence->status == 'Validé')
                     <div class="row">
                         <div class="d-flex justify-content-center mb-2">
@@ -191,6 +204,7 @@
                     </div>
                 @endif
 
+                {{-- Statut rejetée --}}
                 @if ($demandeAbsence->status == 'Rejeté')
                     <div class="row">
                         <div class="d-flex justify-content-center mb-2">
@@ -330,8 +344,8 @@
                         <div class="modal-footer">
                             <x-action-button type="secondary" icon="fas fa-times me-2" size="md"
                                 wireClick="toogle_retrouner_modal" text="Annuler" />
-                            <x-action-button type="success" icon="fas fa-reply me-2" size="md" text="Confirmer le retour"
-                                wireClick="retournerDemandeAbsence" />
+                            <x-action-button type="success" icon="fas fa-reply me-2" size="md"
+                                text="Confirmer le retour" wireClick="retournerDemandeAbsence" />
                         </div>
                     </div>
                 </div>

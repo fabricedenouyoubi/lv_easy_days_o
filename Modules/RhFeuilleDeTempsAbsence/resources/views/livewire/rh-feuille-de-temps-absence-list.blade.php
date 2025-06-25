@@ -100,33 +100,25 @@
                                             <th>Date de début de l'absence</th>
                                             <th>Date de début de l'absence</th>
                                             <th>Statut de la demande</th>
-                                            <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @forelse([] as $employe)
+                                        @forelse($demande_absences_close as $demande_absence)
                                             <tr>
                                                 <td>
-                                                    <span>{{ $employe->matricule }}</span>
+                                                    <span>{{ $demande_absence->employe?->nom . ' ' . $demande_absence->employe?->prenom }}</span>
                                                 </td>
                                                 <td>
-                                                    <span>{{ $employe->nom }}</span>
+                                                    <span>{{ $demande_absence->codeTravail?->libelle }}</span>
                                                 </td>
                                                 <td>
-                                                    <span>{{ $employe->prenom }}</span>
+                                                    <span>{{ $demande_absence->date_debut }}</span>
                                                 </td>
                                                 <td>
-                                                    <span>{{ $employe->gestionnaire?->nom ?? '---' }}</span>
+                                                    <span>{{ $demande_absence->date_fin }}</span>
                                                 </td>
                                                 <td>
-                                                    <div class="d-flex gap-2">
-                                                        {{-- Boutons avec composant --}}
-                                                        @can('Voir Detail Employé')
-                                                            <x-action-button type="outline-info" icon="fas fa-eye"
-                                                                tooltip="Voir détails"
-                                                                href="{{ route('rh-employe.show', $employe->id) }}" />
-                                                        @endcan
-                                                    </div>
+                                                    <span class="badge bg-info">{{ $demande_absence->status }} </span>
                                                 </td>
                                             </tr>
                                         @empty
