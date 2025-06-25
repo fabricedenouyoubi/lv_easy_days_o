@@ -1,4 +1,7 @@
 <div>
+    {{-- Messages de feedback --}}
+    <x-alert-messages />
+
     <div class="row">
         <div class="col-12 col-lg-9">
             <x-table-card title="Mes demandes d'absence" icon="fas fa-clock" button-text="Nouvelle demande"
@@ -43,28 +46,29 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @forelse([] as $employe)
+                                        @forelse($demande_absences as $demande_absence)
                                             <tr>
                                                 <td>
-                                                    <span>{{ $employe->matricule }}</span>
+                                                    <span>{{ $demande_absence->employe?->nom . ' ' . $demande_absence->employe?->prenom }}</span>
                                                 </td>
                                                 <td>
-                                                    <span>{{ $employe->nom }}</span>
+                                                    <span>{{ $demande_absence->codeTravail?->libelle }}</span>
                                                 </td>
                                                 <td>
-                                                    <span>{{ $employe->prenom }}</span>
+                                                    <span>{{ $demande_absence->date_debut }}</span>
                                                 </td>
                                                 <td>
-                                                    <span>{{ $employe->gestionnaire?->nom ?? '---' }}</span>
+                                                    <span>{{ $demande_absence->date_fin }}</span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-info">{{ $demande_absence->status }} </span>
                                                 </td>
                                                 <td>
                                                     <div class="d-flex gap-2">
                                                         {{-- Boutons avec composant --}}
-                                                        @can('Voir Detail Employé')
-                                                            <x-action-button type="outline-info" icon="fas fa-eye"
-                                                                tooltip="Voir détails"
-                                                                href="{{ route('rh-employe.show', $employe->id) }}" />
-                                                        @endcan
+                                                        <x-action-button type="outline-info" icon="fas fa-eye"
+                                                            tooltip="Consulter la demande"
+                                                            href="{{ route('absence.show', $demande_absence->id) }}" />
                                                     </div>
                                                 </td>
                                             </tr>
@@ -153,6 +157,24 @@
         </div>
         <div class="col-12 col-lg-3">
             <x-table-card title="Banque de temps" icon="fas fa-piggy-bank">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Banque de temps</span>
+                    <span class="badge bg-success px-3 py-2 rounded-pill">
+                        0h
+                    </span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Vacances</span>
+                    <span class="badge bg-success px-3 py-2 rounded-pill">
+                        0h
+                    </span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Heure CSN</span>
+                    <span class="badge bg-success px-3 py-2 rounded-pill">
+                        0h
+                    </span>
+                </div>
             </x-table-card>
         </div>
     </div>
@@ -165,7 +187,7 @@
                         <x-action-button type="close" wire-click="toogle_add_absence_modal" aria-label="Close" />
                     </div>
                     <div class="modal-body">
-                        {{-- <livewire:rh::employe.employe-form /> --}}
+                        <livewire:rhfeuilledetempsabsence::rh-feuille-de-temps-absence-form :demande_absence_id="$demandeAbsenceId" />
                     </div>
                 </div>
             </div>

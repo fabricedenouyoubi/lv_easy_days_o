@@ -5,6 +5,8 @@ namespace Modules\RhFeuilleDeTempsAbsence\Providers;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
+use Modules\RhFeuilleDeTempsAbsence\Livewire\RhFeuilleDeTempsAbsenceDetails;
+use Modules\RhFeuilleDeTempsAbsence\Livewire\RhFeuilleDeTempsAbsenceForm;
 use Modules\RhFeuilleDeTempsAbsence\Livewire\RhFeuilleDeTempsAbsenceList;
 use Nwidart\Modules\Traits\PathNamespace;
 use RecursiveDirectoryIterator;
@@ -70,6 +72,8 @@ class RhFeuilleDeTempsAbsenceServiceProvider extends ServiceProvider
     {
 
         Livewire::component('rhfeuilledetempsabsence::rh-feuille-de-temps-absence-list', RhFeuilleDeTempsAbsenceList::class);
+        Livewire::component('rhfeuilledetempsabsence::rh-feuille-de-temps-absence-form', RhFeuilleDeTempsAbsenceForm::class);
+        Livewire::component('rhfeuilledetempsabsence::rh-feuille-de-temps-absence-details', RhFeuilleDeTempsAbsenceDetails::class);
     }
 
     /**

@@ -53,7 +53,7 @@ class CodeTravail extends Model
         if (empty($search)) {
             return $query;
         }
-        
+
         return $query->where(function($q) use ($search) {
             $q->where('code', 'like', '%' . $search . '%')
               ->orWhere('libelle', 'like', '%' . $search . '%');
@@ -68,7 +68,7 @@ class CodeTravail extends Model
         if (empty($code)) {
             return $query;
         }
-        
+
         return $query->where('code', 'like', '%' . $code . '%');
     }
 
@@ -80,12 +80,12 @@ class CodeTravail extends Model
         if (empty($libelle)) {
             return $query;
         }
-        
+
         return $query->where('libelle', 'like', '%' . $libelle . '%');
     }
 
     /**
-     * Relation avec Configuration 
+     * Relation avec Configuration
      */
     public function configurations()
     {

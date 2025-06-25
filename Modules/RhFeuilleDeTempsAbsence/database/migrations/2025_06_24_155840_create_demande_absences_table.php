@@ -14,16 +14,16 @@ return new class extends Migration
         Schema::create('demande_absences', function (Blueprint $table) {
             $table->id();
             $table->text('workflow_log')->nullable();
-            $table->enum('status', ['Brouillon', 'En cours', 'Soumis', 'Validé', 'Rejeté']) ->default('Brouillon');
+            $table->enum('status', ['Brouillon', 'En cours', 'Soumis', 'Validé', 'Rejeté'])->default('Brouillon');
             $table->dateTime('date_debut')->nullable();
             $table->dateTime('date_fin')->nullable();
-            $table->integer('heure_par_jour')->default(8);
-            $table->integer('total_heure')->default(0);
+            $table->double('heure_par_jour')->default(8);
+            $table->double('total_heure')->default(0);
             $table->text('description')->nullable();
 
-            $table->foreignId('annee_financiere_id')->nullable()->constrained('annee_financiere')->nullOnDelete();
-            $table->foreignId('code_de_travail_id')->nullable()->constrained('codedetravail')->nullOnDelete();
-            $table->foreignId('employe_id')->nullable()->constrained('employe')->nullOnDelete();
+            $table->foreignId('annee_financiere_id')->nullable()->constrained('annee_financieres')->nullOnDelete();
+            $table->foreignId('codes_travail_id')->nullable()->constrained('codes_travail')->nullOnDelete();
+            $table->foreignId('employe_id')->nullable()->constrained('employes')->nullOnDelete();
             $table->timestamps();
         });
     }

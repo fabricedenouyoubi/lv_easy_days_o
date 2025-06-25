@@ -138,7 +138,7 @@ class EmployeForm extends Component
 
             $this->dispatch('employeCreated');
         } catch (\Throwable $th) {
-            dd($th->getMessage());
+            //dd($th->getMessage());
             session()->flash('error', 'Erreur lors de la sauvegarde : ' . $th->getMessage());
         }
     }

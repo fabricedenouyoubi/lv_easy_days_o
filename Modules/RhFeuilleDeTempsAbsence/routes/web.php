@@ -9,4 +9,5 @@ use Modules\RhFeuilleDeTempsAbsence\Http\Controllers\RhFeuilleDeTempsAbsenceCont
 
 Route::prefix('rh-feuille-de-temps-absence/demande/absence')->name('absence.')->controller(RhFeuilleDeTempsAbsenceController::class)->middleware(['auth', 'verified'])->group(function () {
     Route::get('', 'index')->name('list');
+    Route::get('/{id}', 'show')->name('show');
 });

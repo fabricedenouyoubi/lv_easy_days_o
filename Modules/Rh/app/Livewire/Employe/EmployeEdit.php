@@ -141,7 +141,7 @@ class EmployeEdit extends Component
 
             $this->dispatch('employeUpdated');
         } catch (\Throwable $th) {
-            dd($th->getMessage());
+            //dd($th->getMessage());
             session()->flash('error', 'Erreur lors de l’enregistrement : ' . $th->getMessage());
         }
     }

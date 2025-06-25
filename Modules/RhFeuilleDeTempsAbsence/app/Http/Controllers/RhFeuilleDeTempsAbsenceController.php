@@ -33,7 +33,7 @@ class RhFeuilleDeTempsAbsenceController extends Controller
      */
     public function show($id)
     {
-        return view('rhfeuilledetempsabsence::show');
+        return view('rhfeuilledetempsabsence::show', compact('id'));
     }
 
     /**
