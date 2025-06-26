@@ -81,7 +81,7 @@
                                                         <span>{{ $demande_absence->date_fin }}</span>
                                                     </td>
                                                     <td>
-                                                        <span class="badge bg-info">{{ $demande_absence->status }}
+                                                        <span class="badge bg-info">{{ $demande_absence->statut }}
                                                         </span>
                                                     </td>
                                                     <td>
@@ -139,7 +139,7 @@
                                                         <span>{{ $demande_absence->date_fin }}</span>
                                                     </td>
                                                     <td>
-                                                        <span class="badge bg-info">{{ $demande_absence->status }}
+                                                        <span class="badge bg-info">{{ $demande_absence->statut }}
                                                         </span>
                                                     </td>
                                                 </tr>

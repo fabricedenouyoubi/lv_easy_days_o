@@ -23,7 +23,7 @@ class RhFeuilleDeTempsAbsenceAdminForm extends Component
     public $employe_id;
     public $employes;
 
-    public $status = [
+    public $statuts = [
         'Brouillon',
         'En cours',
         'Soumis',
@@ -142,7 +142,7 @@ class RhFeuilleDeTempsAbsenceAdminForm extends Component
         $this->validate();
         try {
             $annee_financiere_id = AnneeFinanciere::where('actif', true)->first()->id;
-            $this->build_workflow_log($this->status[0], $this->status[1], 'La demande est en cours de redaction par '. Auth::user()->name);
+            $this->build_workflow_log($this->statuts[0], $this->statuts[1], 'La demande est en cours de redaction par '. Auth::user()->name);
             $demande_absence = DemandeAbsence::create(
                 [
                     'annee_financiere_id' => $annee_financiere_id,
@@ -154,7 +154,7 @@ class RhFeuilleDeTempsAbsenceAdminForm extends Component
                     'total_heure' => $this->calculateTotalHeures(),
                     'description' => $this->description,
                     'workflow_log' => $this->workflow_log,
-                    'status' => $this->status[1],
+                    'statut' => $this->statuts[1],
                     'admin_id' => Auth::user()->id
                 ]
             );

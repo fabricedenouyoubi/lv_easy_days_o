@@ -20,7 +20,7 @@ class DemandeAbsence extends Model
      */
     protected $fillable = [
         'workflow_log',
-        'status',
+        'statut',
         'date_debut',
         'date_fin',
         'heure_par_jour',
@@ -61,12 +61,12 @@ class DemandeAbsence extends Model
     // Scopes
     public function scopeEnAttente($query)
     {
-        return $query->where('status', 'En cours');
+        return $query->where('statut', 'En cours');
     }
 
     public function scopeApprouve($query)
     {
-        return $query->where('status', 'Validé');
+        return $query->where('statut', 'Validé');
     }
 
     public static function getProchaineAbsence()

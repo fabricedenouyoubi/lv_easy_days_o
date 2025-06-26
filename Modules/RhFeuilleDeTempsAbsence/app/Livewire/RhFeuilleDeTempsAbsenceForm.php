@@ -22,7 +22,7 @@ class RhFeuilleDeTempsAbsenceForm extends Component
     public $code_de_travail_id;
     public $type_absence_list;
 
-    public $status = [
+    public $statuts = [
         'Brouillon',
         'En cours',
         'Soumis',
@@ -146,7 +146,7 @@ class RhFeuilleDeTempsAbsenceForm extends Component
 
         try {
             $annee_financiere_id = AnneeFinanciere::where('actif', true)->first()->id;
-            $this->build_workflow_log($this->status[0], $this->status[1], 'La demande est en cours de redaction');
+            $this->build_workflow_log($this->statuts[0], $this->statuts[1], 'La demande est en cours de redaction');
 
             if (!$this->demande_absence_id) {
                 //dd($this->code_de_travail_id);
@@ -161,7 +161,7 @@ class RhFeuilleDeTempsAbsenceForm extends Component
                         'total_heure' => $this->calculateTotalHeures(),
                         'description' => $this->description,
                         'workflow_log' => $this->workflow_log,
-                        'status' => $this->status[1],
+                        'statut' => $this->statuts[1],
                     ]
                 );
                 $this->dispatch('demandeAbsenceAjoute');
@@ -176,7 +176,7 @@ class RhFeuilleDeTempsAbsenceForm extends Component
                     'total_heure' => $this->calculateTotalHeures(),
                     'description' => $this->description,
                     //'workflow_log' => $this->workflow_log,
-                    'status' => $this->status[1],
+                    'statut' => $this->statuts[1],
                 ]);
 
                 $nombreDeJoursEntre = $this->nombreDeJoursEntre($this->date_debut, $this->date_fin);

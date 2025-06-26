@@ -41,7 +41,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
         ];
     }
 
-    public $status = [
+    public $statuts = [
         'Brouillon',
         'En cours',
         'Soumis',
@@ -170,9 +170,9 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     {
         try {
             $comment = $this->demandeAbsence->admin_id == Auth::user()->id ? 'La demande a été soumise par ' . Auth::user()->name : 'La demande a été soumise';
-            $this->build_workflow_log($this->status[1], $this->status[2], $comment);
+            $this->build_workflow_log($this->statuts[1], $this->statuts[2], $comment);
             $this->demandeAbsence->update([
-                'status' => $this->status[2],
+                'statut' => $this->statuts[2],
                 'workflow_log' => $this->workflow_log
             ]);
             $this->showSoumissionModal = false;
@@ -188,9 +188,9 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
         $this->validate();
         try {
             $comment = $this->demandeAbsence->admin_id == Auth::user()->id ? 'La demande a été rappelée par ' . Auth::user()->name : 'La demande a rappelée soumise';
-            $this->build_workflow_log($this->status[2], $this->status[1], $comment .  ' avec pour motif :  << ' . $this->motif . ' >>');
+            $this->build_workflow_log($this->statuts[2], $this->statuts[1], $comment .  ' avec pour motif :  << ' . $this->motif . ' >>');
             $this->demandeAbsence->update([
-                'status' => $this->status[1],
+                'statut' => $this->statuts[1],
                 'workflow_log' => $this->workflow_log
             ]);
             $this->showRappelerModal = false;
@@ -204,9 +204,9 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     public function approuverDemandeAbsence()
     {
         try {
-            $this->build_workflow_log($this->status[2], $this->status[3], 'La demande est approuvée par ' . Auth::user()->name);
+            $this->build_workflow_log($this->statuts[2], $this->statuts[3], 'La demande est approuvée par ' . Auth::user()->name);
             $this->demandeAbsence->update([
-                'status' => $this->status[3],
+                'statut' => $this->statuts[3],
                 'workflow_log' => $this->workflow_log
             ]);
             $this->showApprouverModal = false;
@@ -222,9 +222,9 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
         $this->validate();
         try {
             $comment = 'La demande a été retournée par ' . Auth::user()->name .  ' avec pour motif :  << ' . $this->motif . ' >>';
-            $this->build_workflow_log($this->status[3], $this->status[1], $comment);
+            $this->build_workflow_log($this->statuts[3], $this->statuts[1], $comment);
             $this->demandeAbsence->update([
-                'status' => $this->status[1],
+                'statut' => $this->statuts[1],
                 'workflow_log' => $this->workflow_log
             ]);
             $this->showRetournerModal = false;
@@ -240,9 +240,9 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
         $this->validate();
         try {
             $comment = 'La demande a été rejetée par : ' . Auth::user()->name . ' avec pour motif :  << ' . $this->motif . ' >>';
-            $this->build_workflow_log($this->demandeAbsence->status, $this->status[4], $comment);
+            $this->build_workflow_log($this->demandeAbsence->statut, $this->statuts[4], $comment);
             $this->demandeAbsence->update([
-                'status' => $this->status[4],
+                'statut' => $this->statuts[4],
                 'workflow_log' => $this->workflow_log
             ]);
             $this->showRejeterModal = false;

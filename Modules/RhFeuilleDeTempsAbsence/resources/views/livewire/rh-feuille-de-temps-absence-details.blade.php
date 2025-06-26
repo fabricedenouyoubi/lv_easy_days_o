@@ -20,7 +20,7 @@
                                 text="Retour à la liste" href="{{ route('absence.list') }}" />
                         </div>
                         @if (
-                            $demandeAbsence->status == 'En cours' &&
+                            $demandeAbsence->statut == 'En cours' &&
                                 ($demandeAbsence->employe_id == auth()->user()->employe->id || $demandeAbsence->admin_id == auth()->user()->id))
                             {{-- Bounton Nodifier --}}
                             <div class="col-auto">
@@ -35,7 +35,7 @@
                         @endif
 
 
-                        @if ($demandeAbsence->status == 'Soumis')
+                        @if ($demandeAbsence->statut == 'Soumis')
                             @if ($demandeAbsence->employe_id == auth()->user()->employe->id || $demandeAbsence->admin_id == auth()->user()->id)
                                 {{-- Bounton Rappeller --}}
                                 <div class="col-auto">
@@ -58,7 +58,7 @@
                             @endif
                         @endif
                         {{-- Admininistrateur retrourne les demande d'absence validée et rejetée --}}
-                        @if (($demandeAbsence->status == 'Validé' || $demandeAbsence->status == 'Rejeté') && auth()->user()->hasRole('ADMIN'))
+                        @if (($demandeAbsence->statut == 'Validé' || $demandeAbsence->statut == 'Rejeté') && auth()->user()->hasRole('ADMIN'))
                             {{-- Bounton Retourner --}}
                             <div class="col-auto">
                                 <x-action-button type="warning" size="sm" icon="fas fa-reply" text="Retrourner"
@@ -172,7 +172,7 @@
             {{-- Statut de la demande --}}
             <x-table-card title="Statut actuel" icon="fas fa-battery-half">
                 {{-- statut en cours --}}
-                @if ($demandeAbsence->status == 'En cours')
+                @if ($demandeAbsence->statut == 'En cours')
                     <div class="row">
                         <div class="d-flex justify-content-center mb-2">
                             <i class="fas fa-spinner fs-1"></i>
@@ -194,7 +194,7 @@
                     </div>
                 @endif
                 {{-- Statut soumis --}}
-                @if ($demandeAbsence->status == 'Soumis')
+                @if ($demandeAbsence->statut == 'Soumis')
                     <div class="row">
                         <div class="d-flex justify-content-center mb-2">
                             <i class="fas fa-stopwatch fs-1"></i>
@@ -218,7 +218,7 @@
                 @endif
 
                 {{-- Statut approuvée --}}
-                @if ($demandeAbsence->status == 'Validé')
+                @if ($demandeAbsence->statut == 'Validé')
                     <div class="row">
                         <div class="d-flex justify-content-center mb-2">
                             <i class="fas fa-check-circle fs-1"></i>
@@ -242,7 +242,7 @@
                 @endif
 
                 {{-- Statut rejetée --}}
-                @if ($demandeAbsence->status == 'Rejeté')
+                @if ($demandeAbsence->statut == 'Rejeté')
                     <div class="row">
                         <div class="d-flex justify-content-center mb-2">
                             <i class="fas fa-times-circle fs-1"></i>
