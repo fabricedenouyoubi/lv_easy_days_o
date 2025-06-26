@@ -6,7 +6,9 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Modules\Budget\Models\SemaineAnnee;
 use Modules\RhFeuilleDeTempsAbsence\Models\DemandeAbsence;
+use Modules\RhFeuilleDeTempsAbsence\Models\Operation;
 
 class RhFeuilleDeTempsAbsenceDetails extends Component
 {
@@ -71,7 +73,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
 
     public function mount()
     {
-        $this->demandeAbsence = DemandeAbsence::with('employe', 'codeTravail')->findOrFail($this->demandeAbsenceId);
+        $this->demandeAbsence = DemandeAbsence::with('employe', 'codeTravail', 'operations.anneeSemaine')->findOrFail($this->demandeAbsenceId);
         $this->workflow_log = $this->demandeAbsence->workflow_log;
         $this->nombreJourAbsence = $this->nombreDeJoursEntre($this->demandeAbsence->date_debut, $this->demandeAbsence->date_fin);
     }
@@ -170,7 +172,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     {
         try {
             $comment = $this->demandeAbsence->admin_id == Auth::user()->id ? 'La demande a été soumise par ' . Auth::user()->name : 'La demande a été soumise';
-            $this->build_workflow_log($this->statuts[1], $this->statuts[2], $comment);
+            $this->build_workflow_log($this->demandeAbsence->statut, $this->statuts[2], $comment);
             $this->demandeAbsence->update([
                 'statut' => $this->statuts[2],
                 'workflow_log' => $this->workflow_log
@@ -185,10 +187,11 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     //--- Rappelle de la demande d'absence
     public function rapelleDemandeAbsence()
     {
-        $this->validate();
         try {
             $comment = $this->demandeAbsence->admin_id == Auth::user()->id ? 'La demande a été rappelée par ' . Auth::user()->name : 'La demande a rappelée soumise';
-            $this->build_workflow_log($this->statuts[2], $this->statuts[1], $comment .  ' avec pour motif :  << ' . $this->motif . ' >>');
+            $comment = $this->mmotif ? $comment .  ' avec pour motif :  << ' . $this->motif . ' >>' : $comment;
+
+            $this->build_workflow_log($this->demandeAbsence->statut, $this->statuts[1], $comment);
             $this->demandeAbsence->update([
                 'statut' => $this->statuts[1],
                 'workflow_log' => $this->workflow_log
@@ -204,15 +207,32 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     public function approuverDemandeAbsence()
     {
         try {
-            $this->build_workflow_log($this->statuts[2], $this->statuts[3], 'La demande est approuvée par ' . Auth::user()->name);
+            //--- Selection des semaines de l'année ---
+            $semaines = SemaineAnnee::where('annee_financiere_id', $this->demandeAbsence->annee_financiere_id)
+                ->where('fin', '>=', $this->demandeAbsence->date_debut)
+                ->where('debut', '<=', $this->demandeAbsence->date_fin)
+                ->get();
+
+            //--- Enregistrement des opérations
+            foreach ($semaines as $semaine) {
+                Operation::create([
+                    'demande_absence_id' => $this->demandeAbsence->id,
+                    'annee_semaine_id' => $semaine->id,
+                    'employe_id' => $this->demandeAbsence->employe_id,
+                    'total_heure' => $this->demandeAbsence->total_heure,
+                ]);
+            }
+
+            $this->build_workflow_log($this->demandeAbsence->statut, $this->statuts[3], 'La demande est approuvée par ' . Auth::user()->name);
             $this->demandeAbsence->update([
                 'statut' => $this->statuts[3],
                 'workflow_log' => $this->workflow_log
             ]);
+
             $this->showApprouverModal = false;
             session()->flash('success', 'Demande d\'absence validée avec succès.');
         } catch (\Throwable $th) {
-            //throw $th;
+            dd($th->getMessage());
         }
     }
 
@@ -222,7 +242,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
         $this->validate();
         try {
             $comment = 'La demande a été retournée par ' . Auth::user()->name .  ' avec pour motif :  << ' . $this->motif . ' >>';
-            $this->build_workflow_log($this->statuts[3], $this->statuts[1], $comment);
+            $this->build_workflow_log($this->demandeAbsence->statut, $this->statuts[1], $comment);
             $this->demandeAbsence->update([
                 'statut' => $this->statuts[1],
                 'workflow_log' => $this->workflow_log
@@ -239,6 +259,9 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     {
         $this->validate();
         try {
+            //--- Suppresion des opérations et liaison avec la feuille de temps
+            $this->demandeAbsence->operations()->delete();
+
             $comment = 'La demande a été rejetée par : ' . Auth::user()->name . ' avec pour motif :  << ' . $this->motif . ' >>';
             $this->build_workflow_log($this->demandeAbsence->statut, $this->statuts[4], $comment);
             $this->demandeAbsence->update([

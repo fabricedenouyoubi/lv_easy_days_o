@@ -12,29 +12,29 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('operations', function (Blueprint $table) {
-            /* $table->id();
-            $table->text('workflow_log')->nullable()->comment("Enregistre les changements de statut et les commentaires");
+            $table->id();
+            $table->text('workflow_log')->nullable();
 
             $table->string('statut', 50)
                 ->default('Brouillon');
 
-            $table->timestamps(); // created_at & updated_at
+            $table->timestamps();
 
-            $table->decimal('total_heure', 4, 2)->nullable()->default(0)->comment("Total heures");
-            $table->decimal('total_heure_deplacement', 4, 2)->nullable()->default(0)->comment("Heures déplacement");
-            $table->decimal('total_heure_regulier', 4, 2)->nullable()->default(0)->comment("Heures régulières");
-            $table->decimal('total_heure_supp', 4, 2)->nullable()->default(0)->comment("Heures supplémentaires");
-            $table->decimal('total_heure_supp_ajuster', 4, 2)->nullable()->default(0)->comment("Heures supp. ajustées");
-            $table->decimal('total_heure_formation', 4, 2)->nullable()->default(0)->comment("Heures formation");
-            $table->decimal('total_heure_sup_a_payer', 4, 2)->nullable()->default(0)->comment("Heures supp. à payer");
-            $table->decimal('total_heure_csn', 4, 2)->nullable()->default(0)->comment("Heures CSN");
-            $table->decimal('total_heure_caisse', 4, 2)->nullable()->default(0)->comment("Heures caisse");
-            $table->decimal('total_heure_conge_mobile', 4, 2)->nullable()->default(0)->comment("Heures congé mobile");
+            $table->double('total_heure')->nullable()->default(0)->comment("Total heures");
+            $table->double('total_heure_deplacement')->nullable()->default(0)->comment("Heures déplacement");
+            $table->double('total_heure_regulier')->nullable()->default(0)->comment("Heures régulières");
+            $table->double('total_heure_supp')->nullable()->default(0)->comment("Heures supplémentaires");
+            $table->double('total_heure_supp_ajuster')->nullable()->default(0)->comment("Heures supp. ajustées");
+            $table->double('total_heure_formation')->nullable()->default(0)->comment("Heures formation");
+            $table->double('total_heure_sup_a_payer')->nullable()->default(0)->comment("Heures supp. à payer");
+            $table->double('total_heure_csn')->nullable()->default(0)->comment("Heures CSN");
+            $table->double('total_heure_caisse')->nullable()->default(0)->comment("Heures caisse");
+            $table->double('total_heure_conge_mobile')->nullable()->default(0)->comment("Heures congé mobile");
 
             // Foreign keys
-            $table->foreignId('demande_d_absence_id')->nullable()->constrained('demandeabsence')->nullOnDelete();
-            $table->foreignId('employe_id')->nullable()->constrained('employe')->nullOnDelete();
-            $table->foreignId('feuille_de_temps_id')->nullable()->constrained('feuilledetemps')->nullOnDelete(); */
+            $table->foreignId('demande_absence_id')->nullable()->constrained('demande_absences')->nullOnDelete();
+            $table->foreignId('employe_id')->nullable()->constrained('employes')->nullOnDelete();
+            $table->foreignId('annee_semaine_id')->nullable()->constrained('annee_semaines')->nullOnDelete();
         });
     }
 

@@ -27,9 +27,12 @@
                                     <td>
                                         <div class="d-flex gap-2">
                                             {{-- Boutons avec composant --}}
-                                            <x-action-button type="outline-success" icon="fas fa-edit"
-                                                tooltip="Modifier"
-                                                wireClick="show_edit_groupe_modal({{ $group->id }})" />
+                                            @if ($group->name != 'ADMIN')
+                                                <x-action-button type="outline-success" icon="fas fa-edit"
+                                                    tooltip="Modifier"
+                                                    wireClick="show_edit_groupe_modal({{ $group->id }})" />
+                                            @endif
+
                                             <x-action-button type="outline-info" icon="fas fa-ban"
                                                 tooltip=" Voir les Permissions"
                                                 wireClick="show_group_permission_modal({{ $group->id }},'{{ $group->name }}')" />
@@ -73,7 +76,8 @@
             <div id="dialog-lg" class="modal-dialog modal-md" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title"><i class="fas fa-user-friends"></i> {{ $groupId ? 'Modifier le groupe ' : 'Ajouter un groupe' }}</h5>
+                        <h5 class="modal-title"><i class="fas fa-user-friends"></i>
+                            {{ $groupId ? 'Modifier le groupe ' : 'Ajouter un groupe' }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
                             wire:click="hide_groupe_add_modal"></button>
                     </div>
@@ -91,7 +95,8 @@
             <div id="dialog-lg" class="modal-dialog modal-xl w-100" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title"><i class="fas fa-ban"></i> Permissions du groupe <span class="fw-bold">{{ $groupName }}</span>
+                        <h5 class="modal-title"><i class="fas fa-ban"></i> Permissions du groupe <span
+                                class="fw-bold">{{ $groupName }}</span>
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
                             wire:click="hide_group_permission_modal"></button>

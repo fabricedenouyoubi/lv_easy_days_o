@@ -4,6 +4,8 @@ namespace Modules\Budget\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Modules\RhFeuilleDeTempsAbsence\Models\Operation;
+
 // use Modules\Budget\Database\Factories\SemaineAnneeFactory;
 
 class SemaineAnnee extends Model
@@ -13,7 +15,7 @@ class SemaineAnnee extends Model
     /**
      * The attributes that are mass assignable.
      */
-        use HasFactory;
+    use HasFactory;
 
     protected $table = 'annee_semaines';
 
@@ -42,11 +44,11 @@ class SemaineAnnee extends Model
     }
 
     /**
-     * Relation avec les opérations 
+     * Relation avec les opérations
      */
     public function operations()
     {
-        return $this->hasMany('Modules\Budget\Models\Operation');
+        return $this->hasMany(Operation::class, 'annee_semaine_id');
     }
 
     /**
@@ -79,7 +81,7 @@ class SemaineAnnee extends Model
     public function scopePeriode($query, $dateDebut, $dateFin)
     {
         return $query->where('debut', '>=', $dateDebut)
-                    ->where('fin', '<=', $dateFin);
+            ->where('fin', '<=', $dateFin);
     }
 
     /**
@@ -112,8 +114,8 @@ class SemaineAnnee extends Model
     public static function getForWeek($numeroSemaine, $anneeFinanciereId)
     {
         return self::where('numero_semaine', $numeroSemaine)
-                   ->where('annee_financiere_id', $anneeFinanciereId)
-                   ->first();
+            ->where('annee_financiere_id', $anneeFinanciereId)
+            ->first();
     }
 
     /**
@@ -122,7 +124,7 @@ class SemaineAnnee extends Model
     public static function getForDate($date, $anneeFinanciereId = null)
     {
         $query = self::where('debut', '<=', $date)
-                    ->where('fin', '>=', $date);
+            ->where('fin', '>=', $date);
 
         if ($anneeFinanciereId) {
             $query->where('annee_financiere_id', $anneeFinanciereId);
@@ -137,8 +139,8 @@ class SemaineAnnee extends Model
     public static function getByAnneeFinanciere($anneeFinanciereId)
     {
         return self::parAnneeFinanciere($anneeFinanciereId)
-                   ->orderBy('numero_semaine')
-                   ->get();
+            ->orderBy('numero_semaine')
+            ->get();
     }
 
     /**
@@ -147,8 +149,8 @@ class SemaineAnnee extends Model
     public static function countActivesForAnnee($anneeFinanciereId)
     {
         return self::parAnneeFinanciere($anneeFinanciereId)
-                   ->actif()
-                   ->count();
+            ->actif()
+            ->count();
     }
 
     /**
@@ -157,12 +159,12 @@ class SemaineAnnee extends Model
     public function newQuery()
     {
         $query = parent::newQuery();
-        
+
         // Ajouter automatiquement l'année financière active si pas spécifiée
         if (session()->has('annee_financiere_id')) {
             $query->where('annee_financiere_id', session('annee_financiere_id'));
         }
-        
+
         return $query;
     }
 

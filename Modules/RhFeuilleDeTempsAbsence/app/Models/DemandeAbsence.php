@@ -37,16 +37,19 @@ class DemandeAbsence extends Model
         'date_fin' => 'datetime',
     ];
 
+    //--- relation avec annee financiere
     public function anneeFinanciere()
     {
         return $this->belongsTo(AnneeFinanciere::class);
     }
 
+    //--- relation avec code de travail
     public function codeTravail()
     {
         return $this->belongsTo(CodeTravail::class, 'codes_travail_id');
     }
 
+    //--- relation avec employe
     public function employe()
     {
         return $this->belongsTo(Employe::class);
@@ -57,23 +60,31 @@ class DemandeAbsence extends Model
     //     // return DemandeAbsenceFactory::new();
     // }
 
+    //--- relation avec operations
+    public function operations()
+    {
+        return $this->hasMany(Operation::class, 'demande_absence_id');
+    }
 
-    // Scopes
+    //--- scope pour les absences en cours
     public function scopeEnAttente($query)
     {
         return $query->where('statut', 'En cours');
     }
 
+    //--- scope pour les absences approuvé
     public function scopeApprouve($query)
     {
         return $query->where('statut', 'Validé');
     }
 
+    //--- scope pour les absences cloturées
     public static function getProchaineAbsence()
     {
         return self::approuve()->orderBy('date_debut')->first();
     }
 
+    //--- scope pour la liste des demandes d'absence d'un gestionnaire
     public function scopeGestionnaireConnecte($query)
     {
         $employe = Auth::user()->employe;
@@ -85,6 +96,7 @@ class DemandeAbsence extends Model
         })->orWhere('admin_id', Auth::user()->id);
     }
 
+    //--- scope pour la liste des demandes d'absence d'un employé
     public function scopeEmployeConnecte($query)
     {
         $employeId = Auth::user()->employe->id;

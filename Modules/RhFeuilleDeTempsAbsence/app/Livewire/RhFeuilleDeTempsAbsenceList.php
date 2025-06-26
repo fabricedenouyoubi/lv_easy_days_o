@@ -30,24 +30,20 @@ class RhFeuilleDeTempsAbsenceList extends Component
         if (Auth::user()->employe->est_gestionnaire) {
             //--- Nombre d'absences  approuvée et en attente affichées si un gestionnaire est connecté
             //--- en attente
-            $this->nbrDemandeEnAttente = DemandeAbsence::with(['employe', 'codeTravail'])
-                ->gestionnaireConnecte()
+            $this->nbrDemandeEnAttente = DemandeAbsence::gestionnaireConnecte()
                 ->EnAttente()->count();
 
             //--- approuvée
-            $this->nbrDemandeApprouve = DemandeAbsence::with(['employe', 'codeTravail'])
-                ->gestionnaireConnecte()
+            $this->nbrDemandeApprouve = DemandeAbsence::gestionnaireConnecte()
                 ->approuve()->count();
         } else {
             //--- Nombre d'absences  approuvée et en attente affichées si un employé est connecté
             //--- en attente
-            $this->nbrDemandeEnAttente = DemandeAbsence::with(['employe', 'codeTravail'])
-                ->employeConnecte()
+            $this->nbrDemandeEnAttente = DemandeAbsence::employeConnecte()
                 ->EnAttente()->count();
 
             //--- approuvée
-            $this->nbrDemandeApprouve = DemandeAbsence::with(['employe', 'codeTravail'])
-                ->employeConnecte()
+            $this->nbrDemandeApprouve = DemandeAbsence::employeConnecte()
                 ->approuve()->count();
         }
     }
@@ -75,34 +71,36 @@ class RhFeuilleDeTempsAbsenceList extends Component
     }
 
 
+    //--- recuperation des demandes d'absence en cours
     public function getDemandeAbsence()
     {
 
         if (Auth::user()->employe->est_gestionnaire) {
-            return DemandeAbsence::with(['employe', 'codeTravail'])
+            return DemandeAbsence::with(['employe', 'codeTravail', 'operations.anneeSemaine'])
                 ->gestionnaireConnecte()
                 ->whereDate('date_fin', '>=', \Carbon\Carbon::today())
                 ->paginate(10);
         }
 
-        return DemandeAbsence::with(['employe', 'codeTravail'])
+        return DemandeAbsence::with(['employe', 'codeTravail', 'operations.anneeSemaine'])
             ->employeConnecte()
             ->whereDate('date_fin', '>=', \Carbon\Carbon::today())
             ->paginate(10);
     }
 
+    //--- recuperation des demandes d'absence cloturées
     public function getDemandeAbsenceClose()
     {
         //--- absences affichées si un gestionnaire est connecté
         if (Auth::user()->employe->est_gestionnaire) {
-            return DemandeAbsence::with(['employe', 'codeTravail'])
+            return DemandeAbsence::with(['employe', 'codeTravail', 'operations.anneeSemaine'])
                 ->gestionnaireConnecte()
                 ->whereDate('date_fin', '<', \Carbon\Carbon::today())
                 ->paginate(10);
         }
 
         //--- absences affichées si un employé est connecté
-        return DemandeAbsence::with(['employe', 'codeTravail'])
+        return DemandeAbsence::with(['employe', 'codeTravail', 'operations.anneeSemaine'])
             ->employeConnecte()
             ->whereDate('date_fin', '<', \Carbon\Carbon::today())
             ->paginate(10);
