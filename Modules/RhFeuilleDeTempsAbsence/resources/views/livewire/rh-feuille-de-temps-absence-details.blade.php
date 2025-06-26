@@ -239,6 +239,12 @@
                         0h
                     </span>
                 </div>
+                <div class="d-flex justify-content-between align-items-center mb-3 border-top pt-3">
+                    <span class="text-muted">Total des heures en banque</span>
+                    <span class="badge bg-dark px-3 py-2 rounded-pill">
+                        0h
+                    </span>
+                </div>
             </x-table-card>
         </div>
     </div>
