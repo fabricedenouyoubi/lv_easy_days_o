@@ -27,13 +27,6 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     public $showRejeterModal = false;
 
 
-    public function rules()
-    {
-        return [
-            'motif' => ['required', 'string', 'min:5'],
-        ];
-    }
-
     public function messages()
     {
         return [
@@ -189,7 +182,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     {
         try {
             $comment = $this->demandeAbsence->admin_id == Auth::user()->id ? 'La demande a été rappelée par ' . Auth::user()->name : 'La demande a rappelée soumise';
-            $comment = $this->mmotif ? $comment .  ' avec pour motif :  << ' . $this->motif . ' >>' : $comment;
+            $comment = $this->motif ? $comment .  ' avec pour motif :  << ' . $this->motif . ' >>' : $comment;
 
             $this->build_workflow_log($this->demandeAbsence->statut, $this->statuts[1], $comment);
             $this->demandeAbsence->update([
@@ -199,7 +192,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
             $this->showRappelerModal = false;
             session()->flash('success', 'Demande d\'absence rappelée avec succès.');
         } catch (\Throwable $th) {
-            //throw $th;
+            //dd($th->getMessage());
         }
     }
 
@@ -232,15 +225,20 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
             $this->showApprouverModal = false;
             session()->flash('success', 'Demande d\'absence validée avec succès.');
         } catch (\Throwable $th) {
-            dd($th->getMessage());
+            //dd($th->getMessage());
         }
     }
 
     //--- Retourner la demande d'absence
     public function retournerDemandeAbsence()
     {
-        $this->validate();
+        $this->validate(['motif' => ['required', 'string', 'min:5'],]);
         try {
+
+            if ($this->demandeAbsence->operations()->count() > 0) {
+                $this->demandeAbsence->operations()->delete();
+            }
+
             $comment = 'La demande a été retournée par ' . Auth::user()->name .  ' avec pour motif :  << ' . $this->motif . ' >>';
             $this->build_workflow_log($this->demandeAbsence->statut, $this->statuts[1], $comment);
             $this->demandeAbsence->update([
@@ -257,7 +255,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     //--- Rejeter la demande d'absence
     public function rejeterDemandeAbsence()
     {
-        $this->validate();
+        $this->validate(['motif' => ['required', 'string', 'min:5'],]);
         try {
             //--- Suppresion des opérations et liaison avec la feuille de temps
             $this->demandeAbsence->operations()->delete();

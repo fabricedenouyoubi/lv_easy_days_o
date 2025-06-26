@@ -200,6 +200,7 @@
             </x-table-card>
         </div>
     </div>
+
     {{-- Formulaire d'ajout d'une demande --}}
     @if ($showAddAbsenceModal)
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">

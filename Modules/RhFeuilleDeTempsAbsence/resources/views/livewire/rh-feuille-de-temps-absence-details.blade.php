@@ -397,7 +397,7 @@
                                 class="fas fa-info-circle me-1"></i>Informations
                             additionnelles</h6>
                         <div class="mb-3"> <label for="heure" class="form-label requiredField">
-                                Motif</label> <span class="asteriskField text-danger">*</span>
+                                Motif</label>
                             <textarea name="motif" class="form-control  @error('description')  is-invalid @enderror" cols="20"
                                 rows="10" wire:model="motif" id="motif"></textarea>
                             @error('motif')
