@@ -142,7 +142,7 @@ class RhFeuilleDeTempsAbsenceAdminForm extends Component
         $this->validate();
         try {
             $annee_financiere_id = AnneeFinanciere::where('actif', true)->first()->id;
-            $this->build_workflow_log($this->status[0], $this->status[1], 'La demande est en cours de redaction');
+            $this->build_workflow_log($this->status[0], $this->status[1], 'La demande est en cours de redaction par '. Auth::user()->name);
             $demande_absence = DemandeAbsence::create(
                 [
                     'annee_financiere_id' => $annee_financiere_id,

@@ -175,7 +175,7 @@ class RhFeuilleDeTempsAbsenceForm extends Component
                     'heure_par_jour' => $this->heure_par_jour,
                     'total_heure' => $this->calculateTotalHeures(),
                     'description' => $this->description,
-                    'workflow_log' => $this->workflow_log,
+                    //'workflow_log' => $this->workflow_log,
                     'status' => $this->status[1],
                 ]);
 
