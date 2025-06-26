@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Codes de travail - Configuration RH')
+@section('title', config('app.name') .' | Codes de travail')
 @section('page-title', 'Gestion des Codes de travail') 
 
 @section('content')

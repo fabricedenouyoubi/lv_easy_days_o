@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Catégories - Configuration RH')
+@section('title', config('app.name') .' | Catégories ')
 @section('page-title', 'Gestion des Catégories') 
 
 @section('content')

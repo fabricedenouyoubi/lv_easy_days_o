@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Jours fériés - Configuration')
+@section('title', config('app.name') . ' | Configuration')
 @section('page-title', 'Configuration des Jours fériés') 
 
 @section('content')

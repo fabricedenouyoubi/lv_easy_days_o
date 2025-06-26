@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Entreprise')
+@section('title', config('app.name') . ' | Présentation')
 @section('page-title', 'Présentation entreprise')
 
 @section('content')

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Configuration Individuelle - ' . ($codeTravail->libelle ?? ''))
+@section('title', config('app.name') . ' | ' . ($codeTravail->libelle ?? ''))
 @section('page-title', 'Configuration Individuelle') 
 
 @section('content')

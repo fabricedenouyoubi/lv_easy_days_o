@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Années Financières - Budget')
+@section('title', config('app.name') . ' | Budget')
 @section('page-title', 'Années Financières')
 
 @section('content')
