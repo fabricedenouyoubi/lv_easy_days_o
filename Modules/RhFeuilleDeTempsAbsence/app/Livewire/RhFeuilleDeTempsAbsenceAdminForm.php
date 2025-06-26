@@ -11,9 +11,8 @@ use Modules\RhFeuilleDeTempsAbsence\Models\DemandeAbsence;
 use Modules\RhFeuilleDeTempsConfig\Models\Categorie;
 use Modules\RhFeuilleDeTempsConfig\Models\CodeTravail;
 
-class RhFeuilleDeTempsAbsenceForm extends Component
+class RhFeuilleDeTempsAbsenceAdminForm extends Component
 {
-    public $demande_absence_id;
     public $workflow_log;
     public $date_debut;
     public $date_fin;
@@ -21,6 +20,8 @@ class RhFeuilleDeTempsAbsenceForm extends Component
     public $description;
     public $code_de_travail_id;
     public $type_absence_list;
+    public $employe_id;
+    public $employes;
 
     public $status = [
         'Brouillon',
@@ -37,17 +38,8 @@ class RhFeuilleDeTempsAbsenceForm extends Component
             $categorieIds  = Categorie::whereIn('intitule', ['Absence', 'Caisse'])->pluck('id');
             //--- selection des types d'absence (Code de travail)
             $this->type_absence_list = CodeTravail::with('categorie')->whereIn('categorie_id', $categorieIds)->get();
-
-
-            //--- chargement pour la modification
-            if ($this->demande_absence_id) {
-                $demande = DemandeAbsence::findOrFail($this->demande_absence_id);
-                $this->date_debut = $demande->date_debut->toDateTimeString();
-                $this->date_fin = $demande->date_fin->toDateTimeString();
-                $this->heure_par_jour = $demande->heure_par_jour;
-                $this->description = $demande->description;
-                $this->code_de_travail_id = $demande->codes_travail_id;
-            }
+            //--- selection des employes
+            $this->employes = Employe::where('id', '!=', Auth::user()->employe->id)->orderBy('nom', 'asc')->get();
         } catch (\Throwable $th) {
             //--- dd($th->getMessage());
         }
@@ -59,6 +51,7 @@ class RhFeuilleDeTempsAbsenceForm extends Component
         'heure_par_jour' => 'required|numeric|min:1|max:24',
         'description' => 'nullable|string|max:1000',
         'code_de_travail_id' => 'required|exists:codes_travail,id',
+        'employe_id' => 'required|integer|exists:employes,id',
     ];
 
     protected $messages = [
@@ -79,7 +72,11 @@ class RhFeuilleDeTempsAbsenceForm extends Component
         'description.max' => 'La description ne peut pas dépasser :max caractères.',
 
         'code_de_travail_id.exists' => 'Le code de travail sélectionné est invalide.',
-        'code_de_travail_id.required' => 'Le type d\'absence est obligatoire.'
+        'code_de_travail_id.required' => 'Le type d\'absence est obligatoire.',
+
+        'employe_id.required' => 'l\'employé est obligatoire.',
+        'employe_id.integer' => 'L\'identifiant de l\'employé doit être un nombre entier.',
+        'employe_id.exists' => 'Aucun employé correspondant à cet identifiant.',
     ];
 
     //--- Contruction du journal de la demande d'absence
@@ -143,32 +140,13 @@ class RhFeuilleDeTempsAbsenceForm extends Component
     public function save()
     {
         $this->validate();
-
         try {
             $annee_financiere_id = AnneeFinanciere::where('actif', true)->first()->id;
             $this->build_workflow_log($this->status[0], $this->status[1], 'La demande est en cours de redaction');
-
-            if (!$this->demande_absence_id) {
-                //dd($this->code_de_travail_id);
-                $demande_absence = DemandeAbsence::create(
-                    [
-                        'annee_financiere_id' => $annee_financiere_id,
-                        'employe_id' => Auth::user()->employe->id,
-                        'codes_travail_id' => $this->code_de_travail_id,
-                        'date_debut' => $this->date_debut,
-                        'date_fin' => $this->date_fin,
-                        'heure_par_jour' => $this->heure_par_jour,
-                        'total_heure' => $this->calculateTotalHeures(),
-                        'description' => $this->description,
-                        'workflow_log' => $this->workflow_log,
-                        'status' => $this->status[1],
-                    ]
-                );
-                $this->dispatch('demandeAbsenceAjoute');
-            } else {
-                $demande_absence = DemandeAbsence::findOrFail($this->demande_absence_id);
-                $demande_absence->update([
-                    'employe_id' => Auth::user()->employe->id,
+            $demande_absence = DemandeAbsence::create(
+                [
+                    'annee_financiere_id' => $annee_financiere_id,
+                    'employe_id' => $this->employe_id,
                     'codes_travail_id' => $this->code_de_travail_id,
                     'date_debut' => $this->date_debut,
                     'date_fin' => $this->date_fin,
@@ -177,13 +155,10 @@ class RhFeuilleDeTempsAbsenceForm extends Component
                     'description' => $this->description,
                     'workflow_log' => $this->workflow_log,
                     'status' => $this->status[1],
-                ]);
-
-                $nombreDeJoursEntre = $this->nombreDeJoursEntre($this->date_debut, $this->date_fin);
-
-                $this->dispatch('nombreDeJoursEntre', $nombreDeJoursEntre);
-                $this->dispatch('demandeAbsenceModifie');
-            }
+                    'admin_id' => Auth::user()->id
+                ]
+            );
+            $this->dispatch('demandeAbsenceAjoute');
         } catch (\Throwable $th) {
             dd($th->getMessage());
         }
@@ -192,25 +167,11 @@ class RhFeuilleDeTempsAbsenceForm extends Component
     //--- vider les champs
     public function cancel()
     {
-        $this->reset(['date_debut', 'date_fin', 'heure_par_jour', 'description', 'code_de_travail_id']);
+        $this->reset(['date_debut', 'date_fin', 'heure_par_jour', 'description', 'code_de_travail_id', 'employe_id']);
     }
-
-    //--- reinitiliaser les valeur de modification de depart
-    public function resetAll()
-    {
-        if ($this->demande_absence_id) {
-            $demande = DemandeAbsence::findOrFail($this->demande_absence_id);
-            $this->date_debut = $demande->date_debut->toDateTimeString();
-            $this->date_fin = $demande->date_fin->toDateTimeString();
-            $this->heure_par_jour = $demande->heure_par_jour;
-            $this->description = $demande->description;
-            $this->code_de_travail_id = $demande->codes_travail_id;
-        }
-    }
-
 
     public function render()
     {
-        return view('rhfeuilledetempsabsence::livewire.rh-feuille-de-temps-absence-form');
+        return view('rhfeuilledetempsabsence::livewire.rh-feuille-de-temps-absence-admin-form');
     }
 }

@@ -17,13 +17,41 @@ class RhFeuilleDeTempsAbsenceList extends Component
     public $demandeAbsenceId = null;
     public $nbrDemandeEnAttente;
     public $nbrDemandeApprouve;
-
-
+    public $showAddEmployeAbsenceModal = false;
 
     protected $paginationTheme = 'bootstrap';
     protected $listeners = [
         'demandeAbsenceAjoute' => 'demandeAbsenceAjoute',
     ];
+
+
+    public function mount()
+    {
+        if (Auth::user()->employe->est_gestionnaire) {
+            //--- Nombre d'absences  approuvée et en attente affichées si un gestionnaire est connecté
+            //--- en attente
+            $this->nbrDemandeEnAttente = DemandeAbsence::with(['employe', 'codeTravail'])
+                ->gestionnaireConnecte()
+                ->EnAttente()->count();
+
+            //--- approuvée
+            $this->nbrDemandeApprouve = DemandeAbsence::with(['employe', 'codeTravail'])
+                ->gestionnaireConnecte()
+                ->approuve()->count();
+        } else {
+            //--- Nombre d'absences  approuvée et en attente affichées si un employé est connecté
+            //--- en attente
+            $this->nbrDemandeEnAttente = DemandeAbsence::with(['employe', 'codeTravail'])
+                ->employeConnecte()
+                ->EnAttente()->count();
+
+            //--- approuvée
+            $this->nbrDemandeApprouve = DemandeAbsence::with(['employe', 'codeTravail'])
+                ->employeConnecte()
+                ->approuve()->count();
+        }
+    }
+
 
     //--- afficher et caher le formulaire d'ajout d'une absence
     public function toogle_add_absence_modal()
@@ -31,10 +59,18 @@ class RhFeuilleDeTempsAbsenceList extends Component
         $this->showAddAbsenceModal = !$this->showAddAbsenceModal;
     }
 
+    //--- afficher et caher le formulaire d'ajout d'une absence d'un employé
+    public function toogle_add_employe_absence_modal()
+    {
+        $this->showAddEmployeAbsenceModal = !$this->showAddEmployeAbsenceModal;
+    }
+
+
     //--- afficher le message de creation d'une absence
     public function demandeAbsenceAjoute()
     {
         $this->showAddAbsenceModal = false;
+        $this->showAddEmployeAbsenceModal = false;
         session()->flash('success', 'Demande d\'absence enregistrée avec succès.');
     }
 
@@ -44,38 +80,30 @@ class RhFeuilleDeTempsAbsenceList extends Component
 
         if (Auth::user()->employe->est_gestionnaire) {
             return DemandeAbsence::with(['employe', 'codeTravail'])
-                ->where(function ($query) {
-                    $query->whereHas('employe', function ($q) {
-                        $q->where('gestionnaire_id', Auth::user()->employe->id);
-                    })
-                        ->orWhere('employe_id', Auth::user()->employe->id);
-                })
+                ->gestionnaireConnecte()
                 ->whereDate('date_fin', '>=', \Carbon\Carbon::today())
                 ->paginate(10);
         }
 
         return DemandeAbsence::with(['employe', 'codeTravail'])
-            ->where('employe_id', Auth::user()->employe->id)
+            ->employeConnecte()
             ->whereDate('date_fin', '>=', \Carbon\Carbon::today())
             ->paginate(10);
     }
 
     public function getDemandeAbsenceClose()
     {
+        //--- absences affichées si un gestionnaire est connecté
         if (Auth::user()->employe->est_gestionnaire) {
             return DemandeAbsence::with(['employe', 'codeTravail'])
-                ->where(function ($query) {
-                    $query->whereHas('employe', function ($q) {
-                        $q->where('gestionnaire_id', Auth::user()->employe->id);
-                    })
-                        ->orWhere('employe_id', Auth::user()->employe->id);
-                })
+                ->gestionnaireConnecte()
                 ->whereDate('date_fin', '<', \Carbon\Carbon::today())
                 ->paginate(10);
         }
 
+        //--- absences affichées si un employé est connecté
         return DemandeAbsence::with(['employe', 'codeTravail'])
-            ->where('employe_id', Auth::user()->employe->id)
+            ->employeConnecte()
             ->whereDate('date_fin', '<', \Carbon\Carbon::today())
             ->paginate(10);
     }

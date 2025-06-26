@@ -5,6 +5,7 @@ namespace Modules\RhFeuilleDeTempsAbsence\Providers;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
+use Modules\RhFeuilleDeTempsAbsence\Livewire\RhFeuilleDeTempsAbsenceAdminForm;
 use Modules\RhFeuilleDeTempsAbsence\Livewire\RhFeuilleDeTempsAbsenceDetails;
 use Modules\RhFeuilleDeTempsAbsence\Livewire\RhFeuilleDeTempsAbsenceForm;
 use Modules\RhFeuilleDeTempsAbsence\Livewire\RhFeuilleDeTempsAbsenceList;
@@ -74,6 +75,7 @@ class RhFeuilleDeTempsAbsenceServiceProvider extends ServiceProvider
         Livewire::component('rhfeuilledetempsabsence::rh-feuille-de-temps-absence-list', RhFeuilleDeTempsAbsenceList::class);
         Livewire::component('rhfeuilledetempsabsence::rh-feuille-de-temps-absence-form', RhFeuilleDeTempsAbsenceForm::class);
         Livewire::component('rhfeuilledetempsabsence::rh-feuille-de-temps-absence-details', RhFeuilleDeTempsAbsenceDetails::class);
+        Livewire::component('rhfeuilledetempsabsence::rh-feuille-de-temps-absence-admin-form', RhFeuilleDeTempsAbsenceAdminForm::class);
     }
 
     /**

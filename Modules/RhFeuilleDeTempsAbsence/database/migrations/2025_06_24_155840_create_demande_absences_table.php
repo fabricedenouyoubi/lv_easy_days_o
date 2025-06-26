@@ -20,6 +20,7 @@ return new class extends Migration
             $table->double('heure_par_jour')->default(8);
             $table->double('total_heure')->default(0);
             $table->text('description')->nullable();
+            $table->bigInteger('admin_id')->nullable();
 
             $table->foreignId('annee_financiere_id')->nullable()->constrained('annee_financieres')->nullOnDelete();
             $table->foreignId('codes_travail_id')->nullable()->constrained('codes_travail')->nullOnDelete();

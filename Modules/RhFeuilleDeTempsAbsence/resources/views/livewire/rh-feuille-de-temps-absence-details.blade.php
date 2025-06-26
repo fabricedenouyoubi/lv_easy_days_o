@@ -19,7 +19,9 @@
                             <x-action-button type="secondary" size="sm" icon="fas fa-arrow-left"
                                 text="Retour à la liste" href="{{ route('absence.list') }}" />
                         </div>
-                        @if ($demandeAbsence->status == 'En cours' && $demandeAbsence->employe_id == auth()->user()->employe->id)
+                        @if (
+                            $demandeAbsence->status == 'En cours' &&
+                                ($demandeAbsence->employe_id == auth()->user()->employe->id || $demandeAbsence->admin_id == auth()->user()->id))
                             {{-- Bounton Nodifier --}}
                             <div class="col-auto">
                                 <x-action-button type="primary" size="sm" icon="fas fa-edit" text="Modifier"
@@ -34,7 +36,7 @@
 
 
                         @if ($demandeAbsence->status == 'Soumis')
-                            @if ($demandeAbsence->employe_id == auth()->user()->employe->id)
+                            @if ($demandeAbsence->employe_id == auth()->user()->employe->id || $demandeAbsence->admin_id == auth()->user()->id)
                                 {{-- Bounton Rappeller --}}
                                 <div class="col-auto">
                                     <x-action-button type="primary" size="sm" icon="fas fa-undo-alt"
@@ -55,19 +57,13 @@
                                 </div>
                             @endif
                         @endif
-                        @if ($demandeAbsence->employe->gestionnaire_id == auth()->user()->employe->id)
-                            @if ($demandeAbsence->status == 'Validé')
-                                {{-- Bounton Retourner --}}
-                                <div class="col-auto">
-                                    <x-action-button type="warning" size="sm" icon="fas fa-reply" text="Retrourner"
-                                        wireClick="toogle_retrouner_modal" />
-                                </div>
-                                {{-- Bounton Rejeter --}}
-                                <div class="col-auto">
-                                    <x-action-button type="danger" size="sm" icon="fas fa-times-circle"
-                                        text="Rejeter" wireClick="toogle_rejeter_modal" />
-                                </div>
-                            @endif
+                        {{-- Admininistrateur retrourne les demande d'absence validée et rejetée --}}
+                        @if (($demandeAbsence->status == 'Validé' || $demandeAbsence->status == 'Rejeté') && auth()->user()->hasRole('ADMIN'))
+                            {{-- Bounton Retourner --}}
+                            <div class="col-auto">
+                                <x-action-button type="warning" size="sm" icon="fas fa-reply" text="Retrourner"
+                                    wireClick="toogle_retrouner_modal" />
+                            </div>
                         @endif
                     </div>
                 </div>
@@ -88,7 +84,7 @@
                     </div>
 
                     <div class="row gap-4 px-3">
-                        <div class="col bg-light p-4 border border-rounded-5">
+                        <div class="col bg-light py-2 px-4 border border-rounded-5">
                             <h6 class="text-muted mb-2">Période d'absence</h6>
                             <div class="d-flex align-items-center gap-4">
                                 <i class="fas fa-calendar fs-3"></i>
@@ -101,7 +97,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col bg-light p-4 border border-rounded-5">
+                        <div class="col bg-light py-2 px-4 border border-rounded-5">
                             <h6 class="text-muted mb-2">Type d'absence</h6>
                             <div class="d-flex align-items-center gap-4">
                                 <i class="fas fa-tags fs-3"></i>
@@ -112,9 +108,44 @@
                                 </div>
                             </div>
                         </div>
+                        @if ($demandeAbsence->description)
+                            <div class="col-12 bg-light py-2 px-4 border border-rounded-5">
+                                <h6 class="text-muted mb-2">Description</h6>
+                                <div class="d-flex align-items-center">
+                                    <p class="mb-1"><strong>{{ $demandeAbsence->description }}</strong>
+                                    </p>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
+
+            {{-- Journal dde demande d'absence --}}
+            <x-table-card title="opération d'absence" icon="far fa-calendar-alt">
+                @forelse ([] as $log)
+                    <div class="row mb-3">
+                        <div class="col-12 d-flex align-items-center">
+                            <span class="badge bg-info"><i class="fas fa-exchange-alt"></i></span> &nbsp;
+                            {{ $log['to_state'] }}
+                        </div>
+                        <div class="col-12">
+                            <p class="mb-1"> Date: {{ $log['date'] }} </p>
+                            <p class="mb-1"> Heure: {{ $log['time'] }} </p>
+                        </div>
+                        <div class="col-12">
+                            <span>{{ $log['title'] }}</span>.
+                            <strong>{{ $log['comment'] }}</strong>.
+                        </div>
+                    </div>
+                @empty
+                    <div class="text-center">
+                        <i class="far fa-calendar-alt fs-1 text-muted"></i>
+                        <h5 class="mt-1">Aucune opération d'absence</h5>
+                        <p>Les opérations seront générées une fois la demande approuvée.</p>
+                    </div>
+                @endforelse
+            </x-table-card>
 
             {{-- Journal dde demande d'absence --}}
             <x-table-card title="Journal de la demande d'absence" icon="fas fa-history">
@@ -330,6 +361,19 @@
                     </div>
                     <div class="modal-body">
                         <p>Êtes-vous sûr de vouloir rappeler cette demande d'absence ?</p>
+                        <h6 class="text-muted small text-uppercase mb-2 mt-4"><i
+                                class="fas fa-info-circle me-1"></i>Informations
+                            additionnelles</h6>
+                        <div class="mb-3"> <label for="heure" class="form-label requiredField">
+                                Motif</label> <span class="asteriskField text-danger">*</span>
+                            <textarea name="motif" class="form-control  @error('description')  is-invalid @enderror" cols="20"
+                                rows="10" wire:model="motif" id="motif"></textarea>
+                            @error('motif')
+                                <span class="form-text text-danger">{{ $message }}</span>
+                            @enderror
+                            <div id="id_description_helptext" class="form-text">Raison ou détails supplémentaires de
+                                rejet de la demande</div>
+                        </div>
                         <div class="modal-footer">
                             <x-action-button type="secondary" icon="fas fa-times me-2" size="md"
                                 wireClick="toogle_rappeler_modal" text="Annuler" />
@@ -353,6 +397,19 @@
                     </div>
                     <div class="modal-body">
                         <p>Êtes-vous sûr de vouloir retourner cette demande d'absence ?</p>
+                        <h6 class="text-muted small text-uppercase mb-2 mt-4"><i
+                                class="fas fa-info-circle me-1"></i>Informations
+                            additionnelles</h6>
+                        <div class="mb-3"> <label for="heure" class="form-label requiredField">
+                                Motif</label> <span class="asteriskField text-danger">*</span> </label>
+                            <textarea name="motif" class="form-control  @error('description')  is-invalid @enderror" cols="20"
+                                rows="10" wire:model="motif" id="motif"></textarea>
+                            @error('motif')
+                                <span class="form-text text-danger">{{ $message }}</span>
+                            @enderror
+                            <div id="id_description_helptext" class="form-text">Raison ou détails supplémentaires de
+                                retour de la demande</div>
+                        </div>
                         <div class="modal-footer">
                             <x-action-button type="secondary" icon="fas fa-times me-2" size="md"
                                 wireClick="toogle_retrouner_modal" text="Annuler" />
@@ -377,6 +434,19 @@
                     </div>
                     <div class="modal-body">
                         <p>Êtes-vous sûr de vouloir rejeter cette demande d'absence ?</p>
+                        <h6 class="text-muted small text-uppercase mb-2 mt-4"><i
+                                class="fas fa-info-circle me-1"></i>Informations
+                            additionnelles</h6>
+                        <div class="mb-3"> <label for="heure" class="form-label requiredField">
+                                Motif</label> <span class="asteriskField text-danger">*</span>
+                            <textarea name="motif" class="form-control  @error('description')  is-invalid @enderror" cols="20"
+                                rows="10" wire:model="motif" id="motif"></textarea>
+                            @error('motif')
+                                <span class="form-text text-danger">{{ $message }}</span>
+                            @enderror
+                            <div id="id_description_helptext" class="form-text">Raison ou détails supplémentaires de
+                                rejet de la demande</div>
+                        </div>
                         <div class="modal-footer">
                             <x-action-button type="secondary" icon="fas fa-times me-2" size="md"
                                 wireClick="toogle_rejeter_modal" text="Annuler" />

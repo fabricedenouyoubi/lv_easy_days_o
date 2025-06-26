@@ -4,6 +4,7 @@ namespace Modules\RhFeuilleDeTempsAbsence\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Auth;
 use Modules\Budget\Models\AnneeFinanciere;
 use Modules\Rh\Models\Employe\Employe;
 use Modules\RhFeuilleDeTempsConfig\Models\CodeTravail;
@@ -28,6 +29,7 @@ class DemandeAbsence extends Model
         'annee_financiere_id',
         'codes_travail_id',
         'employe_id',
+        'admin_id'
     ];
 
     protected $casts = [
@@ -59,7 +61,7 @@ class DemandeAbsence extends Model
     // Scopes
     public function scopeEnAttente($query)
     {
-        return $query->where('satus', 'En cours');
+        return $query->where('status', 'En cours');
     }
 
     public function scopeApprouve($query)
@@ -70,5 +72,24 @@ class DemandeAbsence extends Model
     public static function getProchaineAbsence()
     {
         return self::approuve()->orderBy('date_debut')->first();
+    }
+
+    public function scopeGestionnaireConnecte($query)
+    {
+        $employe = Auth::user()->employe;
+
+        return $query->where(function ($q) use ($employe) {
+            $q->whereHas('employe', function ($subQuery) use ($employe) {
+                $subQuery->where('gestionnaire_id', $employe->id);
+            })->orWhere('employe_id', $employe->id);
+        })->orWhere('admin_id', Auth::user()->id);
+    }
+
+    public function scopeEmployeConnecte($query)
+    {
+        $employeId = Auth::user()->employe->id;
+
+        return $query->where('employe_id', $employeId)
+            ->orWhere('admin_id', Auth::user()->id);
     }
 }

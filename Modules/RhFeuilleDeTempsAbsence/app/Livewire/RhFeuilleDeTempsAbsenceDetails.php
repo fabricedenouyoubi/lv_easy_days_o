@@ -3,6 +3,7 @@
 namespace Modules\RhFeuilleDeTempsAbsence\Livewire;
 
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\RhFeuilleDeTempsAbsence\Models\DemandeAbsence;
@@ -14,6 +15,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     public $demandeAbsence;
     public $nombreJourAbsence;
     public $workflow_log;
+    public $motif;
 
     public $showEditAbsenceModal = false;
     public $showSoumissionModal = false;
@@ -23,6 +25,21 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     public $showRejeterModal = false;
 
 
+    public function rules()
+    {
+        return [
+            'motif' => ['required', 'string', 'min:5'],
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'motif.required' => 'Le motif est obligatoire.',
+            'motif.string' => 'Le motif doit être une chaîne de caractères.',
+            'motif.min' => 'Le motif doit contenir au moins :min caractères.',
+        ];
+    }
 
     public $status = [
         'Brouillon',
@@ -140,9 +157,10 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
         $demande = DemandeAbsence::findOrFail($this->demandeAbsenceId);
         $logs = json_decode($demande->workflow_log, true);
         $logsArray = collect(explode("\n", $demande->workflow_log))
+            ->filter() // élimine les lignes vides
             ->map(fn($line) => json_decode(trim($line), true))
-            ->filter()
-            ->sortByDesc('timestamp') // <-- Tri du plus récent au plus ancien
+            ->filter() // élimine les lignes non valides (nulls)
+            ->reverse() // <-- Tri du plus récent au plus ancien
             ->values(); // Pour réindexer proprement;
         return $logsArray;
     }
@@ -151,7 +169,8 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     public function soumettreDemandeAbsence()
     {
         try {
-            $this->build_workflow_log($this->status[1], $this->status[2], 'La demande est en cours d\'approbation');
+            $comment = $this->demandeAbsence->admin_id == Auth::user()->id ? 'La demande a été soumise par ' . Auth::user()->name : 'La demande a été soumise';
+            $this->build_workflow_log($this->status[1], $this->status[2], $comment);
             $this->demandeAbsence->update([
                 'status' => $this->status[2],
                 'workflow_log' => $this->workflow_log
@@ -166,8 +185,10 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     //--- Rappelle de la demande d'absence
     public function rapelleDemandeAbsence()
     {
+        $this->validate();
         try {
-            $this->build_workflow_log($this->status[2], $this->status[1], 'La demande est en cours de redaction');
+            $comment = $this->demandeAbsence->admin_id == Auth::user()->id ? 'La demande a été rappelée par ' . Auth::user()->name : 'La demande a rappelée soumise';
+            $this->build_workflow_log($this->status[2], $this->status[1], $comment .  ' avec pour motif :  << ' . $this->motif . ' >>');
             $this->demandeAbsence->update([
                 'status' => $this->status[1],
                 'workflow_log' => $this->workflow_log
@@ -183,7 +204,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     public function approuverDemandeAbsence()
     {
         try {
-            $this->build_workflow_log($this->status[2], $this->status[3], 'La demande est approuvée');
+            $this->build_workflow_log($this->status[2], $this->status[3], 'La demande est approuvée par ' . Auth::user()->name);
             $this->demandeAbsence->update([
                 'status' => $this->status[3],
                 'workflow_log' => $this->workflow_log
@@ -198,8 +219,10 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     //--- Retourner la demande d'absence
     public function retournerDemandeAbsence()
     {
+        $this->validate();
         try {
-            $this->build_workflow_log($this->status[3], $this->status[1], 'La demande est en cours de redaction');
+            $comment = 'La demande a été retournée par ' . Auth::user()->name .  ' avec pour motif :  << ' . $this->motif . ' >>';
+            $this->build_workflow_log($this->status[3], $this->status[1], $comment);
             $this->demandeAbsence->update([
                 'status' => $this->status[1],
                 'workflow_log' => $this->workflow_log
@@ -214,8 +237,10 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     //--- Rejeter la demande d'absence
     public function rejeterDemandeAbsence()
     {
+        $this->validate();
         try {
-            $this->build_workflow_log($this->demandeAbsence->status, $this->status[4], 'La demande  rejetée');
+            $comment = 'La demande a été rejetée par : ' . Auth::user()->name . ' avec pour motif :  << ' . $this->motif . ' >>';
+            $this->build_workflow_log($this->demandeAbsence->status, $this->status[4], $comment);
             $this->demandeAbsence->update([
                 'status' => $this->status[4],
                 'workflow_log' => $this->workflow_log
