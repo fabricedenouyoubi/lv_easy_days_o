@@ -15,6 +15,11 @@ class RhFeuilleDeTempsAbsenceList extends Component
 
     public $showAddAbsenceModal = false;
     public $demandeAbsenceId = null;
+    public $nbrDemandeEnAttente;
+    public $nbrDemandeApprouve;
+
+
+
     protected $paginationTheme = 'bootstrap';
     protected $listeners = [
         'demandeAbsenceAjoute' => 'demandeAbsenceAjoute',
@@ -36,6 +41,7 @@ class RhFeuilleDeTempsAbsenceList extends Component
 
     public function getDemandeAbsence()
     {
+
         if (Auth::user()->employe->est_gestionnaire) {
             return DemandeAbsence::with(['employe', 'codeTravail'])
                 ->where(function ($query) {

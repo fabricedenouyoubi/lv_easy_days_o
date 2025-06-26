@@ -59,23 +59,12 @@ class DemandeAbsence extends Model
     // Scopes
     public function scopeEnAttente($query)
     {
-        return $query->where('state', 'Brouillon');
+        return $query->where('satus', 'En cours');
     }
 
     public function scopeApprouve($query)
     {
-        return $query->where('state', 'Validé');
-    }
-
-    // Méthodes statiques
-    public static function getNombreDeDemandeEnAttente()
-    {
-        return self::enAttente()->count();
-    }
-
-    public static function getNombreDeDemandeApprouve()
-    {
-        return self::approuve()->count();
+        return $query->where('status', 'Validé');
     }
 
     public static function getProchaineAbsence()

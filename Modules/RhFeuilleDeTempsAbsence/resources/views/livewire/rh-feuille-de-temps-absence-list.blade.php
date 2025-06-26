@@ -142,7 +142,7 @@
                 </div>
                 <hr class="">
                 <div class="d-flex justify-content-end align-items-center gap-2">
-                    <span class="badge bg-info">0 en attente</span>
+                    <span class="badge bg-info">{{ $nbrDemandeEnAttente }} en attente</span>
                     <span class="badge bg-success">0 approuvée</span>
                 </div>
             </x-table-card>

@@ -31,13 +31,18 @@
                                     text="Soumettre" wireClick="toogle_soumission_modal" />
                             </div>
                         @endif
-                        @if ($demandeAbsence->employe->gestionnaire_id == auth()->user()->employe->id)
-                            @if ($demandeAbsence->status == 'Soumis')
+
+
+                        @if ($demandeAbsence->status == 'Soumis')
+                            @if ($demandeAbsence->employe_id == auth()->user()->employe->id)
                                 {{-- Bounton Rappeller --}}
                                 <div class="col-auto">
                                     <x-action-button type="primary" size="sm" icon="fas fa-undo-alt"
                                         text="Rappeller" wireClick="toogle_rappeler_modal" />
                                 </div>
+                            @endif
+
+                            @if ($demandeAbsence->employe->gestionnaire_id == auth()->user()->employe->id)
                                 {{-- Bounton Valider --}}
                                 <div class="col-auto">
                                     <x-action-button type="success" size="sm" icon="fas fa-check-circle"
@@ -49,7 +54,8 @@
                                         text="Rejeter" wireClick="toogle_rejeter_modal" />
                                 </div>
                             @endif
-
+                        @endif
+                        @if ($demandeAbsence->employe->gestionnaire_id == auth()->user()->employe->id)
                             @if ($demandeAbsence->status == 'Validé')
                                 {{-- Bounton Retourner --}}
                                 <div class="col-auto">
