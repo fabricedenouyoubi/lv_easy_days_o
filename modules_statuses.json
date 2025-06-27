@@ -4,5 +4,6 @@
     "RhFeuilleDeTempsConfig": true,
     "Roles": true,
     "Rh": true,
-    "RhFeuilleDeTempsAbsence": true
+    "RhFeuilleDeTempsAbsence": true,
+    "RhFeuilleDeTempsReguliere": true
 }
