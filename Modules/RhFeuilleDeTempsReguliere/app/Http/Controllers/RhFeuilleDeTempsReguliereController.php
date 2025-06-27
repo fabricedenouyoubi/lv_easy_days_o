@@ -2,55 +2,83 @@
 
 namespace Modules\RhFeuilleDeTempsReguliere\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Modules\Budget\Models\SemaineAnnee;
+use Modules\RhFeuilleDeTempsAbsence\Models\Operation;
 
 class RhFeuilleDeTempsReguliereController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Afficher la liste des feuilles de temps pour l'employé connecté
      */
-    public function index()
+    public function index(): Renderable
     {
         return view('rhfeuilledetempsreguliere::index');
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Éditer une feuille de temps
      */
-    public function create()
+    public function edit(Request $request, $semaineId, $operationId = null): Renderable
     {
-        return view('rhfeuilledetempsreguliere::create');
+        // Récupérer la semaine
+        $semaine = SemaineAnnee::findOrFail($semaineId);
+        
+        // Récupérer ou créer l'opération
+        if ($operationId) {
+            $operation = Operation::findOrFail($operationId);
+            
+            // Vérifier que l'opération appartient bien à l'employé connecté
+            if ($operation->employe_id !== auth()->user()->employe->id) {
+                abort(403, 'Accès non autorisé à cette feuille de temps');
+            }
+        } else {
+            // Créer une nouvelle opération si elle n'existe pas
+            $operation = Operation::getOrCreateOperation(
+                auth()->user()->employe->id, 
+                $semaineId
+            );
+        }
+
+        return view('rhfeuilledetempsreguliere::edit', [
+            'semaineId' => $semaineId,
+            'operationId' => $operation->id,
+            'semaine' => $semaine,
+            'operation' => $operation
+        ]);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Consulter une feuille de temps
      */
-    public function store(Request $request) {}
-
-    /**
-     * Show the specified resource.
-     */
-    public function show($id)
+    public function show(Request $request, $semaineId, $operationId): Renderable
     {
-        return view('rhfeuilledetempsreguliere::show');
+        $semaine = SemaineAnnee::findOrFail($semaineId);
+        $operation = Operation::with(['lignesTravail.codeTravail', 'employe'])->findOrFail($operationId);
+        
+        // Vérifier les permissions
+        $user = auth()->user();
+        $canView = $operation->employe_id === $user->employe->id || // Propriétaire
+                  $operation->employe->gestionnaire_id === $user->employe->id || // Gestionnaire
+                  $user->hasRole('ADMIN'); // Admin
+                  
+        if (!$canView) {
+            abort(403, 'Accès non autorisé à cette feuille de temps');
+        }
+
+        return view('rhfeuilledetempsreguliere::show', [
+            'semaine' => $semaine,
+            'operation' => $operation
+        ]);
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Tableau de bord gestionnaire
      */
-    public function edit($id)
+    public function managerDashboard(): Renderable
     {
-        return view('rhfeuilledetempsreguliere::edit');
+        // return view('rhfeuilledetempsreguliere::manager-dashboard');
     }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id) {}
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id) {}
 }

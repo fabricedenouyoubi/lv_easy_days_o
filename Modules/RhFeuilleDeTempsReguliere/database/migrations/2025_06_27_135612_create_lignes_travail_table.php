@@ -47,6 +47,16 @@ return new class extends Migration
             $table->time('debut_6')->nullable();
             $table->time('fin_6')->nullable();
             $table->decimal('duree_6', 4, 2)->nullable();
+
+             // Champ pour marquer les lignes auto-remplies (absences, jours fériés)
+            $table->boolean('auto_rempli')->default(false)->after('codes_travail_id');
+            
+            // Type d'auto-remplissage (absence, ferie, divers)
+            $table->enum('type_auto_remplissage', ['absence', 'ferie', 'divers'])->nullable()->after('auto_rempli');
+            
+            // Référence vers la demande d'absence si applicable
+            // $table->foreignId('demande_absence_id')->nullable()->after('type_auto_remplissage')
+            //       ->constrained('demande_absences')->nullOnDelete();
             
             // Relations
             $table->foreignId('operation_id')->constrained('operations')->onDelete('cascade');

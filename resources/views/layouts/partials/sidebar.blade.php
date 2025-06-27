@@ -89,7 +89,7 @@
                 </li>
 
                 <li>
-                    <a href="#" onclick="return false;">
+                    <a href="{{ route('feuille-temps.list') }}">
                         <i class="icon nav-icon" data-eva="clock-outline"></i>
                         <span class="menu-item" data-key="t-heures-regulieres">Mes feuilles de temps</span>
                     </a>

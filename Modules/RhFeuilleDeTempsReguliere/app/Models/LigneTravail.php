@@ -4,10 +4,7 @@ namespace Modules\RhFeuilleDeTempsReguliere\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Modules\RhFeuilleDeTempsAbsence\Models\Operation;
 use Modules\RhFeuilleDeTempsConfig\Models\CodeTravail;
-
-// use Modules\RhFeuilleDeTempsReguliere\Database\Factories\LigneTravailFactory;
 
 class LigneTravail extends Model
 {
@@ -37,6 +34,11 @@ class LigneTravail extends Model
         // Relations
         'operation_id',
         'codes_travail_id',
+        
+        // Nouveaux champs pour auto-remplissage
+        'auto_rempli',
+        'type_auto_remplissage',
+        'demande_absence_id',
     ];
 
     /**
@@ -66,6 +68,10 @@ class LigneTravail extends Model
         'duree_5' => 'decimal:2',
         'duree_6' => 'decimal:2',
     ];
+
+    // ================================
+    // RELATIONS
+    // ================================
     
     /**
      * Relation avec l'opération
@@ -81,6 +87,14 @@ class LigneTravail extends Model
     public function codeTravail()
     {
         return $this->belongsTo(CodeTravail::class, 'codes_travail_id');
+    }
+
+    /**
+     * Relation avec la demande d'absence (si auto-rempli)
+     */
+    public function demandeAbsence()
+    {
+        return $this->belongsTo(DemandeAbsence::class, 'demande_absence_id');
     }
 
     // ================================
@@ -150,7 +164,7 @@ class LigneTravail extends Model
     }
 
     /**
-     * Remplir une semaine d'absence avec des heures par jour
+     * Remplir une semaine d'absence (comme dans Django)
      */
     public function remplirSemaineAbsence(\DateTime $dateDebut, \DateTime $dateFin, int $heuresParJour = 8): void
     {
@@ -171,9 +185,4 @@ class LigneTravail extends Model
             $currentDate->add(new \DateInterval('P1D'));
         }
     }
-
-    // protected static function newFactory(): LigneTravailFactory
-    // {
-    //     // return LigneTravailFactory::new();
-    // }
 }

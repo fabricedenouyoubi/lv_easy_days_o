@@ -4,6 +4,9 @@ namespace Modules\RhFeuilleDeTempsReguliere\Providers;
 
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
+use Modules\RhFeuilleDeTempsReguliere\Livewire\RhFeuilleDeTempsReguliereEdit;
+use Modules\RhFeuilleDeTempsReguliere\Livewire\RhFeuilleDeTempsReguliereList;
 use Nwidart\Modules\Traits\PathNamespace;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -27,6 +30,9 @@ class RhFeuilleDeTempsReguliereServiceProvider extends ServiceProvider
         $this->registerConfig();
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->name, 'database/migrations'));
+
+        // Composant livewire
+        $this->registerLivewireComponents();
     }
 
     /**
@@ -46,6 +52,17 @@ class RhFeuilleDeTempsReguliereServiceProvider extends ServiceProvider
         // $this->commands([]);
     }
 
+    /**
+     * Register Livewire components.
+     *
+     * @return void
+     */
+    protected function registerLivewireComponents()
+    {
+        Livewire::component('rhfeuilledetempsreguliere::rh-feuille-de-temps-reguliere-list', RhFeuilleDeTempsReguliereList::class);
+
+        Livewire::component('rhfeuilledetempsreguliere::rh-feuille-de-temps-reguliere-edit', RhFeuilleDeTempsReguliereEdit::class);
+    }
     /**
      * Register command Schedules.
      */

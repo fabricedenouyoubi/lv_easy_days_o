@@ -181,6 +181,73 @@ class Operation extends Model
         }
         return $total;
     }
+
+    /**
+ * Vérifier si l'opération peut être modifiée
+ * Une opération est modifiable si elle est en état 'brouillon' ou 'en_cours'
+ */
+public function isEditable(): bool
+{
+    $editableStates = ['brouillon', 'en_cours'];
+    return in_array($this->getCurrentState(), $editableStates);
+}
+
+/**
+ * Vérifier si une transition est possible depuis l'état actuel
+ */
+public function canTransition(string $transition): bool
+{
+    $currentState = $this->getCurrentState();
+    
+    // Définir les transitions autorisées selon l'état actuel
+    $allowedTransitions = [
+        'brouillon' => ['enregistrer', 'soumettre'],
+        'en_cours' => ['enregistrer', 'soumettre'],
+        'soumis' => ['valider', 'rejeter'],
+        'valide' => [], // Une fois validé, aucune transition n'est possible
+        'rejete' => ['enregistrer', 'soumettre'], // Possibilité de corriger et resoumettre
+    ];
+    
+    return isset($allowedTransitions[$currentState]) && 
+           in_array($transition, $allowedTransitions[$currentState]);
+}
+
+/**
+ * Appliquer une transition de workflow
+ */
+public function applyTransition(string $transition, array $options = []): bool
+{
+    $currentState = $this->getCurrentState();
+    
+    if (!$this->canTransition($transition)) {
+        throw new \Exception("Transition '{$transition}' non autorisée depuis l'état '{$currentState}'");
+    }
+    
+    // Définir les nouveaux états selon la transition
+    $newStates = [
+        'enregistrer' => 'en_cours',
+        'soumettre' => 'soumis',
+        'valider' => 'valide',
+        'rejeter' => 'rejete',
+    ];
+    
+    if (!isset($newStates[$transition])) {
+        throw new \Exception("Transition '{$transition}' non reconnue");
+    }
+    
+    $newState = $newStates[$transition];
+    
+    // Logger la transition
+    $this->logTransition($currentState, $newState, $options['comment'] ?? null);
+    
+    // Mettre à jour l'état
+    $this->update([
+        'workflow_state' => $newState,
+        'statut' => ucfirst($newState), // Mettre à jour aussi l'ancien champ statut si nécessaire
+    ]);
+    
+    return true;
+}
     // protected static function newFactory(): OperationFactory
     // {
     //     // return OperationFactory::new();
