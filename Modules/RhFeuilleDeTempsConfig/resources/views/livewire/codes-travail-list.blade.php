@@ -6,11 +6,8 @@
     <div class="row">
         {{-- Colonne principale - Tableau --}}
         <div class="col-lg-8">
-            <x-table-card
-                title="Liste des codes de travail"
-                icon="fas fa-clipboard-list"
-                button-text="Nouveau Code"
-                button-action="showCreateModal">
+            <x-table-card title="Liste des codes de travail" icon="fas fa-clipboard-list" button-text="Nouveau Code"
+                button-action="{{ auth()->user()->can('Ajouter un code de travail') ? 'showCreateModal' : '' }}">
 
                 {{-- Contenu du tableau --}}
                 <div class="table-responsive">
@@ -38,25 +35,22 @@
                                     <td>
                                         <div class="d-flex gap-2">
                                             {{-- Boutons avec composant --}}
-                                            <x-action-button
-                                                type="outline-info"
-                                                icon="fas fa-eye"
+                                            <x-action-button type="outline-info" icon="fas fa-eye"
                                                 tooltip="Voir détails"
                                                 wire-click="showDetailModal({{ $codeTravail->id }})" />
 
-                                            <x-action-button
-                                                type="outline-success"
-                                                icon="fas fa-edit"
-                                                tooltip="Modifier"
-                                                wire-click="showEditModal({{ $codeTravail->id }})" />
+                                            @can('Modifier un code de travail')
+                                                <x-action-button type="outline-success" icon="fas fa-edit"
+                                                    tooltip="Modifier" wire-click="showEditModal({{ $codeTravail->id }})" />
+                                            @endcan
 
-                                            @if($codeTravail->isConfigurable())
-                                                <x-action-button
-                                                    type="outline-primary"
-                                                    icon="fas fa-cog"
-                                                    tooltip="Configuration"
-                                                    href="{{ route('rhfeuilledetempsconfig.configure', $codeTravail->id) }}" />
-                                            @endif
+                                            @can('Configurer un code de travail')
+                                                @if ($codeTravail->isConfigurable())
+                                                    <x-action-button type="outline-primary" icon="fas fa-cog"
+                                                        tooltip="Configuration"
+                                                        href="{{ route('rhfeuilledetempsconfig.configure', $codeTravail->id) }}" />
+                                                @endif
+                                            @endcan
                                         </div>
                                     </td>
                                 </tr>
@@ -85,31 +79,23 @@
                 {{-- Filtre par code --}}
                 <div class="mb-3">
                     <label for="searchCode" class="form-label">Code</label>
-                    <input type="text"
-                           id="searchCode"
-                           class="form-control"
-                           placeholder="Rechercher par code..."
-                           wire:model.defer="searchCode">
+                    <input type="text" id="searchCode" class="form-control" placeholder="Rechercher par code..."
+                        wire:model.defer="searchCode">
                 </div>
 
                 {{-- Filtre par libellé --}}
                 <div class="mb-3">
                     <label for="searchLibelle" class="form-label">Libellé du code</label>
-                    <input type="text"
-                           id="searchLibelle"
-                           class="form-control"
-                           placeholder="Rechercher par libellé..."
-                           wire:model.defer="searchLibelle">
+                    <input type="text" id="searchLibelle" class="form-control"
+                        placeholder="Rechercher par libellé..." wire:model.defer="searchLibelle">
                 </div>
 
                 {{-- Filtre par catégorie --}}
                 <div class="mb-3">
                     <label for="filterCategorie" class="form-label">Catégorie</label>
-                    <select id="filterCategorie"
-                            class="form-select"
-                            wire:model.defer="filterCategorie">
+                    <select id="filterCategorie" class="form-select" wire:model.defer="filterCategorie">
                         <option value="">-- Toutes --</option>
-                        @foreach($categories as $categorie)
+                        @foreach ($categories as $categorie)
                             <option value="{{ $categorie->id }}">{{ $categorie->intitule }}</option>
                         @endforeach
                     </select>
@@ -118,7 +104,7 @@
         </div>
     </div>
 
-        @if($showModal)
+    @if ($showModal)
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
@@ -128,10 +114,7 @@
                             {{ $editingId ? 'Modifier le Code de travail' : 'Nouveau Code de travail' }}
                         </h5>
                         {{-- Utilisation du composant pour le bouton de fermeture --}}
-                        <x-action-button
-                            type="close"
-                            wire-click="closeModal"
-                            aria-label="Close" />
+                        <x-action-button type="close" wire-click="closeModal" aria-label="Close" />
                     </div>
                     <div class="modal-body">
                         <livewire:rh-config::code-travail-form :codeTravailId="$editingId" :key="$editingId" />
@@ -142,7 +125,7 @@
     @endif
 
     {{-- Modal Détail Code de travail --}}
-    @if($showDetail && $detailCodeTravail)
+    @if ($showDetail && $detailCodeTravail)
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
@@ -152,10 +135,7 @@
                             Détails du Code de travail
                         </h5>
                         {{-- Bouton de fermeture avec composant --}}
-                        <x-action-button
-                            type="close"
-                            wire-click="closeDetailModal"
-                            aria-label="Close" />
+                        <x-action-button type="close" wire-click="closeDetailModal" aria-label="Close" />
                     </div>
                     <div class="modal-body">
                         <div class="row">
@@ -164,7 +144,9 @@
                                 <table class="table table-borderless">
                                     <tr>
                                         <td><strong>Code :</strong></td>
-                                        <td><code class="bg-light px-2 py-1 rounded">{{ $detailCodeTravail->code }}</code></td>
+                                        <td><code
+                                                class="bg-light px-2 py-1 rounded">{{ $detailCodeTravail->code }}</code>
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td><strong>Libellé :</strong></td>
@@ -173,13 +155,14 @@
                                     <tr>
                                         <td><strong>Catégorie :</strong></td>
                                         <td>
-                                            <span class="badge bg-info">{{ $detailCodeTravail->categorie->intitule }}</span>
+                                            <span
+                                                class="badge bg-info">{{ $detailCodeTravail->categorie->intitule }}</span>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td><strong>Configurable :</strong></td>
                                         <td>
-                                            @if($detailCodeTravail->isConfigurable())
+                                            @if ($detailCodeTravail->isConfigurable())
                                                 <span class="badge bg-success">
                                                     <i class="fas fa-check me-1"></i>Oui
                                                 </span>
@@ -198,16 +181,11 @@
                     <div class="modal-footer">
                         {{-- Utilisation des composants pour les boutons du footer --}}
                         <div class="d-flex gap-2">
-                            <x-action-button
-                                type="secondary"
-                                text="Fermer"
-                                wire-click="closeDetailModal" />
-
-                            <x-action-button
-                                type="success"
-                                icon="fas fa-edit"
-                                text="Modifier"
-                                wire-click="showEditModal({{ $detailCodeTravail->id }})" />
+                            <x-action-button type="secondary" text="Fermer" wire-click="closeDetailModal" />
+                            @can('Modifier un code de travail')
+                                <x-action-button type="success" icon="fas fa-edit" text="Modifier"
+                                    wire-click="showEditModal({{ $detailCodeTravail->id }})" />
+                            @endcan
                         </div>
                     </div>
                 </div>

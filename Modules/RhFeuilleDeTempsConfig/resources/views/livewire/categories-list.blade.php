@@ -8,7 +8,7 @@
         {{-- Colonne principale - Tableau des catégories --}}
         <div class="col-lg-8">
             <x-table-card title="Liste des Catégories" icon="fas fa-tags me-2" button-text="Nouvelle Catégorie"
-                button-action="showCreateModal">
+                button-action="{{ auth()->user()->can('Ajouter une catégorie') ? 'showCreateModal' : '' }}">
                 {{-- Tableau des catégories --}}
                 <div class="table-responsive">
                     <table class="table table-nowrap align-middle">
@@ -32,8 +32,12 @@
                                                 wireClick="showDetailModal({{ $categorie->id }})" />
 
                                             {{-- Bouton Modifier --}}
-                                            <x-action-button type="outline-primary" icon="fas fa-edit"
-                                                tooltip="Modifier" wireClick="showEditModal({{ $categorie->id }})" />
+                                            @can('Modifier une catégorie')
+                                                <x-action-button type="outline-primary" icon="fas fa-edit"
+                                                    tooltip="Modifier" wireClick="showEditModal({{ $categorie->id }})" />
+                                            @endcan
+
+
                                         </div>
                                     </td>
                                 </tr>
@@ -150,9 +154,12 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <x-action-button type="secondary" icon="fas fa-times me-2" size="md" wireClick='closeDetailModal'
-                            text="Fermer" />
-                        <x-action-button type="success" icon="fas fa-edit me-2" size="md" text="Modifier" wireClick="showEditModal({{ $detailCategorie->id }})" />
+                        <x-action-button type="secondary" icon="fas fa-times me-2" size="md"
+                            wireClick='closeDetailModal' text="Fermer" />
+                        @can('Modifier une catégorie')
+                            <x-action-button type="success" icon="fas fa-edit me-2" size="md" text="Modifier"
+                                wireClick="showEditModal({{ $detailCategorie->id }})" />
+                        @endcan
                     </div>
                 </div>
             </div>

@@ -5,6 +5,6 @@ use Modules\Entreprise\Http\Controllers\EntrepriseController;
 
 Route::prefix('entreprise')->name('entreprise.')->middleware(['web', 'auth'])->group(function() {
     //Route::get('/', [EntrepriseController::class, 'index'])->name('index');
-    Route::get('/presentation', [EntrepriseController::class, 'presentation'])->name('presentation');
+    Route::get('/presentation', [EntrepriseController::class, 'presentation'])->name('presentation')->middleware('permission:Voir Module PRESENTATION');
     Route::get('/sites', [EntrepriseController::class, 'sites'])->name('sites');
 });

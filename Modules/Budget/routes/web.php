@@ -5,8 +5,8 @@ use Modules\Budget\Http\Controllers\BudgetController;
 use Modules\Budget\Http\Controllers\SemaineController;
 
 Route::prefix('budget')->name('budget.')->middleware(['web', 'auth'])->group(function() {
-    Route::get('/annees-financieres', [BudgetController::class, 'anneesFinancieres'])->name('annees-financieres');
+    Route::get('/annees-financieres', [BudgetController::class, 'anneesFinancieres'])->name('annees-financieres')->middleware('permission:Voir Module ANNEE_FINANCIERE');
     //Route::get('/annee/{annee}/details', [BudgetController::class, 'detailsAnnee'])->name('annee-details');
     //Route pour la liste des semaines d'une année financière
-    Route::get('/annee/{annee}/details', [SemaineController::class, 'detailsAnnee'])->name('details-annee');
+    Route::get('/annee/{annee}/details', [SemaineController::class, 'detailsAnnee'])->name('details-annee')->middleware('permission:Générer les semaines d\'une année');
 });

@@ -3,7 +3,8 @@
     <x-alert-messages />
 
     <x-table-card title="Historique des Années Financières" icon="mdi mdi-calendar-outline me-2"
-        button-text="Nouvelle Année" button-action="showCreateModal">
+        button-text="Nouvelle Année"
+        button-action="{{ auth()->user()->can('Ajouter une année financière') ? 'showCreateModal' : '' }}">
 
         <div>
             <!-- Barre de recherche -->
@@ -51,15 +52,21 @@
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center gap-2">
                                         <!-- Bouton Voir feuilles de temps avec génération automatique -->
-                                        <x-action-button type="outline-primary" icon="mdi mdi-file-table" size="sm"
-                                            tooltip="Voir les feuilles de temps" wireClick="voirFeuillesDeTemps({{ $annee->id }})"
-                                            loadingTarget="voirFeuillesDeTemps({{ $annee->id }})"/>
+                                        @can('Générer les semaines d\'une année')
+                                            <x-action-button type="outline-primary" icon="mdi mdi-file-table" size="sm"
+                                                tooltip="Voir les feuilles de temps"
+                                                wireClick="voirFeuillesDeTemps({{ $annee->id }})"
+                                                loadingTarget="voirFeuillesDeTemps({{ $annee->id }})" />
+                                        @endcan
 
                                         <!-- Bouton Activer - si pas active -->
-                                        @if ($annee->statut !== 'ACTIF')
-                                            <x-action-button type="outline-success" icon="mdi mdi-check-circle" size="sm"
-                                            tooltip="Activer" wireClick="activer({{ $annee->id }})"/>
-                                        @endif
+                                        @can('Activer une année financière')
+                                            @if ($annee->statut !== 'ACTIF')
+                                                <x-action-button type="outline-success" icon="mdi mdi-check-circle"
+                                                    size="sm" tooltip="Activer"
+                                                    wireClick="activer({{ $annee->id }})" />
+                                            @endif
+                                        @endcan
 
                                         <!-- Bouton Clôturer -->
                                         @if ($annee->actif)
@@ -117,7 +124,7 @@
                             <i class="mdi mdi-calendar-outline me-2"></i>
                             {{ $editingId ? 'Modifier' : 'Créer' }} une Année Financière
                         </h5>
-                        <x-action-button type="close" wireClick="closeModal"/>
+                        <x-action-button type="close" wireClick="closeModal" />
                     </div>
                     <div class="modal-body">
                         <livewire:budget::annee-financiere-form :anneeId="$editingId" :key="$editingId" />
