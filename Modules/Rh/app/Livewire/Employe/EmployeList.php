@@ -12,10 +12,13 @@ class EmployeList extends Component
 
     public $showModal = false;
     public $editingId = null;
+    public $employeId = null;
+    public $employeNom;
     public $nom_searched;
     public $prenom_searched;
     public $matricule_searched;
     public $gestionnaire_searched;
+    public $showAddEmployeAbsenceModal = false;
 
     protected $paginationTheme = 'bootstrap';
 
@@ -23,6 +26,7 @@ class EmployeList extends Component
     protected $listeners = [
         'showModal' => 'closeModal',
         'employeCreated' => 'handleEmployeCreated',
+        'demandeAbsenceAjoute' => 'demandeAbsenceAjoute',
     ];
 
     //--- fonction d'affichage du formulaire d'un employe
@@ -39,6 +43,28 @@ class EmployeList extends Component
         $val ? $this->showModal = $this->val : $this->showModal = false;
         $this->editingId = null;
     }
+
+    //--- afficher et caher le formulaire d'ajout d'une absence d'un employé
+    public function open_add_employe_absence_modal($empId, $empNom)
+    {
+        $this->employeId = $empId;
+        $this->employeNom = $empNom;
+        $this->showAddEmployeAbsenceModal = !$this->showAddEmployeAbsenceModal;
+    }
+
+    public function close_add_employe_absence_modal()
+    {
+        $this->reset('employeId', 'employeNom');
+        $this->showAddEmployeAbsenceModal = !$this->showAddEmployeAbsenceModal;
+    }
+
+    //--- afficher le message de creation d'une absence
+    public function demandeAbsenceAjoute()
+    {
+        $this->showAddEmployeAbsenceModal = false;
+        session()->flash('success', 'Demande d\'absence enregistrée avec succès.');
+    }
+
 
     //--- fonction d'affichage du message de creation d'un employe
     public function handleEmployeCreated()

@@ -31,11 +31,15 @@
                                                 <x-action-button type="outline-success" icon="fas fa-edit"
                                                     tooltip="Modifier"
                                                     wireClick="show_edit_groupe_modal({{ $group->id }})" />
+                                                <x-action-button type="outline-info" icon="fas fa-ban"
+                                                    tooltip=" Voir les Permissions"
+                                                    wireClick="show_group_permission_modal({{ $group->id }},'{{ $group->name }}')" />
+                                            @else
+                                                <div class="px-3"></div>
+                                                <x-action-button type="outline-info" icon="fas fa-ban"
+                                                    tooltip=" Voir les Permissions"
+                                                    wireClick="show_group_permission_modal({{ $group->id }},'{{ $group->name }}')" />
                                             @endif
-
-                                            <x-action-button type="outline-info" icon="fas fa-ban"
-                                                tooltip=" Voir les Permissions"
-                                                wireClick="show_group_permission_modal({{ $group->id }},'{{ $group->name }}')" />
                                         </div>
                                     </td>
                                 </tr>

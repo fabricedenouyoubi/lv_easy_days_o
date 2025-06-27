@@ -38,12 +38,20 @@
                                     </td>
                                     <td>
                                         <div class="d-flex gap-2">
-                                            {{-- Boutons avec composant --}}
+                                            {{-- Bouton avec Details Employe --}}
                                             @can('Voir Detail Employé')
                                                 <x-action-button type="outline-info" icon="fas fa-eye"
                                                     tooltip="Voir détails"
                                                     href="{{ route('rh-employe.show', $employe->id) }}" />
                                             @endcan
+
+                                            @if (auth()->user()->hasRole('ADMIN'))
+                                                {{-- Bouton Ajouter de demande d'absence --}}
+                                                <x-action-button type="outline-primary" icon="fas fa-clock"
+                                                    tooltip="Ajouter une demande d'absence"
+                                                    wireClick="open_add_employe_absence_modal({{ $employe->id }}, '{{ $employe->nom }} {{ $employe->prenom }}')" />
+                                            @endif
+
                                         </div>
                                     </td>
                                 </tr>
@@ -107,6 +115,25 @@
                     </div>
                     <div class="modal-body">
                         <livewire:rh::employe.employe-form />
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Formulaire d'ajout d'une demande pour un autre employe --}}
+    @if ($showAddEmployeAbsenceModal)
+        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div id="dialog-lg" class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-clock"></i> Nouvelle demande pour <strong>{{  $employeNom }}</strong>
+                        </h5>
+                        <x-action-button type="close" wire-click="close_add_employe_absence_modal"
+                            aria-label="Close" />
+                    </div>
+                    <div class="modal-body">
+                        <livewire:rhfeuilledetempsabsence::rh-feuille-de-temps-absence-admin-form  :employeId="$employeId" />
                     </div>
                 </div>
             </div>

@@ -33,11 +33,12 @@ class RhFeuilleDeTempsAbsenceForm extends Component
     public function mount()
     {
         try {
-            //--- Selection des categories conerné par les types d'absences(Code de traveil)
-            $categorieIds  = Categorie::whereIn('intitule', ['Absence', 'Caisse'])->pluck('id');
-            //--- selection des types d'absence (Code de travail)
-            $this->type_absence_list = CodeTravail::with('categorie')->whereIn('categorie_id', $categorieIds)->get();
-
+            //--- Selection des categories conerné par les types d'absences (Code de traveil) ---
+            $this->type_absence_list = CodeTravail::with('categorie')
+                ->whereHas('categorie', function ($query) {
+                    $query->whereIn('intitule', ['Absence', 'Caisse']);
+                })
+                ->get();
 
             //--- chargement pour la modification
             if ($this->demande_absence_id) {

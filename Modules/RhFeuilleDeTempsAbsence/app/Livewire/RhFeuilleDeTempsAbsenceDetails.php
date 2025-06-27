@@ -4,11 +4,17 @@ namespace Modules\RhFeuilleDeTempsAbsence\Livewire;
 
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use League\CommonMark\Extension\CommonMark\Node\Inline\Code;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Budget\Models\SemaineAnnee;
 use Modules\RhFeuilleDeTempsAbsence\Models\DemandeAbsence;
 use Modules\RhFeuilleDeTempsAbsence\Models\Operation;
+use Modules\RhFeuilleDeTempsConfig\Models\Categorie;
+use Modules\RhFeuilleDeTempsConfig\Models\CodeTravail;
+use Modules\RhFeuilleDeTempsConfig\Models\Comportement\Configuration;
+
+use function Laravel\Prompts\select;
 
 class RhFeuilleDeTempsAbsenceDetails extends Component
 {
@@ -25,6 +31,8 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     public $showApprouverModal = false;
     public $showRetournerModal = false;
     public $showRejeterModal = false;
+
+    public $jour_feriee_list;
 
 
     public function messages()
@@ -64,11 +72,48 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
         return $dateDebut->diffInDays($dateFin) + 1;
     }
 
+
+    //--- recuperer les jours non ouvrables pour les exclure dans le calcul des heures d'absence
+    public function recupererDateNonOuvrable()
+    {
+        //---Recuperer les Jours feriés
+        $jour_feriee_list = Configuration::whereHas('codeTravail.categorie', function ($query) {
+            $query->where('intitule', 'Fermé');
+        })->pluck('date')->map(fn($date) => Carbon::parse($date)->toDateString())->toArray();
+
+        //--- extraire les dimanches des demanines de l'année ---
+        $sundayDates = SemaineAnnee::where('annee_financiere_id', $this->demandeAbsence->annee_financiere_id)
+            ->get()
+            ->map(function ($semaine) {
+                // Calcule le dimanche à partir de la date de début
+                $sunday = Carbon::parse($semaine->debut)->next(Carbon::SUNDAY);
+                // Vérifie que ce dimanche est bien dans la semaine
+                if ($sunday->between($semaine->debut, $semaine->fin)) {
+                    return $sunday->toDateString(); // ou format('d/m/Y')
+                }
+
+                return null;
+            })
+            ->filter()
+            ->values()
+            ->all();
+
+        $date = collect($jour_feriee_list)
+            ->merge($sundayDates)
+            ->unique() // elimine les doublons
+            ->sort()   // classe par ordre croissant
+            ->values() // Réindexe les clés de 0 à n-1
+            ->all(); // Retourne un tableau
+        return $date;
+    }
+
     public function mount()
     {
         $this->demandeAbsence = DemandeAbsence::with('employe', 'codeTravail', 'operations.anneeSemaine')->findOrFail($this->demandeAbsenceId);
         $this->workflow_log = $this->demandeAbsence->workflow_log;
         $this->nombreJourAbsence = $this->nombreDeJoursEntre($this->demandeAbsence->date_debut, $this->demandeAbsence->date_fin);
+
+        //dd($this->recupererDateNonOuvrable());
     }
 
     //--- afficher et caher le formulaire d'ajout d'une absence
