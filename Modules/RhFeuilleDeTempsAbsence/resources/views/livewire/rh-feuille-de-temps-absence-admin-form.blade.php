@@ -3,22 +3,6 @@
         d'absence</h6>
 
     <div class="mb-3">
-        <label for="employe_id" class="form-label requiredField">
-            Employé <span class="asteriskField text-danger">*</span> </label> <select name="employe_id"
-            class="select form-select @error('employe_id')  is-invalid @enderror" id="employe_id" wire:model="employe_id">
-            <option value="" selected="">---------</option>
-            @foreach ($employes as $employe)
-                <option value="{{ $employe->id }}">{{ $employe->nom.' '.$employe->prenom }}</option>
-            @endforeach
-        </select>
-        @error('employe_id')
-            <span class="form-text text-danger">{{ $message }}</span>
-        @enderror
-        <div id="id_code_de_travail_helptext" class="form-text">Sélectionnez l'employé pour lequel vous voulew effectuer
-            la demande</div>
-    </div>
-
-    <div class="mb-3">
         <label for="CodeTraveil" class="form-label requiredField">
             Type d'absence <span class="asteriskField text-danger">*</span> </label> <select name="CodeTraveil"
             class="select form-select @error('code_de_travail_id')  is-invalid @enderror" id="CodeTraveil"

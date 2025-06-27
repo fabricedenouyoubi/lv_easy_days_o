@@ -17,7 +17,6 @@ class RhFeuilleDeTempsAbsenceList extends Component
     public $demandeAbsenceId = null;
     public $nbrDemandeEnAttente;
     public $nbrDemandeApprouve;
-    public $showAddEmployeAbsenceModal = false;
 
     protected $paginationTheme = 'bootstrap';
     protected $listeners = [
@@ -48,28 +47,11 @@ class RhFeuilleDeTempsAbsenceList extends Component
         }
     }
 
-
     //--- afficher et caher le formulaire d'ajout d'une absence
     public function toogle_add_absence_modal()
     {
         $this->showAddAbsenceModal = !$this->showAddAbsenceModal;
     }
-
-    //--- afficher et caher le formulaire d'ajout d'une absence d'un employé
-    public function toogle_add_employe_absence_modal()
-    {
-        $this->showAddEmployeAbsenceModal = !$this->showAddEmployeAbsenceModal;
-    }
-
-
-    //--- afficher le message de creation d'une absence
-    public function demandeAbsenceAjoute()
-    {
-        $this->showAddAbsenceModal = false;
-        $this->showAddEmployeAbsenceModal = false;
-        session()->flash('success', 'Demande d\'absence enregistrée avec succès.');
-    }
-
 
     //--- recuperation des demandes d'absence en cours
     public function getDemandeAbsence()

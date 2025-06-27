@@ -20,8 +20,7 @@ class RhFeuilleDeTempsAbsenceAdminForm extends Component
     public $description;
     public $code_de_travail_id;
     public $type_absence_list;
-    public $employe_id;
-    public $employes;
+    public $employeId;
 
     public $statuts = [
         'Brouillon',
@@ -34,12 +33,12 @@ class RhFeuilleDeTempsAbsenceAdminForm extends Component
     public function mount()
     {
         try {
-            //--- Selection des categories conerné par les types d'absences(Code de traveil)
-            $categorieIds  = Categorie::whereIn('intitule', ['Absence', 'Caisse'])->pluck('id');
-            //--- selection des types d'absence (Code de travail)
-            $this->type_absence_list = CodeTravail::with('categorie')->whereIn('categorie_id', $categorieIds)->get();
-            //--- selection des employes
-            $this->employes = Employe::where('id', '!=', Auth::user()->employe->id)->orderBy('nom', 'asc')->get();
+            $this->type_absence_list = CodeTravail::with('categorie')
+                ->whereHas('categorie', function ($query) {
+                    $query->whereIn('intitule', ['Absence', 'Caisse']);
+                })
+                ->get();
+
         } catch (\Throwable $th) {
             //--- dd($th->getMessage());
         }
@@ -51,7 +50,6 @@ class RhFeuilleDeTempsAbsenceAdminForm extends Component
         'heure_par_jour' => 'required|numeric|min:1|max:24',
         'description' => 'nullable|string|max:1000',
         'code_de_travail_id' => 'required|exists:codes_travail,id',
-        'employe_id' => 'required|integer|exists:employes,id',
     ];
 
     protected $messages = [
@@ -73,10 +71,6 @@ class RhFeuilleDeTempsAbsenceAdminForm extends Component
 
         'code_de_travail_id.exists' => 'Le code de travail sélectionné est invalide.',
         'code_de_travail_id.required' => 'Le type d\'absence est obligatoire.',
-
-        'employe_id.required' => 'l\'employé est obligatoire.',
-        'employe_id.integer' => 'L\'identifiant de l\'employé doit être un nombre entier.',
-        'employe_id.exists' => 'Aucun employé correspondant à cet identifiant.',
     ];
 
     //--- Contruction du journal de la demande d'absence
@@ -142,11 +136,11 @@ class RhFeuilleDeTempsAbsenceAdminForm extends Component
         $this->validate();
         try {
             $annee_financiere_id = AnneeFinanciere::where('actif', true)->first()->id;
-            $this->build_workflow_log($this->statuts[0], $this->statuts[1], 'La demande est en cours de redaction par '. Auth::user()->name);
+            $this->build_workflow_log($this->statuts[0], $this->statuts[1], 'La demande est en cours de redaction par ' . Auth::user()->name);
             $demande_absence = DemandeAbsence::create(
                 [
                     'annee_financiere_id' => $annee_financiere_id,
-                    'employe_id' => $this->employe_id,
+                    'employe_id' => $this->employeId,
                     'codes_travail_id' => $this->code_de_travail_id,
                     'date_debut' => $this->date_debut,
                     'date_fin' => $this->date_fin,
