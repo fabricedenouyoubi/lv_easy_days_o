@@ -97,29 +97,31 @@
                                     <x-action-button type="light dropdown-toggle" icon="mdi mdi-dots-horizontal"
                                         size="sm" dataBsToogle='dropdown' />
                                     <ul class="dropdown-menu">
-                                        @if ($feuille->actif)
+                                        @can('Activer une semaine')
+                                            @if ($feuille->actif)
+                                                <li>
+                                                    <x-action-button type=" dropdown-item"
+                                                        icon="mdi mdi-pause-circle text-warning me-2" size="md"
+                                                        text="Désactiver"
+                                                        wireClick="desactiverFeuille({{ $feuille->id }})" />
+                                                </li>
+                                            @else
+                                                <li>
+                                                    <x-action-button type=" dropdown-item"
+                                                        icon="mdi mdi-play-circle text-success me-2" size="md"
+                                                        text="Activer" wireClick="activerFeuille({{ $feuille->id }})" />
+                                                </li>
+                                            @endif
+                                        @endcan
+                                        @can('Marquer une semaine de paie')
                                             <li>
                                                 <x-action-button type=" dropdown-item"
-                                                    icon="mdi mdi-pause-circle text-warning me-2" size="md"
-                                                    text="Désactiver"
-                                                    wireClick="desactiverFeuille({{ $feuille->id }})" />
+                                                    icon="{{ $feuille->est_semaine_de_paie ? 'mdi mdi-cash-remove text-secondary me-2' : 'mdi mdi-cash-plus text-warning me-2' }}"
+                                                    size="md"
+                                                    text="{{ $feuille->est_semaine_de_paie ? 'Retirer semaine de paie' : 'Marquer semaine de paie' }}"
+                                                    wireClick="toggleSemaineDePaie({{ $feuille->id }})" />
                                             </li>
-                                        @else
-                                            <li>
-                                                <x-action-button type=" dropdown-item"
-                                                    icon="mdi mdi-play-circle text-success me-2" size="md"
-                                                    text="Activer" wireClick="activerFeuille({{ $feuille->id }})" />
-                                            </li>
-                                        @endif
-
-                                        <li>
-                                            <x-action-button type=" dropdown-item"
-                                                icon="{{ $feuille->est_semaine_de_paie ? 'mdi mdi-cash-remove text-secondary me-2' : 'mdi mdi-cash-plus text-warning me-2' }}"
-                                                size="md"
-                                                text="{{ $feuille->est_semaine_de_paie ? 'Retirer semaine de paie' : 'Marquer semaine de paie' }}"
-                                                wireClick="toggleSemaineDePaie({{ $feuille->id }})" />
-                                        </li>
-
+                                        @endcan
                                     </ul>
                                 </div>
                             </td>
@@ -132,8 +134,7 @@
                                     <h6 class="text-muted">Aucune semaine trouvée</h6>
                                     @if ($appliedDateDebut || $appliedDateFin || $appliedShowOnlyActive)
                                         <p class="text-muted small mb-3">Essayez de modifier vos filtres</p>
-                                        <x-action-button type="outline-primary"
-                                            icon="fas fa-refresh" size="sm"
+                                        <x-action-button type="outline-primary" icon="fas fa-refresh" size="sm"
                                             text="Réinitialiser les filtres" wireClick="resetFilters" />
                                     @endif
                                 </div>

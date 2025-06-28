@@ -2,23 +2,19 @@
 
 namespace Modules\RhFeuilleDeTempsAbsence\Livewire;
 
+use Carbon\CarbonPeriod;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use League\CommonMark\Extension\CommonMark\Node\Inline\Code;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Budget\Models\SemaineAnnee;
 use Modules\RhFeuilleDeTempsAbsence\Models\DemandeAbsence;
 use Modules\RhFeuilleDeTempsAbsence\Models\Operation;
-use Modules\RhFeuilleDeTempsConfig\Models\Categorie;
-use Modules\RhFeuilleDeTempsConfig\Models\CodeTravail;
-use Modules\RhFeuilleDeTempsConfig\Models\Comportement\Configuration;
-
-use function Laravel\Prompts\select;
+use Modules\RhFeuilleDeTempsAbsence\Traits\AbsenceResource;
 
 class RhFeuilleDeTempsAbsenceDetails extends Component
 {
-    use WithPagination;
+    use WithPagination, AbsenceResource;
     public $demandeAbsenceId;
     public $demandeAbsence;
     public $nombreJourAbsence;
@@ -32,7 +28,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     public $showRetournerModal = false;
     public $showRejeterModal = false;
 
-    public $jour_feriee_list;
+    public $jours_non_ouvrable;
 
 
     public function messages()
@@ -58,62 +54,11 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
         'nombreDeJoursEntre' => 'handleNombreDeJoursEntre'
     ];
 
-
-    function nombreDeJoursEntre($dateA, $dateB)
-    {
-        $dateDebut = $dateA instanceof Carbon
-            ? $dateA->copy()->startOfDay()
-            : Carbon::parse($dateA)->startOfDay();
-
-        $dateFin = $dateB instanceof Carbon
-            ? $dateB->copy()->startOfDay()
-            : Carbon::parse($dateB)->startOfDay();
-
-        return $dateDebut->diffInDays($dateFin) + 1;
-    }
-
-
-    //--- recuperer les jours non ouvrables pour les exclure dans le calcul des heures d'absence
-    public function recupererDateNonOuvrable()
-    {
-        //---Recuperer les Jours feriés
-        $jour_feriee_list = Configuration::whereHas('codeTravail.categorie', function ($query) {
-            $query->where('intitule', 'Fermé');
-        })->pluck('date')->map(fn($date) => Carbon::parse($date)->toDateString())->toArray();
-
-        //--- extraire les dimanches des demanines de l'année ---
-        $sundayDates = SemaineAnnee::where('annee_financiere_id', $this->demandeAbsence->annee_financiere_id)
-            ->get()
-            ->map(function ($semaine) {
-                // Calcule le dimanche à partir de la date de début
-                $sunday = Carbon::parse($semaine->debut)->next(Carbon::SUNDAY);
-                // Vérifie que ce dimanche est bien dans la semaine
-                if ($sunday->between($semaine->debut, $semaine->fin)) {
-                    return $sunday->toDateString(); // ou format('d/m/Y')
-                }
-
-                return null;
-            })
-            ->filter()
-            ->values()
-            ->all();
-
-        $date = collect($jour_feriee_list)
-            ->merge($sundayDates)
-            ->unique() // elimine les doublons
-            ->sort()   // classe par ordre croissant
-            ->values() // Réindexe les clés de 0 à n-1
-            ->all(); // Retourne un tableau
-        return $date;
-    }
-
     public function mount()
     {
         $this->demandeAbsence = DemandeAbsence::with('employe', 'codeTravail', 'operations.anneeSemaine')->findOrFail($this->demandeAbsenceId);
         $this->workflow_log = $this->demandeAbsence->workflow_log;
-        $this->nombreJourAbsence = $this->nombreDeJoursEntre($this->demandeAbsence->date_debut, $this->demandeAbsence->date_fin);
-
-        //dd($this->recupererDateNonOuvrable());
+        $this->nombreJourAbsence = $this->nombreDeJoursEntre($this->demandeAbsence->date_debut, $this->demandeAbsence->date_fin, $this->demandeAbsence->annee_financiere_id);
     }
 
     //--- afficher et caher le formulaire d'ajout d'une absence
@@ -199,8 +144,8 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
         $logsArray = collect(explode("\n", $demande->workflow_log))
             ->filter() // élimine les lignes vides
             ->map(fn($line) => json_decode(trim($line), true))
-            ->filter() // élimine les lignes non valides (nulls)
-            ->reverse() // <-- Tri du plus récent au plus ancien
+            ->filter()  // élimine les lignes non valides (nulls)
+            ->reverse() // Tri du plus récent au plus ancien
             ->values(); // Pour réindexer proprement;
         return $logsArray;
     }
@@ -235,6 +180,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
                 'workflow_log' => $this->workflow_log
             ]);
             $this->showRappelerModal = false;
+            $this->reset('motif');
             session()->flash('success', 'Demande d\'absence rappelée avec succès.');
         } catch (\Throwable $th) {
             //dd($th->getMessage());
@@ -251,13 +197,41 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
                 ->where('debut', '<=', $this->demandeAbsence->date_fin)
                 ->get();
 
+            //--- Récupération des jours non ouvrables pour l'année financière concernée ---
+            $jours_non_ouvrable = collect($this->recupererDateNonOuvrable($this->demandeAbsence->annee_financiere_id))
+                ->map(fn($date) => Carbon::parse($date)->format('Y-m-d'));
+
             //--- Enregistrement des opérations
             foreach ($semaines as $semaine) {
-                Operation::create([
+
+                // On travaille uniquement avec les dates au format 'YYYY-MM-DD' sans l'heure
+                $dateDebut = Carbon::parse($this->demandeAbsence->date_debut)->toDateString();
+                $semaineDebut = Carbon::parse($semaine->debut)->toDateString();
+
+                /* On prend la date de début la plus tardive entre la demande d'absence et la semaine courante
+                Cela permet de ne pas dépasser les limites de la semaine lors du calcul  */
+                $dateDebut = max($dateDebut, $semaineDebut);
+
+                $dateFin = Carbon::parse($this->demandeAbsence->date_fin)->toDateString();
+                $semaineFin = Carbon::parse($semaine->fin)->toDateString();
+
+                // On prend la date de fin la plus tôt entre la demande d'absence et la semaine courante
+                $dateFin = min($dateFin, $semaineFin);
+
+                // Création d'une période
+                $periode = CarbonPeriod::create($dateDebut, $dateFin);
+
+                // Filtre la période pour compter uniquement les jours qui ne sont pas non ouvrables
+                $jours_absence = collect($periode)->filter(function ($date) use ($jours_non_ouvrable) {
+                    return !$jours_non_ouvrable->contains($date->format('Y-m-d'));
+                })->count();
+
+                // Création d'une opération (enregistrement dans la base) représentant l'absence sur cette semaine
+                $operation = Operation::create([
                     'demande_absence_id' => $this->demandeAbsence->id,
                     'annee_semaine_id' => $semaine->id,
                     'employe_id' => $this->demandeAbsence->employe_id,
-                    'total_heure' => $this->demandeAbsence->total_heure,
+                    'total_heure' => $jours_absence * $this->demandeAbsence->heure_par_jour,
                 ]);
             }
 
@@ -270,14 +244,14 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
             $this->showApprouverModal = false;
             session()->flash('success', 'Demande d\'absence validée avec succès.');
         } catch (\Throwable $th) {
-            //dd($th->getMessage());
+            dd($th->getMessage());
         }
     }
 
     //--- Retourner la demande d'absence
     public function retournerDemandeAbsence()
     {
-        $this->validate(['motif' => ['required', 'string', 'min:5'],]);
+        $this->validate(['motif' => ['required', 'string', 'min:5']]);
         try {
 
             if ($this->demandeAbsence->operations()->count() > 0) {
@@ -291,6 +265,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
                 'workflow_log' => $this->workflow_log
             ]);
             $this->showRetournerModal = false;
+            $this->reset('motif');
             session()->flash('success', 'Demande d\'absence retournée avec succès.');
         } catch (\Throwable $th) {
             //throw $th;
@@ -312,6 +287,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
                 'workflow_log' => $this->workflow_log
             ]);
             $this->showRejeterModal = false;
+            $this->reset('motif');
             session()->flash('success', 'Demande d\'absence rejetée avec succès.');
         } catch (\Throwable $th) {
             //throw $th;

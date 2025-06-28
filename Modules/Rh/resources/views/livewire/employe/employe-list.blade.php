@@ -133,7 +133,7 @@
                             aria-label="Close" />
                     </div>
                     <div class="modal-body">
-                        <livewire:rhfeuilledetempsabsence::rh-feuille-de-temps-absence-admin-form  :employeId="$employeId" />
+                        <livewire:rhfeuilledetempsabsence::rh-feuille-de-temps-absence-form  :employeId="$employeId" />
                     </div>
                 </div>
             </div>

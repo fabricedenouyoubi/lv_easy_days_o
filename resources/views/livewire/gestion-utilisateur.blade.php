@@ -43,8 +43,11 @@
                                     <td>
                                         <div class="d-flex gap-2">
                                             {{-- Boutons avec composant --}}
-                                            <x-action-button type="outline-info" icon="fas fa-ban"
-                                                tooltip="Voir Les Permissions" wireClick="show_user_modal('{{ $utilisateur->name }}', {{ $utilisateur->id }})" />
+                                            @can('Voir Permissions Utilisateur')
+                                                <x-action-button type="outline-info" icon="fas fa-ban"
+                                                    tooltip="Voir Les Permissions"
+                                                    wireClick="show_user_modal('{{ $utilisateur->name }}', {{ $utilisateur->id }})" />
+                                            @endcan
                                         </div>
                                     </td>
                                 </tr>
@@ -78,8 +81,8 @@
                 {{-- Filtre par email --}}
                 <div class="mb-3">
                     <label for="email_searched" class="form-label">Email</label>
-                    <input type="text" id="email_searched" class="form-control"
-                        placeholder="Rechercher par Email..." wire:model.defer="email_searched">
+                    <input type="text" id="email_searched" class="form-control" placeholder="Rechercher par Email..."
+                        wire:model.defer="email_searched">
                 </div>
                 {{-- Filtre par groupe --}}
                 <div class="mb-3">
@@ -96,7 +99,8 @@
             <div id="dialog-lg" class="modal-dialog modal-xl w-100" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title"><i class="fas fa-ban"></i> Permissions <span class="fw-bold">{{ $userName }}</span></h5>
+                        <h5 class="modal-title"><i class="fas fa-ban"></i> Permissions <span
+                                class="fw-bold">{{ $userName }}</span></h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
                             wire:click="hide_user_modal()"></button>
                     </div>

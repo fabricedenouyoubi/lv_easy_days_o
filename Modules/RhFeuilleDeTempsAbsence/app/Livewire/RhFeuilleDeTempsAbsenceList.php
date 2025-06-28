@@ -53,6 +53,13 @@ class RhFeuilleDeTempsAbsenceList extends Component
         $this->showAddAbsenceModal = !$this->showAddAbsenceModal;
     }
 
+    //--- afficher le message de creation d'une absence
+    public function demandeAbsenceAjoute()
+    {
+        $this->showAddAbsenceModal = false;
+        session()->flash('success', 'Demande d\'absence enregistrée avec succès.');
+    }
+
     //--- recuperation des demandes d'absence en cours
     public function getDemandeAbsence()
     {

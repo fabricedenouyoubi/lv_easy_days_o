@@ -44,24 +44,27 @@
                 </li>
 
                 <!-- ENTREPRISE -->
-                <li class="menu-title" data-key="t-entreprise">ENTREPRISE</li>
-
-                <li>
-                    <a href="{{ route('entreprise.presentation') }}">
-                        <i class="icon nav-icon" data-eva="monitor-outline"></i>
-                        <span class="menu-item" data-key="t-presentation">Présentation</span>
-                    </a>
-                </li>
+                @can('Voir Module PRESENTATION')
+                    <li class="menu-title" data-key="t-entreprise">ENTREPRISE</li>
+                    <li>
+                        <a href="{{ route('entreprise.presentation') }}">
+                            <i class="icon nav-icon" data-eva="monitor-outline"></i>
+                            <span class="menu-item" data-key="t-presentation">Présentation</span>
+                        </a>
+                    </li>
+                @endcan
 
                 <!-- BUDGET -->
-                <li class="menu-title" data-key="t-budget">BUDGET</li>
+                @can('Voir Module ANNEE_FINANCIERE')
+                    <li class="menu-title" data-key="t-budget">BUDGET</li>
+                    <li>
+                        <a href="{{ route('budget.annees-financieres') }}">
+                            <i class="icon nav-icon" data-eva="calendar-outline"></i>
+                            <span class="menu-item" data-key="t-annees-financieres">Années Financières</span>
+                        </a>
+                    </li>
+                @endcan
 
-                <li>
-                    <a href="{{ route('budget.annees-financieres') }}">
-                        <i class="icon nav-icon" data-eva="calendar-outline"></i>
-                        <span class="menu-item" data-key="t-annees-financieres">Années Financières</span>
-                    </a>
-                </li>
 
                 <!-- RH -->
                 @can('Voir Module RH')
@@ -95,20 +98,23 @@
                     </a>
                 </li>
 
-                <li>
-                    <a href="javascript: void(0);" class="has-arrow">
-                        <i class="icon nav-icon" data-eva="settings-2-outline"></i>
-                        <span class="menu-item" data-key="t-configurations">Configurations</span>
-                    </a>
-                    <ul class="sub-menu" aria-expanded="false">
-                        <li><a href="#" onclick="return false;" data-key="t-feuilles-temps">Feuilles de temps</a>
-                        </li>
-                        <li><a href="{{ route('rhfeuilledetempsconfig.codes-travail.codetravails') }}"
-                                data-key="t-code-travail">Code de travail</a></li>
-                        <li><a href="{{ route('rhfeuilledetempsconfig.categories.categories') }}"
-                                data-key="t-categorie">Catégorie code</a></li>
-                    </ul>
-                </li>
+                {{-- Configuration --}}
+                @can('Voir Module CONFIGURATION')
+                    <li>
+                        <a href="javascript: void(0);" class="has-arrow">
+                            <i class="icon nav-icon" data-eva="settings-2-outline"></i>
+                            <span class="menu-item" data-key="t-configurations">Configurations</span>
+                        </a>
+                        <ul class="sub-menu" aria-expanded="false">
+                            <li><a href="#" onclick="return false;" data-key="t-feuilles-temps">Feuilles de temps</a>
+                            </li>
+                            <li><a href="{{ route('rhfeuilledetempsconfig.codes-travail.codetravails') }}"
+                                    data-key="t-code-travail">Code de travail</a></li>
+                            <li><a href="{{ route('rhfeuilledetempsconfig.categories.categories') }}"
+                                    data-key="t-categorie">Catégorie code</a></li>
+                        </ul>
+                    </li>
+                @endcan
 
                 <!-- RAPPORT -->
                 <li class="menu-title" data-key="t-rapport">RAPPORT</li>
@@ -128,27 +134,31 @@
                 </li>
 
                 <!-- Autorisation -->
-                <li class="menu-title" data-key="t-autorisations">Autorisation</li>
-
-                <li>
-                    <a href="javascript: void(0);" class="has-arrow">
-                        <i class="mdi mdi-cancel fs-4"></i>
-                        <span class="menu-item" data-key="t-gestion_autorisation">Gestion autorisations</span>
-                    </a>
-                    <ul class="sub-menu" aria-expanded="false">
-                        {{-- <li>
+                @can('Voir Module AUTORISATION')
+                    <li class="menu-title" data-key="t-autorisations">Autorisation</li>
+                    <li>
+                        <a href="javascript: void(0);" class="has-arrow">
+                            <i class="mdi mdi-cancel fs-4"></i>
+                            <span class="menu-item" data-key="t-gestion_autorisation">Gestion autorisations</span>
+                        </a>
+                        <ul class="sub-menu" aria-expanded="false">
+                            {{-- <li>
                             <a href="{{ route('permission.index') }}"data-key="t-permissions">Permissions</a>
                         </li> --}}
-                        <li>
-                            <a href="{{ route('group.index') }}"data-key="t-groups">Groupes</a>
-                        </li>
-                        <li>
-                            <a
-                                href="{{ route('gestion_utilisateur.index') }}"data-key="t-utilisateurs">Utilisateurs</a>
-                        </li>
-                    </ul>
-                </li>
-
+                            @can('Voir Groupes')
+                                <li>
+                                    <a href="{{ route('group.index') }}"data-key="t-groups">Groupes</a>
+                                </li>
+                            @endcan
+                            @can('Voir Utilisateurs')
+                                <li>
+                                    <a
+                                        href="{{ route('gestion_utilisateur.index') }}"data-key="t-utilisateurs">Utilisateurs</a>
+                                </li>
+                            @endcan
+                        </ul>
+                    </li>
+                @endcan
             </ul>
         </div>
         <!-- Sidebar -->

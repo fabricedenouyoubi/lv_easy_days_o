@@ -23,13 +23,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [AuthController::class, 'profile'])->name('profile');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    Route::prefix('permissions')->name('permission.')->group(function () {
+    /* Route::prefix('permissions')->name('permission.')->group(function () {
         Route::get('/', [AutorisationController::class, 'permission'])->name('index');
-    });
+    }); */
+
     Route::prefix('groupes')->name('group.')->group(function () {
         Route::get('/', [AutorisationController::class, 'groupe'])->name('index');
-    });
+    })->middleware(['permission:Voir Module AUTORISATION', 'permission:Voir Groupes']);
+
     Route::prefix('utilisateurs')->name('gestion_utilisateur.')->group(function () {
         Route::get('/', [AutorisationController::class, 'gestion_utilisateur'])->name('index');
-    });
+    })->middleware(['permission:Voir Module AUTORISATION', 'permission:Voir Utilisateurs']);
 });

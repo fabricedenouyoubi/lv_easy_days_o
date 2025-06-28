@@ -4,6 +4,8 @@ namespace Modules\RhFeuilleDeTempsReguliere\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Modules\RhFeuilleDeTempsAbsence\Models\DemandeAbsence;
+use Modules\RhFeuilleDeTempsAbsence\Models\Operation;
 use Modules\RhFeuilleDeTempsConfig\Models\CodeTravail;
 
 class LigneTravail extends Model
@@ -30,11 +32,11 @@ class LigneTravail extends Model
         'debut_5', 'fin_5', 'duree_5',
         // Dimanche (6)
         'debut_6', 'fin_6', 'duree_6',
-        
+
         // Relations
         'operation_id',
         'codes_travail_id',
-        
+
         // Nouveaux champs pour auto-remplissage
         'auto_rempli',
         'type_auto_remplissage',
@@ -59,7 +61,7 @@ class LigneTravail extends Model
         'fin_5' => 'datetime:H:i',
         'debut_6' => 'datetime:H:i',
         'fin_6' => 'datetime:H:i',
-        
+
         'duree_0' => 'decimal:2',
         'duree_1' => 'decimal:2',
         'duree_2' => 'decimal:2',
@@ -72,7 +74,7 @@ class LigneTravail extends Model
     // ================================
     // RELATIONS
     // ================================
-    
+
     /**
      * Relation avec l'opération
      */
@@ -100,7 +102,7 @@ class LigneTravail extends Model
     // ================================
     // MÉTHODES UTILES
     // ================================
-    
+
     /**
      * Obtenir les jours de la semaine avec leurs données
      */
@@ -108,7 +110,7 @@ class LigneTravail extends Model
     {
         $jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
         $data = [];
-        
+
         for ($i = 0; $i <= 6; $i++) {
             $data[$i] = [
                 'nom' => $jours[$i],
@@ -117,7 +119,7 @@ class LigneTravail extends Model
                 'duree' => $this->{"duree_{$i}"} ?? 0,
             ];
         }
-        
+
         return $data;
     }
 
@@ -141,7 +143,7 @@ class LigneTravail extends Model
         if ($jour < 0 || $jour > 6) {
             throw new \InvalidArgumentException('Le jour doit être entre 0 (Lundi) et 6 (Dimanche)');
         }
-        
+
         $this->{"debut_{$jour}"} = $debut;
         $this->{"fin_{$jour}"} = $fin;
         $this->{"duree_{$jour}"} = $duree;
@@ -155,7 +157,7 @@ class LigneTravail extends Model
         if ($jour < 0 || $jour > 6) {
             throw new \InvalidArgumentException('Le jour doit être entre 0 (Lundi) et 6 (Dimanche)');
         }
-        
+
         return [
             'debut' => $this->{"debut_{$jour}"},
             'fin' => $this->{"fin_{$jour}"},
@@ -169,10 +171,10 @@ class LigneTravail extends Model
     public function remplirSemaineAbsence(\DateTime $dateDebut, \DateTime $dateFin, int $heuresParJour = 8): void
     {
         $currentDate = clone $dateDebut;
-        
+
         while ($currentDate <= $dateFin) {
             $jourSemaine = $currentDate->format('N') - 1; // 0=Lundi, 6=Dimanche
-            
+
             if ($jourSemaine >= 0 && $jourSemaine <= 6) {
                 $this->setJourHeures(
                     $jourSemaine,
@@ -181,7 +183,7 @@ class LigneTravail extends Model
                     min($heuresParJour, 7) // Max 7h par jour
                 );
             }
-            
+
             $currentDate->add(new \DateInterval('P1D'));
         }
     }

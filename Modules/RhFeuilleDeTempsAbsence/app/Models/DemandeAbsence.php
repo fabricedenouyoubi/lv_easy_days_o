@@ -10,11 +10,12 @@ use Modules\Rh\Models\Employe\Employe;
 use Modules\RhFeuilleDeTempsConfig\Models\CodeTravail;
 use Modules\RhFeuilleDeTempsReguliere\Models\LigneTravail;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Modules\RhFeuilleDeTempsAbsence\Traits\HasWorkflow;
 
 class DemandeAbsence extends Model
 {
-    use HasFactory, HasWorkflow;
+    use HasFactory/* , HasWorkflow */;
 
     protected $table = 'demande_absences';
 
@@ -65,11 +66,12 @@ class DemandeAbsence extends Model
     /**
      * Actions spécifiques lors de la validation d'une absence
      */
+
     protected function onValidation(array $context = []): void
     {
         // Remplir automatiquement les feuilles de temps
         $this->remplirFeuillesDeTempsAutomatiquement();
-        
+
         // Créer les opérations si nécessaire
         $this->creerOperationsAbsence();
     }
@@ -81,7 +83,7 @@ class DemandeAbsence extends Model
     {
         // Supprimer les remplissages automatiques existants
         $this->supprimerRemplissageAutomatique();
-        
+
         // Supprimer les opérations créées
         $this->operations()->delete();
     }
@@ -93,15 +95,15 @@ class DemandeAbsence extends Model
     {
         // Obtenir les semaines concernées par l'absence
         $semaines = $this->getSemainesConcernees();
-        
+
         foreach ($semaines as $semaine) {
             // Obtenir ou créer l'opération pour cette semaine
             $operation = Operation::getOrCreateOperation($this->employe_id, $semaine->id);
-            
+
             // Calculer les dates de début et fin pour cette semaine
             $dateDebutSemaine = $this->getDateDebutPourSemaine($semaine);
             $dateFinSemaine = $this->getDateFinPourSemaine($semaine);
-            
+
             // Créer la ligne de travail auto-remplie
             $this->creerLigneTravailAbsence($operation, $dateDebutSemaine, $dateFinSemaine);
         }
@@ -126,15 +128,15 @@ class DemandeAbsence extends Model
     {
         $debutAbsence = $this->date_debut->copy();
         $debutSemaine = Carbon::parse($semaine->debut);
-        
+
         // Prendre la date la plus tardive (début de semaine ou début d'absence)
         $dateDebut = $debutAbsence->gt($debutSemaine) ? $debutAbsence : $debutSemaine;
-        
+
         // Si c'est un dimanche, passer au lundi
         if ($dateDebut->isSunday()) {
             $dateDebut->addDay();
         }
-        
+
         return $dateDebut;
     }
 
@@ -145,15 +147,15 @@ class DemandeAbsence extends Model
     {
         $finAbsence = $this->date_fin->copy();
         $finSemaine = Carbon::parse($semaine->fin);
-        
+
         // Prendre la date la plus proche (fin de semaine ou fin d'absence)
         $dateFin = $finAbsence->lt($finSemaine) ? $finAbsence : $finSemaine;
-        
+
         // Si c'est un samedi, passer au vendredi
         if ($dateFin->isSaturday()) {
             $dateFin->subDay();
         }
-        
+
         return $dateFin;
     }
 
@@ -175,11 +177,11 @@ class DemandeAbsence extends Model
         $currentDate = $dateDebut->copy();
         while ($currentDate <= $dateFin) {
             $jourSemaine = $currentDate->dayOfWeek === 0 ? 6 : $currentDate->dayOfWeek - 1; // 0=Lundi, 6=Dimanche
-            
+
             // Seulement les jours ouvrables (Lundi à Vendredi)
             if ($jourSemaine >= 0 && $jourSemaine <= 4) {
                 $heuresJour = min($this->heure_par_jour, 8); // Max 8h par jour
-                
+
                 $ligne->setJourHeures(
                     $jourSemaine,
                     '08:00',
@@ -187,7 +189,7 @@ class DemandeAbsence extends Model
                     $heuresJour
                 );
             }
-            
+
             $currentDate->addDay();
         }
 
@@ -200,7 +202,7 @@ class DemandeAbsence extends Model
     private function creerOperationsAbsence(): void
     {
         $semaines = $this->getSemainesConcernees();
-        
+
         foreach ($semaines as $semaine) {
             // Vérifier si l'opération existe déjà
             if (!$this->operations()->where('annee_semaine_id', $semaine->id)->exists()) {
@@ -223,21 +225,21 @@ class DemandeAbsence extends Model
     {
         $dateDebut = $this->getDateDebutPourSemaine($semaine);
         $dateFin = $this->getDateFinPourSemaine($semaine);
-        
+
         $joursOuvrables = 0;
         $currentDate = $dateDebut->copy();
-        
+
         while ($currentDate <= $dateFin) {
             $jourSemaine = $currentDate->dayOfWeek === 0 ? 6 : $currentDate->dayOfWeek - 1;
-            
+
             // Compter seulement les jours ouvrables
             if ($jourSemaine >= 0 && $jourSemaine <= 4) {
                 $joursOuvrables++;
             }
-            
+
             $currentDate->addDay();
         }
-        
+
         return $joursOuvrables * min($this->heure_par_jour, 8);
     }
 
@@ -247,21 +249,29 @@ class DemandeAbsence extends Model
     private function supprimerRemplissageAutomatique(): void
     {
         LigneTravail::where('demande_absence_id', $this->id)
-                   ->where('auto_rempli', true)
-                   ->delete();
+            ->where('auto_rempli', true)
+            ->delete();
     }
 
-    // Scopes utiles
+    //--- scope pour la liste des demandes d'absence d'un employé
     public function scopeEmployeConnecte($query)
     {
-        return $query->where('employe_id', auth()->user()->employe->id);
+        $employeId = Auth::user()->employe->id;
+
+        return $query->where('employe_id', $employeId)
+            ->orWhere('admin_id', Auth::user()->id);
     }
 
+    //--- scope pour la liste des demandes d'absence d'un gestionnaire
     public function scopeGestionnaireConnecte($query)
     {
-        return $query->whereHas('employe', function($q) {
-            $q->where('gestionnaire_id', auth()->user()->employe->id);
-        });
+        $employe = Auth::user()->employe;
+
+        return $query->where(function ($q) use ($employe) {
+            $q->whereHas('employe', function ($subQuery) use ($employe) {
+                $subQuery->where('gestionnaire_id', $employe->id);
+            })->orWhere('employe_id', $employe->id);
+        })->orWhere('admin_id', Auth::user()->id);
     }
 
     public function scopeEnAttente($query)

@@ -2,17 +2,18 @@
 
 namespace Modules\RhFeuilleDeTempsAbsence\Livewire;
 
-use Illuminate\Support\Carbon;
+
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Modules\Budget\Models\AnneeFinanciere;
-use Modules\Rh\Models\Employe\Employe;
 use Modules\RhFeuilleDeTempsAbsence\Models\DemandeAbsence;
-use Modules\RhFeuilleDeTempsConfig\Models\Categorie;
+use Modules\RhFeuilleDeTempsAbsence\Traits\AbsenceResource;
 use Modules\RhFeuilleDeTempsConfig\Models\CodeTravail;
 
 class RhFeuilleDeTempsAbsenceForm extends Component
 {
+    use AbsenceResource;
+
     public $demande_absence_id;
     public $workflow_log;
     public $date_debut;
@@ -21,6 +22,8 @@ class RhFeuilleDeTempsAbsenceForm extends Component
     public $description;
     public $code_de_travail_id;
     public $type_absence_list;
+    public $annee_financiere_id;
+    public $employeId;
 
     public $statuts = [
         'Brouillon',
@@ -39,6 +42,10 @@ class RhFeuilleDeTempsAbsenceForm extends Component
                     $query->whereIn('intitule', ['Absence', 'Caisse']);
                 })
                 ->get();
+
+            //--- recuperation de l'annee financiere en cours
+            $this->annee_financiere_id = AnneeFinanciere::where('actif', true)->first()->id;
+
 
             //--- chargement pour la modification
             if ($this->demande_absence_id) {
@@ -107,80 +114,47 @@ class RhFeuilleDeTempsAbsenceForm extends Component
         $this->workflow_log = implode("\n", $logs);
     }
 
-    //--- calcul la l'heure total de l'absence
-    public function calculateTotalHeures()
-    {
-        if ($this->date_debut && $this->date_fin && $this->heure_par_jour) {
-            $dateDebut = $this->date_debut instanceof Carbon
-                ? $this->date_debut->copy()->startOfDay()
-                : Carbon::parse($this->date_debut)->startOfDay();
-
-            $dateFin = $this->date_fin instanceof Carbon
-                ? $this->date_fin->copy()->startOfDay()
-                : Carbon::parse($this->date_fin)->startOfDay();
-
-            $jours = $dateDebut->diffInDays($dateFin) + 1;
-            return $jours * $this->heure_par_jour;
-        }
-
-        return 0;
-    }
-
-    //--- Calcul du nombre de jour d'absence
-    function nombreDeJoursEntre($dateA, $dateB)
-    {
-        $dateDebut = $dateA instanceof Carbon
-            ? $dateA->copy()->startOfDay()
-            : Carbon::parse($dateA)->startOfDay();
-
-        $dateFin = $dateB instanceof Carbon
-            ? $dateB->copy()->startOfDay()
-            : Carbon::parse($dateB)->startOfDay();
-
-        return $dateDebut->diffInDays($dateFin) + 1;
-    }
-
     //--- ajout et modification d'une demande d'absence
     public function save()
     {
         $this->validate();
 
         try {
-            $annee_financiere_id = AnneeFinanciere::where('actif', true)->first()->id;
             $this->build_workflow_log($this->statuts[0], $this->statuts[1], 'La demande est en cours de redaction');
 
             if (!$this->demande_absence_id) {
                 //dd($this->code_de_travail_id);
                 $demande_absence = DemandeAbsence::create(
                     [
-                        'annee_financiere_id' => $annee_financiere_id,
-                        'employe_id' => Auth::user()->employe->id,
+                        'annee_financiere_id' => $this->annee_financiere_id,
+                        'employe_id' => $this->employeId ?? Auth::user()->employe->id,
                         'codes_travail_id' => $this->code_de_travail_id,
                         'date_debut' => $this->date_debut,
                         'date_fin' => $this->date_fin,
                         'heure_par_jour' => $this->heure_par_jour,
-                        'total_heure' => $this->calculateTotalHeures(),
+                        'total_heure' => $this->calculateTotalHeures($this->date_debut, $this->date_fin, $this->heure_par_jour, $this->annee_financiere_id),
                         'description' => $this->description,
                         'workflow_log' => $this->workflow_log,
                         'statut' => $this->statuts[1],
+                        'admin_id' => Auth::user()->id ?? null
                     ]
                 );
                 $this->dispatch('demandeAbsenceAjoute');
             } else {
                 $demande_absence = DemandeAbsence::findOrFail($this->demande_absence_id);
                 $demande_absence->update([
-                    'employe_id' => Auth::user()->employe->id,
+                    'annee_financiere_id' => $this->annee_financiere_id,
                     'codes_travail_id' => $this->code_de_travail_id,
                     'date_debut' => $this->date_debut,
                     'date_fin' => $this->date_fin,
                     'heure_par_jour' => $this->heure_par_jour,
-                    'total_heure' => $this->calculateTotalHeures(),
+                    'total_heure' => $this->calculateTotalHeures($this->date_debut, $this->date_fin, $this->heure_par_jour, $this->annee_financiere_id),
                     'description' => $this->description,
                     //'workflow_log' => $this->workflow_log,
                     'statut' => $this->statuts[1],
                 ]);
 
-                $nombreDeJoursEntre = $this->nombreDeJoursEntre($this->date_debut, $this->date_fin);
+                $nombreDeJoursEntre = $this->nombreDeJoursEntre($this->date_debut, $this->date_fin, $this->annee_financiere_id);
 
                 $this->dispatch('nombreDeJoursEntre', $nombreDeJoursEntre);
                 $this->dispatch('demandeAbsenceModifie');

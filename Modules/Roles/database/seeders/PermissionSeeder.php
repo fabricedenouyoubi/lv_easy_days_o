@@ -47,8 +47,17 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(['name' => 'Modifier une catégorie', 'module' => 'CONFIGURATION', 'guard_name' => 'web']);
 
 
+        //--- Permission module AUTORISATION
+        //--- Groupes
+        Permission::firstOrCreate(['name' => 'Voir Module AUTORISATION', 'module' => 'AUTORISATION', 'guard_name' => 'web']);
+        Permission::firstOrCreate(['name' => 'Voir Groupes', 'module' => 'AUTORISATION', 'guard_name' => 'web']);
+        Permission::firstOrCreate(['name' => 'Ajouter Groupe', 'module' => 'AUTORISATION', 'guard_name' => 'web']);
+        Permission::firstOrCreate(['name' => 'Modifier Groupe', 'module' => 'AUTORISATION', 'guard_name' => 'web']);
+        Permission::firstOrCreate(['name' => 'Voir Permissions Groupe', 'module' => 'AUTORISATION', 'guard_name' => 'web']);
+        Permission::firstOrCreate(['name' => 'Modifier Permissions Groupe', 'module' => 'AUTORISATION', 'guard_name' => 'web']);
 
-
-
+        //--- Utilisateurs
+        Permission::firstOrCreate(['name' => 'Voir Utilisateurs', 'module' => 'AUTORISATION', 'guard_name' => 'web']);
+        Permission::firstOrCreate(['name' => 'Voir Permissions Utilisateur', 'module' => 'AUTORISATION', 'guard_name' => 'web']);
     }
 }

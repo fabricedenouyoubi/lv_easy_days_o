@@ -111,7 +111,7 @@
                                         {{ \Carbon\Carbon::parse($demandeAbsence->date_debut)->format('d/m/Y') }}</p>
                                     <p class="mb-1"><strong>Au:</strong>
                                         {{ \Carbon\Carbon::parse($demandeAbsence->date_fin)->format('d/m/Y') }}</p>
-                                    <p class="badge bg-info">{{ $nombreJourAbsence }} jours</p>
+                                    <p class="badge bg-info">{{ $nombreJourAbsence }} jours réguliers</p>
                                 </div>
                             </div>
                         </div>

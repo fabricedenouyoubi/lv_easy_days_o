@@ -3,7 +3,8 @@
     <x-alert-messages />
 
     <x-table-card title="Informations de l'Entreprise" icon="fas fa-building me-2" button-text="Modifier"
-        buttonIcon="fas fa-edit me-2" button-action="edit">
+        buttonIcon="fas fa-edit me-2"
+        button-action="{{ auth()->user()->can('Modifier les informations de l\'entreprise')  ? 'edit' : '' }}">
 
         <!-- Informations de l'entreprise -->
         <div>
@@ -39,8 +40,10 @@
                     </div>
 
                     <div class="d-flex justify-content-end gap-2">
-                        <x-action-button type="secondary" icon="fas fa-times me-2" size="md" wireClick='cancel' text="Annuler"/>
-                        <x-action-button type="success" icon="fas fa-save me-2" size="md" text="Enregistrer" typeButton='submit'/>
+                        <x-action-button type="secondary" icon="fas fa-times me-2" size="md" wireClick='cancel'
+                            text="Annuler" />
+                        <x-action-button type="success" icon="fas fa-save me-2" size="md" text="Enregistrer"
+                            typeButton='submit' />
                     </div>
                 </form>
             @else

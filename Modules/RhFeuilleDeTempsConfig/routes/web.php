@@ -12,9 +12,9 @@ Route::prefix('rh-feuille-de-temps-config')->name('rhfeuilledetempsconfig.')->mi
     Route::get('/annee/{annee}/details', [RhFeuilleDeTempsConfigController::class, 'detailsAnnee'])->name('details-annee');
 
     // Routes pour les catégories
-    Route::get('/categories', [CategorieController::class, 'categories'])->name('categories.categories');
+    Route::get('/categories', [CategorieController::class, 'categories'])->name('categories.categories')->middleware(['permission:Voir Module CONFIGURATION']);
     // Routes pour les codes de travail
-    Route::get('/codes-travail', [CodeTravailController::class, 'codetravails'])->name('codes-travail.codetravails');
+    Route::get('/codes-travail', [CodeTravailController::class, 'codetravails'])->name('codes-travail.codetravails')->middleware(['permission:Voir Module CONFIGURATION']);
     // Route pour la configuration d'un code de travail
     Route::get('configure/{codeTravailId}', [ComportementController::class, 'configure'])->name('configure');
 });

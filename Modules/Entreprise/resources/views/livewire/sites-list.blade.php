@@ -3,7 +3,7 @@
     <x-alert-messages />
 
     <x-table-card title="Sites de l'Entreprise" icon="fas fa-map-marker-alt me-2" button-text="Nouveau Site"
-        button-action="showCreateModal">
+        button-action="{{ auth()->user()->can('Ajouter un nouveau site') ? 'showCreateModal' : '' }}">
 
         <div>
             {{-- Barre de recherche avec bouton filtrer --}}
@@ -11,14 +11,14 @@
                 <div class="col-md-6">
                     <div class="search-box">
                         <div class="input-group">
-                            <input type="text"
-                                class="form-control @if (isset($searchError) && $searchError) is-invalid @endif"
+                            <input type="text" class="form-control @if (isset($searchError) && $searchError) is-invalid @endif"
                                 placeholder="Rechercher un site..." wire:model="search"
                                 wire:keydown.enter="performSearch">
 
                             {{-- Bouton Filtrer --}}
 
-                            <x-action-button type="outline-primary" icon="fas fa-search me-1" wireClick="performSearch" text="Filtrer" loadingTarget="performSearch"/>
+                            <x-action-button type="outline-primary" icon="fas fa-search me-1" wireClick="performSearch"
+                                text="Filtrer" loadingTarget="performSearch" />
 
                             {{-- <button type="button" class="btn btn-outline-primary" wire:click="performSearch"
                                 wire:loading.attr="disabled" wire:target="performSearch">
@@ -135,10 +135,19 @@
                                 <td>
                                     <div class="d-flex gap-2">
                                         {{-- Bouton Détails --}}
-                                        <x-action-button type="outline-info" icon="fas fa-eye" size="sm" tooltip="Voir détails" wireClick="showDetailModal({{ $site->id }})" />
+                                        @can('Voir les détails d\'un site')
+                                            <x-action-button type="outline-info" icon="fas fa-eye" size="sm"
+                                                tooltip="Voir détails" wireClick="showDetailModal({{ $site->id }})" />
+                                        @endcan
+
 
                                         {{-- Bouton Modifier --}}
-                                        <x-action-button type="outline-primary" icon="fas fa-edit" size="sm" tooltip="Modifier" wireClick="showEditModal({{ $site->id }})" />
+                                        @can('Modifier un site')
+                                            <x-action-button type="outline-primary" icon="fas fa-edit" size="sm"
+                                                tooltip="Modifier" wireClick="showEditModal({{ $site->id }})" />
+                                        @endcan
+
+
 
                                         {{-- Bouton Supprimer --}}
                                         <!-- <button class="btn btn-sm btn-outline-danger"
@@ -274,8 +283,10 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <x-action-button type="secondary" wireClick="closeDetailModal" size="md" icon="fas fa-times" text="Fermer"/>
-                        <x-action-button type="primary" wireClick="showEditModal({{ $detailSite->id }})" size="md" icon="fas fa-edit me-2" text="Modifier"/>
+                        <x-action-button type="secondary" wireClick="closeDetailModal" size="md"
+                            icon="fas fa-times" text="Fermer" />
+                        <x-action-button type="primary" wireClick="showEditModal({{ $detailSite->id }})"
+                            size="md" icon="fas fa-edit me-2" text="Modifier" />
                     </div>
                 </div>
             </div>
@@ -293,7 +304,7 @@
                             <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
                             Confirmer la suppression
                         </h5>
-                        <x-action-button type="close" wireClick="cancelDelete"/>
+                        <x-action-button type="close" wireClick="cancelDelete" />
                     </div>
                     <div class="modal-body">
                         <p>Êtes-vous sûr de vouloir supprimer ce site ?</p>
@@ -301,8 +312,10 @@
                         </p>
                     </div>
                     <div class="modal-footer">
-                        <x-action-button type="secondary" wireClick="cancelDelete" size="md" icon="fas fa-times" text="Annuler"/>
-                        <x-action-button type="danger" wireClick="delete" size="md" icon="fas fa-trash me-2" text="Supprimer"/>
+                        <x-action-button type="secondary" wireClick="cancelDelete" size="md"
+                            icon="fas fa-times" text="Annuler" />
+                        <x-action-button type="danger" wireClick="delete" size="md" icon="fas fa-trash me-2"
+                            text="Supprimer" />
                     </div>
                 </div>
             </div>

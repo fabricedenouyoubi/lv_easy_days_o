@@ -4,6 +4,7 @@ namespace Modules\RhFeuilleDeTempsAbsence\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Auth;
 use Modules\Budget\Models\SemaineAnnee;
 use Modules\Rh\Models\Employe\Employe;
 use Modules\RhFeuilleDeTempsReguliere\Models\LigneTravail;
@@ -88,15 +89,15 @@ class Operation extends Model
             'to_state' => $to,
             'comment' => $comment ?? '',
             'title' => "{$from} → {$to}",
-            'user' => auth()->user()->name ?? 'System'
+            'user' => Auth::user()->name ?? 'System'
         ];
 
         $logs = $this->workflow_log ? explode("\n", $this->workflow_log) : [];
         $logs[] = json_encode($log);
-        
+
         $this->update(['workflow_log' => implode("\n", $logs)]);
     }
-    
+
     /**
      * Scope pour filtrer par employé
      */
@@ -137,7 +138,7 @@ class Operation extends Model
         return $query->whereIn('workflow_state', ['brouillon', 'en_cours']);
     }
 
-    
+
     /**
      * Obtenir une opération pour un employé et une semaine spécifique
      */
@@ -199,7 +200,7 @@ public function isEditable(): bool
 public function canTransition(string $transition): bool
 {
     $currentState = $this->getCurrentState();
-    
+
     // Définir les transitions autorisées selon l'état actuel
     $allowedTransitions = [
         'brouillon' => ['enregistrer', 'soumettre'],
@@ -208,8 +209,8 @@ public function canTransition(string $transition): bool
         'valide' => [], // Une fois validé, aucune transition n'est possible
         'rejete' => ['enregistrer', 'soumettre'], // Possibilité de corriger et resoumettre
     ];
-    
-    return isset($allowedTransitions[$currentState]) && 
+
+    return isset($allowedTransitions[$currentState]) &&
            in_array($transition, $allowedTransitions[$currentState]);
 }
 
@@ -219,11 +220,11 @@ public function canTransition(string $transition): bool
 public function applyTransition(string $transition, array $options = []): bool
 {
     $currentState = $this->getCurrentState();
-    
+
     if (!$this->canTransition($transition)) {
         throw new \Exception("Transition '{$transition}' non autorisée depuis l'état '{$currentState}'");
     }
-    
+
     // Définir les nouveaux états selon la transition
     $newStates = [
         'enregistrer' => 'en_cours',
@@ -231,22 +232,22 @@ public function applyTransition(string $transition, array $options = []): bool
         'valider' => 'valide',
         'rejeter' => 'rejete',
     ];
-    
+
     if (!isset($newStates[$transition])) {
         throw new \Exception("Transition '{$transition}' non reconnue");
     }
-    
+
     $newState = $newStates[$transition];
-    
+
     // Logger la transition
     $this->logTransition($currentState, $newState, $options['comment'] ?? null);
-    
+
     // Mettre à jour l'état
     $this->update([
         'workflow_state' => $newState,
         'statut' => ucfirst($newState), // Mettre à jour aussi l'ancien champ statut si nécessaire
     ]);
-    
+
     return true;
 }
     // protected static function newFactory(): OperationFactory

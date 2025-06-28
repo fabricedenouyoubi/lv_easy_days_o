@@ -2,16 +2,18 @@
 
 namespace Modules\RhFeuilleDeTempsAbsence\Traits;
 
+use Illuminate\Support\Facades\Auth;
 use Workflow\Events\GuardEvent;
 use Workflow\Registry;
 
-trait HasWorkflow {
+trait HasWorkflow
+{
     /**
      * Obtenir le nom du workflow pour ce modèle
      */
     public function getWorkflowName(): string
     {
-        return match(get_class($this)) {
+        return match (get_class($this)) {
             'Modules\RhFeuilleDeTempsAbsence\Models\Operation' => 'operation_workflow',
             'Modules\RhFeuilleDeTempsAbsence\Models\DemandeAbsence' => 'demande_absence_workflow',
             default => throw new \InvalidArgumentException('Aucun workflow défini pour ce modèle')
@@ -40,16 +42,16 @@ trait HasWorkflow {
     public function applyTransition(string $transition, array $context = []): void
     {
         $fromState = $this->getCurrentPlace();
-        
+
         // Événement avant transition
         $this->beforeTransition($transition, $fromState, $context);
-        
+
         // Appliquer la transition
         $this->workflow()->apply($this, $transition, $context);
-        
+
         // Événement après transition
         $this->afterTransition($transition, $fromState, $this->getCurrentPlace(), $context);
-        
+
         // Sauvegarder automatiquement
         $this->save();
     }
@@ -92,7 +94,7 @@ trait HasWorkflow {
      */
     protected function getDefaultState(): string
     {
-        return match(get_class($this)) {
+        return match (get_class($this)) {
             'Modules\RhFeuilleDeTempsAbsence\Models\Operation' => 'brouillon',
             'Modules\RhFeuilleDeTempsAbsence\Models\DemandeAbsence' => 'Brouillon',
             default => 'brouillon'
@@ -114,7 +116,7 @@ trait HasWorkflow {
     {
         // Logger la transition
         $this->logTransition($fromState, $toState, $context['comment'] ?? null);
-        
+
         // Notifications ou autres actions post-transition
         $this->handlePostTransition($transition, $fromState, $toState, $context);
     }
@@ -125,7 +127,7 @@ trait HasWorkflow {
     protected function handlePostTransition(string $transition, string $fromState, string $toState, array $context = []): void
     {
         // Actions spécifiques selon la transition
-        match($transition) {
+        match ($transition) {
             'valider' => $this->onValidation($context),
             'rejeter' => $this->onRejection($context),
             'soumettre' => $this->onSubmission($context),
@@ -170,13 +172,13 @@ trait HasWorkflow {
             'to_state' => $to,
             'comment' => $comment ?? '',
             'title' => "{$from} → {$to}",
-            'user' => auth()->user()->name ?? 'System',
-            'user_id' => auth()->id() ?? null
+            'user' => Auth::user()->name ?? 'System',
+            'user_id' => Auth::user()->id ?? null
         ];
 
         $logs = $this->workflow_log ? explode("\n", $this->workflow_log) : [];
         $logs[] = json_encode($log);
-        
+
         // Mise à jour du log (sans déclencher save() pour éviter boucle)
         $this->updateQuietly(['workflow_log' => implode("\n", $logs)]);
     }
