@@ -227,7 +227,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
                 })->count();
 
                 // Création d'une opération (enregistrement dans la base) représentant l'absence sur cette semaine
-               $operation = Operation::create([
+                $operation = Operation::create([
                     'demande_absence_id' => $this->demandeAbsence->id,
                     'annee_semaine_id' => $semaine->id,
                     'employe_id' => $this->demandeAbsence->employe_id,

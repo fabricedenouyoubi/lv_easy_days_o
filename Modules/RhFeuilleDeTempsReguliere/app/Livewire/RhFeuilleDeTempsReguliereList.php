@@ -26,13 +26,13 @@ class RhFeuilleDeTempsReguliereList extends Component
         try {
             // Récupérer l'employé connecté
             $this->employe = Auth::user()->employe;
-            
+
             // Récupérer l'année financière active
             $this->anneeFinanciere = AnneeFinanciere::where('actif', true)->first();
-            
+
             // Calculer la banque de temps
             $this->calculerBanqueTemps();
-            
+
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors du chargement des données: ' . $th->getMessage());
         }
@@ -59,7 +59,7 @@ class RhFeuilleDeTempsReguliereList extends Component
         // Enrichir avec les données d'opération
         $semaines->getCollection()->transform(function($semaine) {
             $operation = $semaine->operations->first();
-            
+
             $semaine->operation_data = [
                 'id' => $operation?->id,
                 'workflow_state' => $operation?->workflow_state ?? null,
@@ -68,7 +68,7 @@ class RhFeuilleDeTempsReguliereList extends Component
                 'created_at' => $operation?->created_at,
                 'updated_at' => $operation?->updated_at,
             ];
-            
+
             return $semaine;
         });
 
@@ -83,13 +83,13 @@ class RhFeuilleDeTempsReguliereList extends Component
         try {
             // Créer l'opération avec état brouillon
             $operation = Operation::getOrCreateOperation($this->employe->id, $semaineId);
-            
+
             // Rediriger vers le formulaire d'édition
             return redirect()->route('feuille-temps.edit', [
                 'semaineId' => $semaineId,
                 'operationId' => $operation->id
             ]);
-            
+
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors de la création: ' . $th->getMessage());
         }
@@ -115,7 +115,7 @@ class RhFeuilleDeTempsReguliereList extends Component
     public function getStatutFormate($semaine)
     {
         $operation = $semaine->operation_data;
-        
+
         if (!$operation['id']) {
             return [
                 'text' => '---',
@@ -183,7 +183,7 @@ class RhFeuilleDeTempsReguliereList extends Component
                         'params' => ['semaineId' => $semaine->id, 'operationId' => $operation['id']]
                     ];
                     break;
-                    
+
                 default:
                     $actions[] = [
                         'type' => 'info',
