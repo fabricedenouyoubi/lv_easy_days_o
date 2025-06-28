@@ -7,6 +7,8 @@ use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
 use Modules\RhFeuilleDeTempsReguliere\Livewire\RhFeuilleDeTempsReguliereEdit;
 use Modules\RhFeuilleDeTempsReguliere\Livewire\RhFeuilleDeTempsReguliereList;
+use Modules\RhFeuilleDeTempsReguliere\Livewire\RhFeuilleDeTempsReguliereManagerDashboard;
+use Modules\RhFeuilleDeTempsReguliere\Livewire\RhFeuilleDeTempsReguliereShow;
 use Nwidart\Modules\Traits\PathNamespace;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -62,6 +64,8 @@ class RhFeuilleDeTempsReguliereServiceProvider extends ServiceProvider
         Livewire::component('rhfeuilledetempsreguliere::rh-feuille-de-temps-reguliere-list', RhFeuilleDeTempsReguliereList::class);
 
         Livewire::component('rhfeuilledetempsreguliere::rh-feuille-de-temps-reguliere-edit', RhFeuilleDeTempsReguliereEdit::class);
+        Livewire::component('livewire:rhfeuilledetempsreguliere::rh-feuille-de-temps-reguliere-show', RhFeuilleDeTempsReguliereShow::class);
+        Livewire::component('rhfeuilledetempsreguliere::livewire.rh-feuille-de-temps-reguliere-manager-dashboard', RhFeuilleDeTempsReguliereManagerDashboard::class);
     }
     /**
      * Register command Schedules.

@@ -16,7 +16,7 @@ Route::prefix('rh-feuille-de-temps-reguliere/feuille-temps')->name('feuille-temp
     Route::get('/{semaineId}/show/{operationId}', 'show')->name('show');
     
     // Gestionnaire - tableau de bord
-    Route::get('/manager/dashboard', 'managerDashboard')->name('manager.dashboard')->middleware('permission:Gestion Feuilles Temps');
+    Route::get('/dashboard', 'managerDashboard')->name('dashboard')->middleware('permission:Gestion Feuilles Temps');
 });
 
 

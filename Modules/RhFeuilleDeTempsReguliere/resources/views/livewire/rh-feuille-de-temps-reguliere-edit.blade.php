@@ -1,24 +1,15 @@
 <div>
+
+                <!-- Breadcrumb -->
+            <x-breadcrumb :items="[
+                ['label' => 'Feuilles de temps', 'url' => route('feuille-temps.list')],
+                ['label' => 'Détails semaine ' . ($semaine->numero_semaine)]
+            ]" />
     {{-- Messages de feedback --}}
     <x-alert-messages />
 
     <form wire:submit.prevent="enregistrer" class="h-100">
         <div class="container-fluid py-3">
-            <!-- Breadcrumb -->
-            <div class="row mb-3">
-                <div class="col-md-8">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item">
-                                <a href="{{ route('feuille-temps.list') }}">Feuilles de temps</a>
-                            </li>
-                            <li class="breadcrumb-item active" aria-current="page">
-                                Semaine {{ $semaine->numero_semaine }}
-                            </li>
-                        </ol>
-                    </nav>
-                </div>
-            </div>
 
             <div class="row g-4">
                 <!-- Colonne principale (9/12) -->
@@ -31,21 +22,23 @@
                                     <i class="mdi mdi-clock-time-four-outline text-primary me-2"></i>
                                     Feuille de temps
                                 </h5>
-                                @if($operation->workflow_state)
-                                    @php
-                                        $statusConfig = [
-                                            'brouillon' => ['class' => 'bg-warning text-dark', 'icon' => 'mdi-pencil-outline'],
-                                            'en_cours' => ['class' => 'bg-info text-dark', 'icon' => 'mdi-hourglass-half'],
-                                            'soumis' => ['class' => 'bg-primary', 'icon' => 'mdi-send'],
-                                            'valide' => ['class' => 'bg-success', 'icon' => 'mdi-check-circle'],
-                                        ];
-                                        $status = $statusConfig[$operation->workflow_state] ?? ['class' => 'bg-secondary', 'icon' => 'mdi-help'];
-                                    @endphp
-                                    <span class="badge {{ $status['class'] }} rounded-pill px-3 py-2">
-                                        <i class="{{ $status['icon'] }} align-middle me-1"></i>
-                                        {{ ucfirst($operation->workflow_state) }}
-                                    </span>
-                                @endif
+                                <div class="d-flex align-items-center gap-2">
+                                    @if($operation->workflow_state)
+                                        @php
+                                            $statusConfig = [
+                                                'brouillon' => ['class' => 'bg-warning text-dark', 'icon' => 'mdi-pencil-outline'],
+                                                'en_cours' => ['class' => 'bg-info text-dark', 'icon' => 'mdi-hourglass-half'],
+                                                'soumis' => ['class' => 'bg-primary', 'icon' => 'mdi-send'],
+                                                'valide' => ['class' => 'bg-success', 'icon' => 'mdi-check-circle'],
+                                            ];
+                                            $status = $statusConfig[$operation->workflow_state] ?? ['class' => 'bg-secondary', 'icon' => 'mdi-help'];
+                                        @endphp
+                                        <span class="badge {{ $status['class'] }} rounded-pill px-3 py-2">
+                                            <i class="{{ $status['icon'] }} align-middle me-1"></i>
+                                            {{ ucfirst($operation->workflow_state) }}
+                                        </span>
+                                    @endif
+                                </div>
                             </div>
                         </div>
 
@@ -54,8 +47,8 @@
                             <div class="row mb-4">
                                 <div class="col-12">
                                     <div class="d-flex align-items-center">
-                                        <div class="avatar-lg bg-light rounded-circle text-center me-3">
-                                            <span class="font-size-24 text-primary">
+                                        <div class="avatar-lg bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 80px; height: 80px;">
+                                            <span class="font-size-24 text-primary fw-bold">
                                                 {{ substr($employe->prenom, 0, 1) }}{{ substr($employe->nom, 0, 1) }}
                                             </span>
                                         </div>
@@ -72,35 +65,19 @@
 
                             <!-- Informations période -->
                             <div class="row mb-4">
-                                <div class="col-md-4 mb-3">
+                                <div class="col-12 mb-3">
                                     <div class="card h-100 border-0 bg-primary-subtle">
                                         <div class="card-body p-3">
-                                            <div class="d-flex align-items-start">
-                                                <div class="avatar-md bg-primary rounded-circle text-center">
-                                                    <i class="mdi mdi-calendar-week text-white" style="font-size: 24px; line-height: 56px; margin-left: 16px;"></i>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-md bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 56px; height: 56px;">
+                                                    <i class="mdi mdi-calendar-week text-white" style="font-size: 24px;"></i>
                                                 </div>
-                                                <div class="ms-3">
-                                                    <h5 class="mb-1">{{ $semaine->numero_semaine }}</h5>
-                                                    <p class="mb-0 text-muted">Semaine</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-8 mb-3">
-                                    <div class="card h-100 border-0 bg-success-subtle">
-                                        <div class="card-body p-3">
-                                            <div class="d-flex align-items-start">
-                                                <div class="avatar-md bg-success rounded-circle text-center">
-                                                    <i class="mdi mdi-calendar-range text-white" style="font-size: 24px; line-height: 56px; margin-left: 16px;"></i>
-                                                </div>
-                                                <div class="ms-3">
-                                                    <h5 class="mb-1">
-                                                        Du {{ \Carbon\Carbon::parse($semaine->debut)->format('d/m/Y') }}
+                                                <div>
+                                                    <h5 class="mb-1">Semaine {{ $semaine->numero_semaine }}</h5>
+                                                    <p class="mb-0 fw-bold small">
+                                                        Période Du {{ \Carbon\Carbon::parse($semaine->debut)->format('d/m/Y') }}
                                                         au {{ \Carbon\Carbon::parse($semaine->fin)->format('d/m/Y') }}
-                                                    </h5>
-                                                    <p class="mb-0 text-muted">Période</p>
+                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
@@ -114,85 +91,80 @@
                                     <div class="card-header bg-light py-3">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <h6 class="mb-0">
-                                                <i class="mdi mdi-format-list-bulleted text-primary me-2"></i>
-                                                Lignes de travail
-                                            </h6>
-                                            <button type="button" wire:click="ajouterLigneTravail" 
-                                                    class="btn btn-sm btn-outline-success">
-                                                <i class="mdi mdi-plus me-1"></i>
-                                                Ajouter une ligne
+                                            <i class="mdi mdi-format-list-bulleted text-primary me-2"></i>
+                                            Lignes de travail
+                                        </h6>
+
+                                <div class="d-flex align-items-center gap-2">
+                                    <!-- Boutons d'action déplacés dans le header -->
+                                    @if($this->peutModifier())
+                                        <div class="d-flex gap-2">
+                                            <a href="{{ route('feuille-temps.list') }}" class="btn btn-outline-secondary btn-sm">
+                                                <i class="mdi mdi-arrow-left me-1"></i>
+                                                Retour
+                                            </a>
+                                            <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                <i class="mdi mdi-content-save-outline me-1"></i>
+                                                Enregistrer
+                                            </button>
+                                            <button type="button" wire:click="soumettre" class="btn btn-primary btn-sm">
+                                                <i class="mdi mdi-send-outline me-1"></i>
+                                                Soumettre
                                             </button>
                                         </div>
+                                    @else
+                                        <a href="{{ route('feuille-temps.list') }}" class="btn btn-outline-secondary btn-sm">
+                                            <i class="mdi mdi-arrow-left me-1"></i>
+                                            Retour
+                                        </a>
+                                    @endif
+                                </div>
+                                    </div>   
                                     </div>
+
                                     <div class="card-body p-0">
                                         <div class="table-responsive">
                                             <table class="table table-hover mb-0 align-middle">
                                                 <thead class="table-light">
                                                     <tr>
                                                         <th style="min-width: 200px;">Code de travail</th>
-                                                        @foreach($joursLabels as $index => $jour)
-                                                            <th class="text-center" style="min-width: 80px;">
-                                                                {{ $jour }}
-                                                                <br>
-                                                                <small class="text-muted">
-                                                                    {{ \Carbon\Carbon::parse($semaine->debut)->addDays($index)->format('d/m') }}
-                                                                </small>
+                                                        @foreach($datesSemaine as $index => $dateInfo)
+                                                            <th class="text-center {{ $dateInfo['is_dimanche'] ? 'bg-warning bg-opacity-25' : '' }}" 
+                                                                style="min-width: 120px;">
+                                                                {{ $dateInfo['format'] }}
                                                             </th>
                                                         @endforeach
-                                                        <th class="text-center">Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     @foreach($lignesTravail as $ligneIndex => $ligne)
                                                         <tr class="{{ $ligne['auto_rempli'] ? 'table-warning' : '' }}">
-                                                            <td>
-                                                                @if($this->peutModifierLigne($ligneIndex))
-                                                                    <select wire:model="lignesTravail.{{ $ligneIndex }}.codes_travail_id" 
-                                                                            class="form-select form-select-sm">
-                                                                        <option value="">Sélectionner un code</option>
-                                                                        @foreach($this->codesTravauxDisponibles as $categorie => $codes)
-                                                                            <optgroup label="{{ $categorie }}">
-                                                                                @foreach($codes as $code)
-                                                                                    <option value="{{ $code->id }}">{{ $code->libelle }}</option>
-                                                                                @endforeach
-                                                                            </optgroup>
-                                                                        @endforeach
-                                                                    </select>
-                                                                @else
-                                                                    <span class="badge bg-warning">
-                                                                        <i class="mdi mdi-lock me-1"></i>
-                                                                        Auto-rempli
-                                                                    </span>
-                                                                @endif
+                                                            <!-- Code de travail grisé -->
+                                                            <td class="bg-light">
+                                                                <div class="d-flex align-items-center">
+                                                                    @if($ligne['auto_rempli'])
+                                                                        <i class="mdi mdi-lock text-warning me-2" title="Auto-rempli"></i>
+                                                                    @endif
+                                                                    <span class="fw-medium">{{ $ligne['code_travail']->libelle }}</span>
+                                                                </div>
                                                             </td>
                                                             
                                                             @for($jour = 0; $jour <= 6; $jour++)
-                                                                <td class="text-center">
+                                                                <td class="text-center {{ $datesSemaine[$jour]['is_dimanche'] ? 'bg-warning bg-opacity-10' : '' }}">
                                                                     @if($this->peutModifierLigne($ligneIndex))
                                                                         <input type="number" 
                                                                                wire:model="lignesTravail.{{ $ligneIndex }}.duree_{{ $jour }}"
                                                                                class="form-control form-control-sm text-center"
                                                                                min="0" max="12" step="0.25"
-                                                                               style="width: 70px; margin: 0 auto;">
+                                                                               placeholder="00.00"
+                                                                               style="width: 80px; margin: 0 auto;">
                                                                     @else
                                                                         <span class="badge bg-primary">
-                                                                            {{ $ligne["duree_{$jour}"] ?? 0 }}h
+                                                                            {{ number_format($ligne["duree_{$jour}"] ?? 0, 2) }}h
                                                                         </span>
                                                                     @endif
                                                                 </td>
                                                             @endfor
-                                                            
-                                                            <td class="text-center">
-                                                                @if($this->peutModifierLigne($ligneIndex))
-                                                                    <button type="button" 
-                                                                            wire:click="supprimerLigneTravail({{ $ligneIndex }})"
-                                                                            class="btn btn-outline-danger btn-sm">
-                                                                        <i class="mdi mdi-delete"></i>
-                                                                    </button>
-                                                                @else
-                                                                    <i class="mdi mdi-lock text-muted"></i>
-                                                                @endif
-                                                            </td>
                                                         </tr>
                                                     @endforeach
                                                 </tbody>
@@ -208,30 +180,6 @@
                                 </div>
                             @endif
                         </div>
-
-                        <!-- Pied de page avec boutons d'action -->
-                        <div class="card-footer bg-light">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <a href="{{ route('feuille-temps.list') }}" class="btn btn-outline-secondary">
-                                        <i class="mdi mdi-arrow-left me-1"></i>
-                                        Retour à la liste
-                                    </a>
-                                </div>
-                                @if($this->peutModifier())
-                                    <div class="d-flex gap-2">
-                                        <button type="submit" class="btn btn-outline-primary">
-                                            <i class="mdi mdi-content-save-outline me-1"></i>
-                                            Enregistrer
-                                        </button>
-                                        <button type="button" wire:click="soumettre" class="btn btn-primary">
-                                            <i class="mdi mdi-send-outline me-1"></i>
-                                            Soumettre
-                                        </button>
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -241,38 +189,38 @@
                     <x-table-card title="Récapitulatif" icon="mdi mdi-calculator-variant-outline">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="text-muted small">Formation</span>
-                            <span class="badge bg-primary">{{ $totaux['total_heure_formation'] }}h</span>
+                            <span class="badge bg-primary">{{ number_format($totaux['total_heure_formation'], 2) }}h</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="text-muted small">CSN</span>
-                            <span class="badge bg-primary">{{ $totaux['total_heure_csn'] }}h</span>
+                            <span class="badge bg-primary">{{ number_format($totaux['total_heure_csn'], 2) }}h</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="text-muted small">Caisse</span>
-                            <span class="badge bg-primary">{{ $totaux['total_heure_caisse'] }}h</span>
+                            <span class="badge bg-primary">{{ number_format($totaux['total_heure_caisse'], 2) }}h</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="text-muted small">Congé Mobile</span>
-                            <span class="badge bg-primary">{{ $totaux['total_heure_conge_mobile'] }}h</span>
+                            <span class="badge bg-primary">{{ number_format($totaux['total_heure_conge_mobile'], 2) }}h</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="text-muted small">Déplacement</span>
-                            <span class="badge bg-primary">{{ $totaux['total_heure_deplacement'] }}h</span>
+                            <span class="badge bg-primary">{{ number_format($totaux['total_heure_deplacement'], 2) }}h</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="text-muted small">Régulier</span>
-                            <span class="badge bg-primary">{{ $totaux['total_heure_regulier'] }}h</span>
+                            <span class="badge bg-primary">{{ number_format($totaux['total_heure_regulier'], 2) }}h</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="text-muted small">Heures Supp.</span>
-                            <span class="badge bg-primary">{{ $totaux['total_heure_supp'] }}h</span>
+                            <span class="badge bg-primary">{{ number_format($totaux['total_heure_supp'], 2) }}h</span>
                         </div>
                         
                         <hr class="my-3">
                         
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="text-muted fw-bold">Total des heures</span>
-                            <span class="badge bg-dark px-3 py-2">{{ $totaux['total_heure'] }}h</span>
+                            <span class="badge bg-dark px-3 py-2">{{ number_format($totaux['total_heure'], 2) }}h</span>
                         </div>
                     </x-table-card>
 

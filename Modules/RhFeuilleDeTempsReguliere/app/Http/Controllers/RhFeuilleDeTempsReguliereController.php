@@ -79,6 +79,6 @@ class RhFeuilleDeTempsReguliereController extends Controller
      */
     public function managerDashboard(): Renderable
     {
-        // return view('rhfeuilledetempsreguliere::manager-dashboard');
+        return view('rhfeuilledetempsreguliere::dashboard');
     }
 }

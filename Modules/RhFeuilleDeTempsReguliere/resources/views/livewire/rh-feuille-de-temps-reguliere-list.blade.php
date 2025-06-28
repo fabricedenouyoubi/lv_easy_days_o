@@ -24,8 +24,8 @@
                     <!-- Profil employé -->
                     <div class="p-3 border-bottom">
                         <div class="d-flex align-items-center">
-                            <div class="avatar-lg bg-light rounded-circle text-center me-3">
-                                <span class="font-size-24 text-primary">
+                            <div class="avatar-lg bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 80px; height: 80px;">
+                                <span class="font-size-24 text-primary fw-bold">
                                     {{ substr($employe->prenom, 0, 1) }}{{ substr($employe->nom, 0, 1) }}
                                 </span>
                             </div>
@@ -33,7 +33,7 @@
                                 <h4 class="mb-1">{{ $employe->prenom }} {{ $employe->nom }}</h4>
                                 <p class="text-muted mb-0">
                                     <i class="mdi mdi-clock-outline me-1"></i>
-                                    Semaine normale : 35h <!-- À récupérer depuis les données employé -->
+                                    Semaine normale : 35h 
                                 </p>
                             </div>
                         </div>
@@ -139,10 +139,10 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="text-muted">
                         <i class="fas fa-star text-warning me-1"></i>
-                        Prochains jours fériés
+                        Anniversaire
                     </span>
                     <span class="badge bg-light text-dark px-3 py-2 rounded-pill">
-                        Aucun
+                        10 Avril 1997
                     </span>
                 </div>
             </x-table-card>
@@ -172,20 +172,6 @@
                     <span class="badge bg-dark px-3 py-2 rounded-pill">
                         {{ $banqueTemps['total_heures_banque'] }}h
                     </span>
-                </div>
-            </x-table-card>
-
-            <!-- Récapitulatif des actions (optionnel) -->
-            <x-table-card title="Actions rapides" icon="fas fa-bolt">
-                <div class="d-grid gap-2">
-                    <a href="{{ route('absence.list') }}" class="btn btn-outline-primary btn-sm">
-                        <i class="fas fa-calendar-times me-1"></i>
-                        Mes demandes d'absence
-                    </a>
-                    <button class="btn btn-outline-info btn-sm" disabled>
-                        <i class="fas fa-chart-line me-1"></i>
-                        Rapport mensuel
-                    </button>
                 </div>
             </x-table-card>
         </div>
