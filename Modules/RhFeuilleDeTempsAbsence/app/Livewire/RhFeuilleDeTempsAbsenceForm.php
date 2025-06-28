@@ -2,17 +2,13 @@
 
 namespace Modules\RhFeuilleDeTempsAbsence\Livewire;
 
-use Illuminate\Support\Carbon;
+
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Modules\Budget\Models\AnneeFinanciere;
-use Modules\Budget\Models\SemaineAnnee;
-use Modules\Rh\Models\Employe\Employe;
 use Modules\RhFeuilleDeTempsAbsence\Models\DemandeAbsence;
 use Modules\RhFeuilleDeTempsAbsence\Traits\AbsenceResource;
-use Modules\RhFeuilleDeTempsConfig\Models\Categorie;
 use Modules\RhFeuilleDeTempsConfig\Models\CodeTravail;
-use Modules\RhFeuilleDeTempsConfig\Models\Comportement\Configuration;
 
 class RhFeuilleDeTempsAbsenceForm extends Component
 {

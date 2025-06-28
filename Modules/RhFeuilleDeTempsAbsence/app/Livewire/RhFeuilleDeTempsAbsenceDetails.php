@@ -11,7 +11,6 @@ use Modules\Budget\Models\SemaineAnnee;
 use Modules\RhFeuilleDeTempsAbsence\Models\DemandeAbsence;
 use Modules\RhFeuilleDeTempsAbsence\Models\Operation;
 use Modules\RhFeuilleDeTempsAbsence\Traits\AbsenceResource;
-use Modules\RhFeuilleDeTempsConfig\Models\Comportement\Configuration;
 
 class RhFeuilleDeTempsAbsenceDetails extends Component
 {

@@ -183,33 +183,6 @@ trait HasWorkflow
         $this->updateQuietly(['workflow_log' => implode("\n", $logs)]);
     }
 
-
-    //--- Contruction du journal de la demande d'absence
-    public function build_workflow_log($workflow_log, $from, $to, $comment = null)
-    {
-        $timestamp = now();
-        $log = [
-            'timestamp' => now()->format('Y-m-d H:i'),
-            'date' => now()->format('d-m-Y'),
-            'time' => now()->format('H:i'),
-            'from_state' => $from,
-            'to_state' => $to,
-            'comment' => $comment ?? '',
-            'title' => $from . ' à ' . $to,
-            'user' => Auth::user()->name ?? 'System',
-            'user_id' => Auth::user()->id ?? null
-        ];
-
-
-        $logs = $workflow_log ? explode("\n", $this->workflow_log) : [];
-
-        //--- chargement du nouveau journal de la demande d'absence
-        $logs[] = json_encode($log);
-
-        //--- mis a jour du journal de la demande d'absence
-        return  $workflow_log = implode("\n", $logs);
-    }
-
     /**
      * Obtenir l'historique des transitions
      */

@@ -253,6 +253,43 @@ class DemandeAbsence extends Model
             ->delete();
     }
 
+    //--- Contruction du journal de la demande d'absence
+    public function build_workflow_log($from, $to, $comment = null)
+    {
+        $timestamp = now();
+        $log = [
+            'timestamp' => $timestamp->format('Y-m-d H:i'),
+            'date' => $timestamp->format('d-m-Y'),
+            'time' => $timestamp->format('H:i'),
+            'from_state' => $from,
+            'to_state' => $to,
+            'comment' => $comment ?? '',
+            'title' => $from . ' à ' . $to
+        ];
+
+
+        $logs = $this->workflow_log ? explode("\n", $this->workflow_log) : [];
+
+        //--- chargement du nouveau journal de la demande d'absence
+        $logs[] = json_encode($log);
+
+        //--- mis a jour du journal de la demande d'absence
+        $this->workflow_log = implode("\n", $logs);
+    }
+
+    //--- recuperation du journal de la demande d'absence
+    public function get_workflow_log()
+    {
+        $logs = json_decode($this->workflow_log, true);
+        $logsArray = collect(explode("\n", $this->workflow_log))
+            ->filter() // élimine les lignes vides
+            ->map(fn($line) => json_decode(trim($line), true))
+            ->filter()  // élimine les lignes non valides (nulls)
+            ->reverse() // Tri du plus récent au plus ancien
+            ->values(); // Pour réindexer proprement;
+        return $logsArray;
+    }
+
     //--- scope pour la liste des demandes d'absence d'un employé
     public function scopeEmployeConnecte($query)
     {
