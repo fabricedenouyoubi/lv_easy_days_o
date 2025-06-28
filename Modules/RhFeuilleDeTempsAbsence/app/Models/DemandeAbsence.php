@@ -66,6 +66,7 @@ class DemandeAbsence extends Model
     /**
      * Actions spécifiques lors de la validation d'une absence
      */
+
     protected function onValidation(array $context = []): void
     {
         // Remplir automatiquement les feuilles de temps
@@ -161,7 +162,7 @@ class DemandeAbsence extends Model
     /**
      * Créer une ligne de travail pour l'absence
      */
-    private function creerLigneTravailAbsence(Operation $operation, Carbon $dateDebut, Carbon $dateFin): void
+    public function creerLigneTravailAbsence(Operation $operation, Carbon $dateDebut, Carbon $dateFin): void
     {
         // Créer la ligne de travail
         $ligne = new LigneTravail([

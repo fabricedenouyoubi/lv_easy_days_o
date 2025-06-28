@@ -7,7 +7,7 @@
         {{-- Colonne principale - Tableau --}}
         <div class="col-lg-8">
             <x-table-card title="Liste des groupes" icon="fas fa-user-friends" button-text="Nouveau groupe"
-                button-action="show_add_group_modal">
+                button-action="{{ auth()->user()->can('Ajouter Groupe') ? 'show_add_group_modal' : '' }}">
 
                 {{-- Contenu du tableau --}}
                 <div class="table-responsive">
@@ -28,17 +28,23 @@
                                         <div class="d-flex gap-2">
                                             {{-- Boutons avec composant --}}
                                             @if ($group->name != 'ADMIN')
-                                                <x-action-button type="outline-success" icon="fas fa-edit"
-                                                    tooltip="Modifier"
-                                                    wireClick="show_edit_groupe_modal({{ $group->id }})" />
-                                                <x-action-button type="outline-info" icon="fas fa-ban"
-                                                    tooltip=" Voir les Permissions"
-                                                    wireClick="show_group_permission_modal({{ $group->id }},'{{ $group->name }}')" />
+                                                @can('Modifier Groupe')
+                                                    <x-action-button type="outline-success" icon="fas fa-edit"
+                                                        tooltip="Modifier"
+                                                        wireClick="show_edit_groupe_modal({{ $group->id }})" />
+                                                @endcan
+                                                @can('Voir Permissions Groupe')
+                                                    <x-action-button type="outline-info" icon="fas fa-ban"
+                                                        tooltip=" Voir les Permissions"
+                                                        wireClick="show_group_permission_modal({{ $group->id }},'{{ $group->name }}')" />
+                                                @endcan
                                             @else
                                                 <div class="px-3"></div>
-                                                <x-action-button type="outline-info" icon="fas fa-ban"
-                                                    tooltip=" Voir les Permissions"
-                                                    wireClick="show_group_permission_modal({{ $group->id }},'{{ $group->name }}')" />
+                                                @can('Voir Permissions Groupe')
+                                                    <x-action-button type="outline-info" icon="fas fa-ban"
+                                                        tooltip=" Voir les Permissions"
+                                                        wireClick="show_group_permission_modal({{ $group->id }},'{{ $group->name }}')" />
+                                                @endcan
                                             @endif
                                         </div>
                                     </td>

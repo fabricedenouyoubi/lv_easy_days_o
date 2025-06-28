@@ -9,10 +9,12 @@
                 <x-action-button type="success" icon="far fa-object-ungroup me-2" size="md" wireClick='deselect_all'
                     text="Tout déselectionner" />
             </div>
-            <div>
-                <x-action-button type="primary" icon="far fa-save me-2" size="md" wireClick='set_group_permission'
-                    text="Enregistrer" loading="true" loading-target="set_group_permission" />
-            </div>
+            @can('Modifier Permissions Groupe')
+                <div>
+                    <x-action-button type="primary" icon="far fa-save me-2" size="md" wireClick='set_group_permission'
+                        text="Enregistrer" loading="true" loading-target="set_group_permission" />
+                </div>
+            @endcan
         </div>
         <div class="accordion table-hover" id="accordionFlushExample">
             @forelse ($permissionGroups as $module => $group_permissions)

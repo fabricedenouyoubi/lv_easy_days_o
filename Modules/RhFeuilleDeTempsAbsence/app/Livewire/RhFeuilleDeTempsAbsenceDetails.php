@@ -10,11 +10,12 @@ use Livewire\WithPagination;
 use Modules\Budget\Models\SemaineAnnee;
 use Modules\RhFeuilleDeTempsAbsence\Models\DemandeAbsence;
 use Modules\RhFeuilleDeTempsAbsence\Models\Operation;
+use Modules\RhFeuilleDeTempsAbsence\Traits\AbsenceResource;
 use Modules\RhFeuilleDeTempsConfig\Models\Comportement\Configuration;
 
 class RhFeuilleDeTempsAbsenceDetails extends Component
 {
-    use WithPagination;
+    use WithPagination, AbsenceResource;
     public $demandeAbsenceId;
     public $demandeAbsence;
     public $nombreJourAbsence;
@@ -53,70 +54,6 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
         'demandeAbsenceModifie' => 'demandeAbsenceModifie',
         'nombreDeJoursEntre' => 'handleNombreDeJoursEntre'
     ];
-
-
-    //--- recuperer les jours non ouvrables pour les exclure dans le calcul des heures d'absence
-    public function recupererDateNonOuvrable($idAnneFinnEncours)
-    {
-        //---Recuperer les Jours feriés
-        $jour_feriee_list = Configuration::whereHas('codeTravail.categorie', function ($query) {
-            $query->where('intitule', 'Fermé');
-        })->pluck('date')->map(fn($date) => Carbon::parse($date)->toDateString())->toArray();
-
-        //--- extraire les dimanches des demanines de l'année ---
-        $sundayDates = SemaineAnnee::where('annee_financiere_id', $idAnneFinnEncours)
-            ->get()
-            ->map(function ($semaine) {
-                // Calcule le dimanche à partir de la date de début
-                $sunday = Carbon::parse($semaine->debut)->next(Carbon::SUNDAY);
-                // Vérifie que ce dimanche est bien dans la semaine
-                if ($sunday->between($semaine->debut, $semaine->fin)) {
-                    return $sunday->toDateString(); // ou format('d/m/Y')
-                }
-
-                return null;
-            })
-            ->filter()
-            ->values()
-            ->all();
-
-        $date = collect($jour_feriee_list)
-            ->merge($sundayDates)
-            ->unique() // elimine les doublons
-            ->sort()   // classe par ordre croissant
-            ->values() // Réindexe les clés de 0 à n-1
-            ->all(); // Retourne un tableau
-        return $date;
-    }
-
-    //--- Calcul du nombre de jour d'absence en tenant compte des jour non ouvrables
-    function nombreDeJoursEntre($dateA, $dateB, $idAnneFinnEncours)
-    {
-        // Conversion des dates en objets Carbon (début de journée)
-        $dateDebut = $dateA instanceof Carbon
-            ? $dateA->copy()->startOfDay()
-            : Carbon::parse($dateA)->startOfDay();
-
-        $dateFin = $dateB instanceof Carbon
-            ? $dateB->copy()->startOfDay()
-            : Carbon::parse($dateB)->startOfDay();
-
-        //--- recuperation des jours non ouvrables
-        $jour_non_ouvrable_list = $this->recupererDateNonOuvrable($idAnneFinnEncours);
-
-        // Normalisation des jours non ouvrables au format 'Y-m-d' avec array_flip pour accès rapide
-        $joursNonOuvrables = array_flip(
-            array_map(fn($date) => Carbon::parse($date)->toDateString(), $jour_non_ouvrable_list)
-        );
-
-        // Génère la liste des jours entre les deux dates incluses
-        $joursOuvrables = collect(Carbon::parse($dateDebut)->daysUntil($dateFin->copy()))
-            // Supprime les jours non ouvrables
-            ->reject(fn(Carbon $date) => isset($joursNonOuvrables[$date->toDateString()]))
-            ->count();
-
-        return $joursOuvrables;
-    }
 
     public function mount()
     {
@@ -208,8 +145,8 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
         $logsArray = collect(explode("\n", $demande->workflow_log))
             ->filter() // élimine les lignes vides
             ->map(fn($line) => json_decode(trim($line), true))
-            ->filter() // élimine les lignes non valides (nulls)
-            ->reverse() // <-- Tri du plus récent au plus ancien
+            ->filter()  // élimine les lignes non valides (nulls)
+            ->reverse() // Tri du plus récent au plus ancien
             ->values(); // Pour réindexer proprement;
         return $logsArray;
     }
@@ -291,7 +228,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
                 })->count();
 
                 // Création d'une opération (enregistrement dans la base) représentant l'absence sur cette semaine
-                Operation::create([
+               $operation = Operation::create([
                     'demande_absence_id' => $this->demandeAbsence->id,
                     'annee_semaine_id' => $semaine->id,
                     'employe_id' => $this->demandeAbsence->employe_id,

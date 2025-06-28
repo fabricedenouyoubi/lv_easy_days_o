@@ -134,27 +134,31 @@
                 </li>
 
                 <!-- Autorisation -->
-                <li class="menu-title" data-key="t-autorisations">Autorisation</li>
-
-                <li>
-                    <a href="javascript: void(0);" class="has-arrow">
-                        <i class="mdi mdi-cancel fs-4"></i>
-                        <span class="menu-item" data-key="t-gestion_autorisation">Gestion autorisations</span>
-                    </a>
-                    <ul class="sub-menu" aria-expanded="false">
-                        {{-- <li>
+                @can('Voir Module AUTORISATION')
+                    <li class="menu-title" data-key="t-autorisations">Autorisation</li>
+                    <li>
+                        <a href="javascript: void(0);" class="has-arrow">
+                            <i class="mdi mdi-cancel fs-4"></i>
+                            <span class="menu-item" data-key="t-gestion_autorisation">Gestion autorisations</span>
+                        </a>
+                        <ul class="sub-menu" aria-expanded="false">
+                            {{-- <li>
                             <a href="{{ route('permission.index') }}"data-key="t-permissions">Permissions</a>
                         </li> --}}
-                        <li>
-                            <a href="{{ route('group.index') }}"data-key="t-groups">Groupes</a>
-                        </li>
-                        <li>
-                            <a
-                                href="{{ route('gestion_utilisateur.index') }}"data-key="t-utilisateurs">Utilisateurs</a>
-                        </li>
-                    </ul>
-                </li>
-
+                            @can('Voir Groupes')
+                                <li>
+                                    <a href="{{ route('group.index') }}"data-key="t-groups">Groupes</a>
+                                </li>
+                            @endcan
+                            @can('Voir Utilisateurs')
+                                <li>
+                                    <a
+                                        href="{{ route('gestion_utilisateur.index') }}"data-key="t-utilisateurs">Utilisateurs</a>
+                                </li>
+                            @endcan
+                        </ul>
+                    </li>
+                @endcan
             </ul>
         </div>
         <!-- Sidebar -->
