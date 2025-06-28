@@ -7,12 +7,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Modules\Budget\Models\SemaineAnnee;
 use Modules\Rh\Models\Employe\Employe;
 use Modules\RhFeuilleDeTempsReguliere\Models\LigneTravail;
+use Modules\RhFeuilleDeTempsAbsence\Traits\HasWorkflow;
 
 // use Modules\RhFeuilleDeTempsAbsence\Database\Factories\OperationFactory;
 
 class Operation extends Model
 {
-    use HasFactory;
+    use HasFactory, HasWorkflow;
 
     protected $table = 'operations';
 

@@ -118,7 +118,7 @@ class RhFeuilleDeTempsReguliereList extends Component
         
         if (!$operation['id']) {
             return [
-                'text' => 'Non démarré',
+                'text' => '---',
                 'class' => 'bg-secondary',
                 'icon' => 'fas fa-minus-circle'
             ];

@@ -1,21 +1,13 @@
 <div>
-    {{-- Messages de feedback --}}
-    <x-alert-messages />
+    <!-- Breadcrumb -->
+    <x-breadcrumb :items="[
+        ['label' => 'Feuilles de temps', 'url' => route('feuille-temps.list')],
+        ['label' => 'Détails semaine ' . ($semaine->numero_semaine)]
+    ]" />
 
-    <div class="row mb-3">
-        <div class="col-md-8">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="{{ route('feuille-temps.list') }}">Feuilles de temps</a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">
-                        Détails semaine {{ $semaine->numero_semaine }}
-                    </li>
-                </ol>
-            </nav>
-        </div>
-    </div>
+
+     {{-- Messages de feedback --}}
+    <x-alert-messages />
 
     <!-- Main content area -->
     <div class="row">
@@ -30,14 +22,51 @@
                                 Feuille de temps
                             </h5>
                         </div>
+
                         <div class="d-flex align-items-center gap-2">
                             @php $statut = $this->getStatutFormate(); @endphp
                             <span class="badge {{ $statut['class'] }} rounded-pill px-3 py-2">
                                 <i class="{{ $statut['icon'] }} align-middle me-1"></i>
                                 {{ $statut['text'] }}
-                            </span>
+                            </span> 
                             
-                            <!-- Actions selon les permissions -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- Informations employé -->
+                    <div class="row align-items-center mb-4">
+                        <div class="col-auto">
+                            <div class="avatar-wrapper">
+                                <div class="avatar-placeholder d-flex align-items-center justify-content-center bg-light rounded-circle shadow-sm border border-3 border-white"
+                                     style="width: 100px; height: 100px;">
+                                    <i class="fa fa-user-circle text-primary" style="font-size: 3rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <h4 class="mb-1">{{ $employe->nom }} {{ $employe->prenom }}</h4>
+                            <p class="text-muted mb-0">Semaine {{ $semaine->numero_semaine }} - Du {{ \Carbon\Carbon::parse($semaine->debut)->format('d/m/Y') }} au {{ \Carbon\Carbon::parse($semaine->fin)->format('d/m/Y') }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Détail des lignes de travail -->
+                    <div class="card mt-3 border-0 shadow-sm">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="card-title mb-0">
+                                    Détail de la feuille de temps
+                                </h6>
+
+                                <div class="d-flex align-items-center gap-2">
+                                    <!-- Boutons d'action déplacés dans le header -->
+                                    <div class="d-flex gap-2">
+                                            <a href="{{ route('feuille-temps.list') }}" class="btn btn-outline-secondary btn-sm">
+                                                <i class="mdi mdi-arrow-left me-1"></i>
+                                                Retour
+                                            </a>
+                                            <!-- Actions selon les permissions -->
                             @if($canEdit)
                                 <a href="{{ route('feuille-temps.edit', ['semaineId' => $semaineId, 'operationId' => $operationId]) }}" 
                                    class="btn btn-sm btn-outline-warning">
@@ -80,31 +109,10 @@
                                     Retourner
                                 </button>
                             @endif
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-body">
-                    <!-- Informations employé -->
-                    <div class="row align-items-center mb-4">
-                        <div class="col-auto">
-                            <div class="avatar-wrapper">
-                                <div class="avatar-placeholder d-flex align-items-center justify-content-center bg-light rounded-circle shadow-sm border border-3 border-white"
-                                     style="width: 100px; height: 100px;">
-                                    <i class="fa fa-user-circle text-primary" style="font-size: 3rem;"></i>
+                                        </div>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <h4 class="mb-1">{{ $employe->nom }} {{ $employe->prenom }}</h4>
-                            <p class="text-muted mb-0">Semaine {{ $semaine->numero_semaine }} - Du {{ \Carbon\Carbon::parse($semaine->debut)->format('d/m/Y') }} au {{ \Carbon\Carbon::parse($semaine->fin)->format('d/m/Y') }}</p>
-                        </div>
-                    </div>
 
-                    <!-- Détail des lignes de travail -->
-                    <div class="card mt-3 border-0 shadow-sm">
-                        <div class="card-header bg-light">
-                            <h6 class="card-title mb-0">Détail de la feuille de temps</h6>
+                            </div>                           
                         </div>
                         <div class="card-body p-0">
                             <div class="table-responsive">

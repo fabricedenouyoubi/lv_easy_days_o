@@ -9,7 +9,6 @@ use Modules\Budget\Models\SemaineAnnee;
 use Modules\RhFeuilleDeTempsAbsence\Models\Operation;
 use Modules\RhFeuilleDeTempsReguliere\Models\LigneTravail;
 use Modules\RhFeuilleDeTempsConfig\Models\CodeTravail;
-use Modules\RhFeuilleDeTempsConfig\Models\Categorie;
 
 class RhFeuilleDeTempsReguliereEdit extends Component
 {
@@ -35,12 +34,11 @@ class RhFeuilleDeTempsReguliereEdit extends Component
         'total_heure_conge_mobile' => 0,
     ];
     
-    // Jours de la semaine
-    public $joursLabels = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+    // Jours de la semaine avec dates complètes
+    public $datesSemaine = [];
     public $joursFeries = [];
 
     protected $rules = [
-        'lignesTravail.*.codes_travail_id' => 'required|exists:codes_travail,id',
         'lignesTravail.*.duree_0' => 'nullable|numeric|min:0|max:12',
         'lignesTravail.*.duree_1' => 'nullable|numeric|min:0|max:12',
         'lignesTravail.*.duree_2' => 'nullable|numeric|min:0|max:12',
@@ -63,10 +61,13 @@ class RhFeuilleDeTempsReguliereEdit extends Component
             }
             
             // Charger les codes de travail disponibles
-            // $this->chargerCodesTravauxDisponibles();
+            $this->chargerCodesTravauxDisponibles();
             
-            // Charger les lignes de travail existantes
-            $this->chargerLignesTravail();
+            // Calculer les dates de la semaine
+            $this->calculerDatesSemaine();
+            
+            // Générer les lignes de travail
+            $this->genererLignesTravail();
             
             // Calculer les jours fériés
             $this->calculerJoursFeries();
@@ -84,81 +85,53 @@ class RhFeuilleDeTempsReguliereEdit extends Component
      */
     private function chargerCodesTravauxDisponibles()
     {
-        // Récupérer les codes selon les catégories (exclure les absences)
-        $categoriesExclues = ['Absence']; // À adapter selon votre logique
-        
+        // Récupérer TOUS les codes de travail (y compris les absences)
         $this->codesTravauxDisponibles = CodeTravail::with('categorie')
-            ->whereHas('categorie', function($query) use ($categoriesExclues) {
-                $query->whereNotIn('intitule', $categoriesExclues);
-            })
             ->orderBy('libelle')
-            ->get()
-            ->groupBy('categorie.intitule');
+            ->get();
     }
 
     /**
-     * Charger les lignes de travail existantes ou créer des lignes vides
+     * Calculer les dates de la semaine pour affichage
      */
-    private function chargerLignesTravail()
+    private function calculerDatesSemaine()
     {
-        $lignesExistantes = $this->operation->lignesTravail;
+        $dateDebut = \Carbon\Carbon::parse($this->semaine->debut);
         
-        if ($lignesExistantes->count() > 0) {
-            // Charger les lignes existantes
-            foreach ($lignesExistantes as $ligne) {
-                $this->lignesTravail[] = [
-                    'id' => $ligne->id,
-                    'codes_travail_id' => $ligne->codes_travail_id,
-                    'duree_0' => $ligne->duree_0 ?? 0,
-                    'duree_1' => $ligne->duree_1 ?? 0,
-                    'duree_2' => $ligne->duree_2 ?? 0,
-                    'duree_3' => $ligne->duree_3 ?? 0,
-                    'duree_4' => $ligne->duree_4 ?? 0,
-                    'duree_5' => $ligne->duree_5 ?? 0,
-                    'duree_6' => $ligne->duree_6 ?? 0,
-                    'auto_rempli' => $ligne->auto_rempli ?? false,
-                ];
-            }
-        } else {
-            // Créer une ligne vide pour commencer
-            $this->ajouterLigneTravail();
+        for ($i = 0; $i <= 6; $i++) {
+            $date = $dateDebut->copy()->addDays($i);
+            $this->datesSemaine[] = [
+                'date' => $date,
+                'format' => $date->format('d') . ' ' . $date->locale('fr')->monthName . ' ' . $date->format('Y'),
+                'is_dimanche' => $date->isSunday()
+            ];
         }
     }
 
     /**
-     * Ajouter une nouvelle ligne de travail
+     * Générer les lignes de travail basées sur les codes de travail
      */
-    public function ajouterLigneTravail()
+    private function genererLignesTravail()
     {
-        $this->lignesTravail[] = [
-            'id' => null,
-            'codes_travail_id' => null,
-            'duree_0' => 0,
-            'duree_1' => 0,
-            'duree_2' => 0,
-            'duree_3' => 0,
-            'duree_4' => 0,
-            'duree_5' => 0,
-            'duree_6' => 0,
-            'auto_rempli' => false,
-        ];
-    }
-
-    /**
-     * Supprimer une ligne de travail
-     */
-    public function supprimerLigneTravail($index)
-    {
-        if (isset($this->lignesTravail[$index])) {
-            // Si la ligne a un ID, la marquer pour suppression en base
-            if ($this->lignesTravail[$index]['id']) {
-                LigneTravail::find($this->lignesTravail[$index]['id'])?->delete();
-            }
+        $lignesExistantes = $this->operation->lignesTravail->keyBy('codes_travail_id');
+        
+        // Créer une ligne pour chaque code de travail
+        foreach ($this->codesTravauxDisponibles as $codeTravail) {
+            $ligneExistante = $lignesExistantes->get($codeTravail->id);
             
-            unset($this->lignesTravail[$index]);
-            $this->lignesTravail = array_values($this->lignesTravail); // Réindexer
-            
-            $this->calculerTotaux();
+            $this->lignesTravail[] = [
+                'id' => $ligneExistante?->id,
+                'codes_travail_id' => $codeTravail->id,
+                'code_travail' => $codeTravail,
+                'duree_0' => $ligneExistante?->duree_0 ?? '00.00',
+                'duree_1' => $ligneExistante?->duree_1 ?? '00.00',
+                'duree_2' => $ligneExistante?->duree_2 ?? '00.00',
+                'duree_3' => $ligneExistante?->duree_3 ?? '00.00',
+                'duree_4' => $ligneExistante?->duree_4 ?? '00.00',
+                'duree_5' => $ligneExistante?->duree_5 ?? '00.00',
+                'duree_6' => $ligneExistante?->duree_6 ?? '00.00',
+                'auto_rempli' => $ligneExistante?->auto_rempli ?? false,
+            ];
         }
     }
 
@@ -179,16 +152,18 @@ class RhFeuilleDeTempsReguliereEdit extends Component
         ];
 
         foreach ($this->lignesTravail as $ligne) {
-            if (!$ligne['codes_travail_id']) continue;
-            
             // Calculer le total des heures pour cette ligne
             $totalLigne = 0;
             for ($jour = 0; $jour <= 6; $jour++) {
-                $totalLigne += floatval($ligne["duree_{$jour}"] ?? 0);
+                $duree = floatval($ligne["duree_{$jour}"] ?? 0);
+                $totalLigne += $duree;
             }
             
+            // Ne pas comptabiliser les lignes vides
+            if ($totalLigne == 0) continue;
+            
             // Répartir selon le code de travail
-            $codeTravail = CodeTravail::find($ligne['codes_travail_id']);
+            $codeTravail = $ligne['code_travail'];
             if ($codeTravail) {
                 switch (strtoupper($codeTravail->code)) {
                     case 'FOR':
@@ -305,26 +280,38 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     private function sauvegarderLignesTravail()
     {
         foreach ($this->lignesTravail as $ligneData) {
-            if (!$ligneData['codes_travail_id']) continue;
+            // Calculer le total des heures pour cette ligne
+            $totalLigne = 0;
+            for ($jour = 0; $jour <= 6; $jour++) {
+                $totalLigne += floatval($ligneData["duree_{$jour}"] ?? 0);
+            }
             
+            // Préparer les données
             $data = [
                 'operation_id' => $this->operation->id,
                 'codes_travail_id' => $ligneData['codes_travail_id'],
-                'duree_0' => $ligneData['duree_0'] ?? 0,
-                'duree_1' => $ligneData['duree_1'] ?? 0,
-                'duree_2' => $ligneData['duree_2'] ?? 0,
-                'duree_3' => $ligneData['duree_3'] ?? 0,
-                'duree_4' => $ligneData['duree_4'] ?? 0,
-                'duree_5' => $ligneData['duree_5'] ?? 0,
-                'duree_6' => $ligneData['duree_6'] ?? 0,
+                'duree_0' => floatval($ligneData['duree_0'] ?? 0),
+                'duree_1' => floatval($ligneData['duree_1'] ?? 0),
+                'duree_2' => floatval($ligneData['duree_2'] ?? 0),
+                'duree_3' => floatval($ligneData['duree_3'] ?? 0),
+                'duree_4' => floatval($ligneData['duree_4'] ?? 0),
+                'duree_5' => floatval($ligneData['duree_5'] ?? 0),
+                'duree_6' => floatval($ligneData['duree_6'] ?? 0),
             ];
             
             if ($ligneData['id']) {
-                // Mettre à jour ligne existante
-                LigneTravail::where('id', $ligneData['id'])->update($data);
+                // Mettre à jour ligne existante seulement si elle a des heures
+                if ($totalLigne > 0) {
+                    LigneTravail::where('id', $ligneData['id'])->update($data);
+                } else {
+                    // Supprimer si plus d'heures
+                    LigneTravail::find($ligneData['id'])?->delete();
+                }
             } else {
-                // Créer nouvelle ligne
-                LigneTravail::create($data);
+                // Créer nouvelle ligne seulement si elle a des heures
+                if ($totalLigne > 0) {
+                    LigneTravail::create($data);
+                }
             }
         }
     }
