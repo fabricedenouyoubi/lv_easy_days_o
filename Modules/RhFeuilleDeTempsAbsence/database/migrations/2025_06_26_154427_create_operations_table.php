@@ -31,10 +31,17 @@ return new class extends Migration
             $table->double('total_heure_caisse')->nullable()->default(0)->comment("Heures caisse");
             $table->double('total_heure_conge_mobile')->nullable()->default(0)->comment("Heures congé mobile");
 
+            // Colonne pour la gestion du workflow
+            $table->string('workflow_state', 50)->default('brouillon')->after('statut');
+
             // Foreign keys
             $table->foreignId('demande_absence_id')->nullable()->constrained('demande_absences')->nullOnDelete();
             $table->foreignId('employe_id')->nullable()->constrained('employes')->nullOnDelete();
             $table->foreignId('annee_semaine_id')->nullable()->constrained('annee_semaines')->nullOnDelete();
+
+            // Indexation
+            $table->index(['workflow_state']);
+            $table->index(['employe_id', 'workflow_state']);
         });
     }
 

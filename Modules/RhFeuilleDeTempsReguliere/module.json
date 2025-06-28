@@ -1,0 +1,11 @@
+{
+    "name": "RhFeuilleDeTempsReguliere",
+    "alias": "rhfeuilledetempsreguliere",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\RhFeuilleDeTempsReguliere\\Providers\\RhFeuilleDeTempsReguliereServiceProvider"
+    ],
+    "files": []
+}
