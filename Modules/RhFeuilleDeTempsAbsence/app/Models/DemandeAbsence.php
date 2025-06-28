@@ -248,21 +248,29 @@ class DemandeAbsence extends Model
     private function supprimerRemplissageAutomatique(): void
     {
         LigneTravail::where('demande_absence_id', $this->id)
-                   ->where('auto_rempli', true)
-                   ->delete();
+            ->where('auto_rempli', true)
+            ->delete();
     }
 
-    // Scopes utiles
+    //--- scope pour la liste des demandes d'absence d'un employé
     public function scopeEmployeConnecte($query)
     {
-        return $query->where('employe_id', Auth::user()->employe->id);
+        $employeId = Auth::user()->employe->id;
+
+        return $query->where('employe_id', $employeId)
+            ->orWhere('admin_id', Auth::user()->id);
     }
 
+    //--- scope pour la liste des demandes d'absence d'un gestionnaire
     public function scopeGestionnaireConnecte($query)
     {
-        return $query->whereHas('employe', function($q) {
-            $q->where('gestionnaire_id', Auth::user()->employe->id);
-        });
+        $employe = Auth::user()->employe;
+
+        return $query->where(function ($q) use ($employe) {
+            $q->whereHas('employe', function ($subQuery) use ($employe) {
+                $subQuery->where('gestionnaire_id', $employe->id);
+            })->orWhere('employe_id', $employe->id);
+        })->orWhere('admin_id', Auth::user()->id);
     }
 
     public function scopeEnAttente($query)

@@ -90,7 +90,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     }
 
     //--- Calcul du nombre de jour d'absence en tenant compte des jour non ouvrables
-    function nombreDeJoursEntre($dateA, $dateB, $idAnneFinnEncours): int
+    function nombreDeJoursEntre($dateA, $dateB, $idAnneFinnEncours)
     {
         // Conversion des dates en objets Carbon (début de journée)
         $dateDebut = $dateA instanceof Carbon
