@@ -2,11 +2,10 @@
     <!-- Breadcrumb -->
     <x-breadcrumb :items="[
         ['label' => 'Feuilles de temps', 'url' => route('feuille-temps.list')],
-        ['label' => 'Détails semaine ' . ($semaine->numero_semaine)]
+        ['label' => 'Détails semaine ' . ($this->semaine->numero_semaine)]
     ]" />
 
-
-     {{-- Messages de feedback --}}
+    {{-- Messages de feedback --}}
     <x-alert-messages />
 
     <!-- Main content area -->
@@ -29,7 +28,6 @@
                                 <i class="{{ $statut['icon'] }} align-middle me-1"></i>
                                 {{ $statut['text'] }}
                             </span> 
-                            
                         </div>
                     </div>
                 </div>
@@ -46,8 +44,8 @@
                             </div>
                         </div>
                         <div class="col-auto">
-                            <h4 class="mb-1">{{ $employe->nom }} {{ $employe->prenom }}</h4>
-                            <p class="text-muted mb-0">Semaine {{ $semaine->numero_semaine }} - Du {{ \Carbon\Carbon::parse($semaine->debut)->format('d/m/Y') }} au {{ \Carbon\Carbon::parse($semaine->fin)->format('d/m/Y') }}</p>
+                            <h4 class="mb-1">{{ $this->employe->nom }} {{ $this->employe->prenom }}</h4>
+                            <p class="text-muted mb-0">Semaine {{ $this->semaine->numero_semaine }} - Du {{ \Carbon\Carbon::parse($this->semaine->debut)->format('d/m/Y') }} au {{ \Carbon\Carbon::parse($this->semaine->fin)->format('d/m/Y') }}</p>
                         </div>
                     </div>
 
@@ -62,56 +60,55 @@
                                 <div class="d-flex align-items-center gap-2">
                                     <!-- Boutons d'action déplacés dans le header -->
                                     <div class="d-flex gap-2">
-                                            <a href="{{ route('feuille-temps.list') }}" class="btn btn-outline-secondary btn-sm">
-                                                <i class="mdi mdi-arrow-left me-1"></i>
-                                                Retour
+                                        <a href="{{ route('feuille-temps.list') }}" class="btn btn-outline-secondary btn-sm">
+                                            <i class="mdi mdi-arrow-left me-1"></i>
+                                            Retour
+                                        </a>
+                                        <!-- Actions selon les permissions -->
+                                        @if($canEdit)
+                                            <a href="{{ route('feuille-temps.edit', ['semaineId' => $semaineId, 'operationId' => $operationId]) }}" 
+                                               class="btn btn-sm btn-outline-warning">
+                                                <i class="mdi mdi-square-edit-outline me-1"></i>
+                                                Modifier
                                             </a>
-                                            <!-- Actions selon les permissions -->
-                            @if($canEdit)
-                                <a href="{{ route('feuille-temps.edit', ['semaineId' => $semaineId, 'operationId' => $operationId]) }}" 
-                                   class="btn btn-sm btn-outline-warning">
-                                    <i class="mdi mdi-square-edit-outline me-1"></i>
-                                    Modifier
-                                </a>
-                            @endif
-                            
-                            @if($canSubmit)
-                                <button wire:click="toggleSubmitModal" class="btn btn-sm btn-outline-primary">
-                                    <i class="mdi mdi-send-circle-outline me-1"></i>
-                                    Soumettre
-                                </button>
-                            @endif
-                            
-                            @if($canRecall)
-                                <button wire:click="toggleRecallModal" class="btn btn-sm btn-outline-warning">
-                                    <i class="mdi mdi-backup-restore me-1"></i>
-                                    Rappeler
-                                </button>
-                            @endif
-                            
-                            @if($canApprove)
-                                <button wire:click="toggleApproveModal" class="btn btn-sm btn-outline-success">
-                                    <i class="mdi mdi-checkbox-marked-circle-outline me-1"></i>
-                                    Valider
-                                </button>
-                            @endif
-                            
-                            @if($canReject)
-                                <button wire:click="toggleRejectModal" class="btn btn-sm btn-outline-danger">
-                                    <i class="mdi mdi-close-circle-outline me-1"></i>
-                                    Rejeter
-                                </button>
-                            @endif
-                            
-                            @if($canReturn)
-                                <button wire:click="toggleReturnModal" class="btn btn-sm btn-outline-warning">
-                                    <i class="mdi mdi-reply me-1"></i>
-                                    Retourner
-                                </button>
-                            @endif
-                                        </div>
+                                        @endif
+                                        
+                                        @if($canSubmit)
+                                            <button wire:click="toggleSubmitModal" class="btn btn-sm btn-outline-primary">
+                                                <i class="mdi mdi-send-circle-outline me-1"></i>
+                                                Soumettre
+                                            </button>
+                                        @endif
+                                        
+                                        @if($canRecall)
+                                            <button wire:click="toggleRecallModal" class="btn btn-sm btn-outline-warning">
+                                                <i class="mdi mdi-backup-restore me-1"></i>
+                                                Rappeler
+                                            </button>
+                                        @endif
+                                        
+                                        @if($canApprove)
+                                            <button wire:click="toggleApproveModal" class="btn btn-sm btn-outline-success">
+                                                <i class="mdi mdi-checkbox-marked-circle-outline me-1"></i>
+                                                Valider
+                                            </button>
+                                        @endif
+                                        
+                                        @if($canReject)
+                                            <button wire:click="toggleRejectModal" class="btn btn-sm btn-outline-danger">
+                                                <i class="mdi mdi-close-circle-outline me-1"></i>
+                                                Rejeter
+                                            </button>
+                                        @endif
+                                        
+                                        @if($canReturn)
+                                            <button wire:click="toggleReturnModal" class="btn btn-sm btn-outline-warning">
+                                                <i class="mdi mdi-reply me-1"></i>
+                                                Retourner
+                                            </button>
+                                        @endif
+                                    </div>
                                 </div>
-
                             </div>                           
                         </div>
                         <div class="card-body p-0">
@@ -125,7 +122,7 @@
                                                     {{ $jour }}
                                                     <br>
                                                     <small class="text-muted">
-                                                        {{ \Carbon\Carbon::parse($semaine->debut)->addDays($index)->format('d/m') }}
+                                                        {{ \Carbon\Carbon::parse($this->semaine->debut)->addDays($index)->format('d/m') }}
                                                     </small>
                                                 </th>
                                             @endforeach
@@ -228,35 +225,35 @@
             <x-table-card title="Résumé des heures" icon="fas fa-clock">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-muted">Formation</span>
-                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $operation->total_heure_formation ?? 0 }}h</span>
+                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $this->operation->total_heure_formation ?? 0 }}h</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-muted">CSN</span>
-                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $operation->total_heure_csn ?? 0 }}h</span>
+                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $this->operation->total_heure_csn ?? 0 }}h</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-muted">Caisse</span>
-                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $operation->total_heure_caisse ?? 0 }}h</span>
+                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $this->operation->total_heure_caisse ?? 0 }}h</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-muted">Congé Mobile</span>
-                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $operation->total_heure_conge_mobile ?? 0 }}h</span>
+                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $this->operation->total_heure_conge_mobile ?? 0 }}h</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-muted">Déplacement</span>
-                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $operation->total_heure_deplacement ?? 0 }}h</span>
+                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $this->operation->total_heure_deplacement ?? 0 }}h</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-muted">Régulier</span>
-                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $operation->total_heure_regulier ?? 0 }}h</span>
+                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $this->operation->total_heure_regulier ?? 0 }}h</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-muted">Heure Supplémentaire</span>
-                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $operation->total_heure_supp ?? 0 }}h</span>
+                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $this->operation->total_heure_supp ?? 0 }}h</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="text-muted">Total des heures</span>
-                    <span class="badge bg-dark px-3 py-2 rounded-pill">{{ $operation->total_heure ?? 0 }}h</span>
+                    <span class="badge bg-dark px-3 py-2 rounded-pill">{{ $this->operation->total_heure ?? 0 }}h</span>
                 </div>
             </x-table-card>
 
