@@ -26,12 +26,12 @@
                                     @if($operation->workflow_state)
                                         @php
                                             $statusConfig = [
-                                                'brouillon' => ['class' => 'bg-warning text-dark', 'icon' => 'mdi-pencil-outline'],
-                                                'en_cours' => ['class' => 'bg-info text-dark', 'icon' => 'mdi-hourglass-half'],
-                                                'soumis' => ['class' => 'bg-primary', 'icon' => 'mdi-send'],
-                                                'valide' => ['class' => 'bg-success', 'icon' => 'mdi-check-circle'],
+                                                'brouillon' => ['class' => 'bg-warning text-dark', 'icon' => 'fas fa-pencil-alt'],
+                                                'en_cours' => ['class' => 'bg-info text-dark', 'icon' => 'fas fa-hourglass-half'],
+                                                'soumis' => ['class' => 'bg-primary', 'icon' => 'fas fa-paper-plane'],
+                                                'valide' => ['class' => 'bg-success', 'icon' => 'fas fa-check-circle'],
                                             ];
-                                            $status = $statusConfig[$operation->workflow_state] ?? ['class' => 'bg-secondary', 'icon' => 'mdi-help'];
+                                            $status = $statusConfig[$operation->workflow_state] ?? ['class' => 'bg-secondary', 'icon' => 'fas fa-question-circle'];
                                         @endphp
                                         <span class="badge {{ $status['class'] }} rounded-pill px-3 py-2">
                                             <i class="{{ $status['icon'] }} align-middle me-1"></i>

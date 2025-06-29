@@ -33,6 +33,7 @@ return new class extends Migration
 
             // Colonne pour la gestion du workflow
             $table->string('workflow_state', 50)->default('brouillon')->after('statut');
+            $table->text('motif_rejet')->nullable();
 
             // Foreign keys
             $table->foreignId('demande_absence_id')->nullable()->constrained('demande_absences')->nullOnDelete();

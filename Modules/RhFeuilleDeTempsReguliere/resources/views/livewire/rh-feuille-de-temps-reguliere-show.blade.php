@@ -34,20 +34,34 @@
 
                 <div class="card-body">
                     <!-- Informations employé -->
-                    <div class="row align-items-center mb-4">
-                        <div class="col-auto">
-                            <div class="avatar-wrapper">
-                                <div class="avatar-placeholder d-flex align-items-center justify-content-center bg-light rounded-circle shadow-sm border border-3 border-white"
-                                     style="width: 100px; height: 100px;">
-                                    <i class="fa fa-user-circle text-primary" style="font-size: 3rem;"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <h4 class="mb-1">{{ $this->employe->nom }} {{ $this->employe->prenom }}</h4>
-                            <p class="text-muted mb-0">Semaine {{ $this->semaine->numero_semaine }} - Du {{ \Carbon\Carbon::parse($this->semaine->debut)->format('d/m/Y') }} au {{ \Carbon\Carbon::parse($this->semaine->fin)->format('d/m/Y') }}</p>
+            <div class="row align-items-center mb-4">
+                <div class="col-auto">
+                    <div class="avatar-wrapper">
+                        <div class="avatar-placeholder d-flex align-items-center justify-content-center bg-light rounded-circle shadow-sm border border-3 border-white"
+                             style="width: 100px; height: 100px;">
+                            <i class="fa fa-user-circle text-primary" style="font-size: 3rem;"></i>
                         </div>
                     </div>
+                </div>
+                <div class="col-auto">
+                    <h4 class="mb-1">{{ $this->employe->nom }} {{ $this->employe->prenom }}</h4>
+                    <p class="text-muted mb-0">Semaine {{ $this->semaine->numero_semaine }} - Du {{ \Carbon\Carbon::parse($this->semaine->debut)->format('d/m/Y') }} au {{ \Carbon\Carbon::parse($this->semaine->fin)->format('d/m/Y') }}</p>
+                </div>
+            </div>
+
+            {{-- Affichage du motif de rejet si la feuille est rejetée --}}
+            @if($this->operation->workflow_state === 'rejete' && $this->operation->motif_rejet)
+                <div class="alert alert-danger border-0 mb-4">
+                    <div class="d-flex align-items-start">
+                        <i class="mdi mdi-alert-circle-outline me-2 mt-1" style="font-size: 1.2em;"></i>
+                        <div>
+                            <h6 class="alert-heading mb-2">Feuille de temps rejetée</h6>
+                            <p class="mb-0"><strong>Motif :</strong> {{ $this->operation->motif_rejet }}</p>
+                            <hr class="my-2">
+                        </div>
+                    </div>
+                </div>
+            @endif
 
                     <!-- Détail des lignes de travail -->
                     <div class="card mt-3 border-0 shadow-sm">

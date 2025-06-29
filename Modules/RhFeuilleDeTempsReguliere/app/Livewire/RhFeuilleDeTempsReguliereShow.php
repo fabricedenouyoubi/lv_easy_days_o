@@ -35,8 +35,6 @@ class RhFeuilleDeTempsReguliereShow extends Component
     public $motifRejet = '';
     public $commentaire = '';
 
-    public $statutFormate = [];
-
     protected $rules = [
         'motifRejet' => 'required|string|min:5',
         'commentaire' => 'nullable|string|max:500'
@@ -50,7 +48,6 @@ class RhFeuilleDeTempsReguliereShow extends Component
                                       ->findOrFail($this->operationId);
             
             $this->employe = $this->operation->employe;
-            $this->statutFormate = $this->getStatutFormate();
             
             // Vérifier les permissions d'accès
             $this->verifierPermissions();
@@ -260,31 +257,36 @@ class RhFeuilleDeTempsReguliereShow extends Component
      */
     public function getStatutFormate()
     {
-        return match($this->operation->workflow_state) {
+       return match($this->operation->workflow_state) {
             'brouillon' => [
                 'text' => 'Brouillon',
                 'class' => 'bg-warning text-dark',
-                'icon' => 'mdi-pencil-outline'
+                'icon' => 'fas fa-pencil-alt'
             ],
             'en_cours' => [
                 'text' => 'En cours',
                 'class' => 'bg-info text-dark',
-                'icon' => 'mdi-hourglass-half'
+                'icon' => 'fas fa-hourglass-half'
             ],
             'soumis' => [
                 'text' => 'Soumis',
                 'class' => 'bg-primary',
-                'icon' => 'mdi-send'
+                'icon' => 'fas fa-paper-plane'
             ],
             'valide' => [
                 'text' => 'Validé',
                 'class' => 'bg-success',
-                'icon' => 'mdi-check-circle'
+                'icon' => 'fas fa-times-circle'
+            ],
+            'rejete' => [
+                'text' => 'Rejeté',
+                'class' => 'bg-danger',
+                'icon' => 'mdi-close-circle'
             ],
             default => [
                 'text' => 'Inconnu',
                 'class' => 'bg-secondary',
-                'icon' => 'mdi-help'
+                'icon' => 'fas fa-question-circle'
             ]
         };
     }
