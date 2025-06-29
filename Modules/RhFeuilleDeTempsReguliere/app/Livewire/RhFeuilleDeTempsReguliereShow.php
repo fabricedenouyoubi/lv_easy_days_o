@@ -6,6 +6,7 @@ use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use Modules\Budget\Models\SemaineAnnee;
 use Modules\RhFeuilleDeTempsAbsence\Models\Operation;
+use Livewire\Attributes\Computed;
 
 class RhFeuilleDeTempsReguliereShow extends Component
 {
@@ -256,6 +257,7 @@ class RhFeuilleDeTempsReguliereShow extends Component
     /**
      * Obtenir le statut formaté
      */
+    #[Computed]
     public function getStatutFormate()
     {
         return match($this->operation->workflow_state) {
