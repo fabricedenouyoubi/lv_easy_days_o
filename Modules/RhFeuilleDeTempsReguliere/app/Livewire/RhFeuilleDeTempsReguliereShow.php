@@ -6,8 +6,6 @@ use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use Modules\Budget\Models\SemaineAnnee;
 use Modules\RhFeuilleDeTempsAbsence\Models\Operation;
-use Livewire\Attributes\Computed;
-
 class RhFeuilleDeTempsReguliereShow extends Component
 {
     public $operationId;
@@ -37,6 +35,8 @@ class RhFeuilleDeTempsReguliereShow extends Component
     public $motifRejet = '';
     public $commentaire = '';
 
+    public $statutFormate = [];
+
     protected $rules = [
         'motifRejet' => 'required|string|min:5',
         'commentaire' => 'nullable|string|max:500'
@@ -50,6 +50,7 @@ class RhFeuilleDeTempsReguliereShow extends Component
                                       ->findOrFail($this->operationId);
             
             $this->employe = $this->operation->employe;
+            $this->statutFormate = $this->getStatutFormate();
             
             // Vérifier les permissions d'accès
             $this->verifierPermissions();
@@ -257,7 +258,6 @@ class RhFeuilleDeTempsReguliereShow extends Component
     /**
      * Obtenir le statut formaté
      */
-    #[Computed]
     public function getStatutFormate()
     {
         return match($this->operation->workflow_state) {
