@@ -2,7 +2,7 @@
     <!-- Breadcrumb -->
     <x-breadcrumb :items="[
         ['label' => 'Feuilles de temps', 'url' => route('feuille-temps.list')],
-        ['label' => 'Détails semaine ' . ($this->semaine->numero_semaine)]
+        ['label' => 'Détails feuille']
     ]" />
 
     {{-- Messages de feedback --}}

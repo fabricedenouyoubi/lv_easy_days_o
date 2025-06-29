@@ -61,23 +61,12 @@
 
                                         <!-- Bouton Activer - si pas active -->
                                         @can('Activer une année financière')
-                                            @if ($annee->statut !== 'ACTIF')
+                                            @if (!$annee->actif)
                                                 <x-action-button type="outline-success" icon="mdi mdi-check-circle"
                                                     size="sm" tooltip="Activer"
                                                     wireClick="activer({{ $annee->id }})" />
                                             @endif
                                         @endcan
-
-                                        <!-- Bouton Clôturer -->
-                                        @if ($annee->actif)
-                                            <!-- <button class="btn btn-outline-warning btn-sm rounded-3 px-3 d-inline-flex align-items-center"
-                                                    onclick="alert('Pas encore disponible')"
-                                                    data-bs-toggle="tooltip"
-                                                    title="Clôturer l'année">
-                                                <i class="mdi mdi-close-circle-outline me-1"></i>
-                                                Clôturer
-                                            </button> -->
-                                        @endif
                                     </div>
                                 </td>
                             </tr>
