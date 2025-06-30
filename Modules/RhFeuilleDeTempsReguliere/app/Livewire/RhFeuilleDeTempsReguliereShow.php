@@ -255,9 +255,9 @@ class RhFeuilleDeTempsReguliereShow extends Component
     /**
      * Obtenir le statut formaté
      */
-    public function getStatutFormate()
+       public function getStatutFormateProperty()
     {
-       return match($this->operation->workflow_state) {
+        return match($this->operation->workflow_state) {
             'brouillon' => [
                 'text' => 'Brouillon',
                 'class' => 'bg-warning text-dark',
@@ -276,12 +276,12 @@ class RhFeuilleDeTempsReguliereShow extends Component
             'valide' => [
                 'text' => 'Validé',
                 'class' => 'bg-success',
-                'icon' => 'fas fa-times-circle'
+                'icon' => 'fas fa-check-circle'
             ],
             'rejete' => [
                 'text' => 'Rejeté',
                 'class' => 'bg-danger',
-                'icon' => 'mdi-close-circle'
+                'icon' => 'fas fa-times-circle'
             ],
             default => [
                 'text' => 'Inconnu',

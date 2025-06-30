@@ -58,6 +58,8 @@ class RhFeuilleDeTempsReguliereManagerDashboard extends Component
             // ->whereHas('employe', function($query) use ($managerId) {
             //     $query->where('gestionnaire_id', $managerId);
             // })
+            ->whereHas('anneeSemaine') 
+            ->whereHas('employe')
             ->where('workflow_state', 'soumis')
             ->orderBy('updated_at', 'desc')
             ->paginate(10, ['*'], 'feuilles_page');

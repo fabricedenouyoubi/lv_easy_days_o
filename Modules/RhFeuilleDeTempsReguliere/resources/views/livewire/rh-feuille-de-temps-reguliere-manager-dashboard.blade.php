@@ -57,11 +57,17 @@
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <span class="badge bg-primary">{{ $feuille->anneeSemaine->numero_semaine }}</span>
+                                                    <span class="badge bg-primary">
+                                                        {{ $feuille->anneeSemaine?->numero_semaine ?? 'N/A' }}
+                                                    </span>
                                                 </td>
                                                 <td>
-                                                    Du {{ \Carbon\Carbon::parse($feuille->anneeSemaine->debut)->format('d/m') }}
-                                                    au {{ \Carbon\Carbon::parse($feuille->anneeSemaine->fin)->format('d/m') }}
+                                                    @if($feuille->anneeSemaine)
+                                                        Du {{ \Carbon\Carbon::parse($feuille->anneeSemaine->debut)->format('d/m') }}
+                                                        au {{ \Carbon\Carbon::parse($feuille->anneeSemaine->fin)->format('d/m') }}
+                                                    @else
+                                                        <span class="text-muted">Période non définie</span>
+                                                    @endif
                                                 </td>
                                                 <td>
                                                     <span class="fw-bold">{{ $feuille->total_heure ?? 0 }}h</span>
