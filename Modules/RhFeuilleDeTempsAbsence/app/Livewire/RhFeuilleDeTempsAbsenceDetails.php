@@ -4,6 +4,7 @@ namespace Modules\RhFeuilleDeTempsAbsence\Livewire;
 
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -11,6 +12,9 @@ use Modules\Budget\Models\SemaineAnnee;
 use Modules\RhFeuilleDeTempsAbsence\Models\DemandeAbsence;
 use Modules\RhFeuilleDeTempsAbsence\Models\Operation;
 use Modules\RhFeuilleDeTempsAbsence\Traits\AbsenceResource;
+use Modules\RhFeuilleDeTempsAbsence\Workflows\DemandeAbsenceWorkflow;
+use Workflow\Events\WorkflowCompleted;
+use Workflow\WorkflowStub;
 
 class RhFeuilleDeTempsAbsenceDetails extends Component
 {
@@ -155,16 +159,50 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     {
         try {
 
-            $comment = $this->demandeAbsence->admin_id == Auth::user()->id ? 'La demande a été soumise par ' . Auth::user()->name : 'La demande a été soumise';
-            $this->build_workflow_log($this->demandeAbsence->statut, $this->statuts[2], $comment);
-            $this->demandeAbsence->update([
-                'statut' => $this->statuts[2],
-                'workflow_log' => $this->workflow_log
+            $comment = $this->demandeAbsence->admin_id == Auth::user()->id
+                ? 'La demande a été soumise par ' . Auth::user()->name
+                : 'La demande a été soumise';
+
+            $workflow = WorkflowStub::make(DemandeAbsenceWorkflow::class);
+            $workflow->start($this->demandeAbsence, 'En cours', 'Soumis', $comment);
+
+
+            // Exécute la commande queue:work --once
+            $exitCode = Artisan::call('queue:work', [
+                '--once'    => true,  // Indique de traiter une seule tâche
+                '--tries'   => 1,     // Tenter chaque tâche une seule fois
+                '--timeout' => 120    // Temps maximum d'exécution de la tâche
             ]);
+
+            $exitCode = Artisan::call('queue:work', [
+                '--once'    => true,  // Indique de traiter une seule tâche
+                '--tries'   => 1,     // Tenter chaque tâche une seule fois
+                '--timeout' => 120    // Temps maximum d'exécution de la tâche
+            ]);
+
+            // Vous pouvez vérifier le code de sortie pour savoir si la commande a réussi (0 signifie succès)
+            if ($exitCode === 0) {
+                session()->flash('success', "Une tâche de la file d'attente a été traitée avec succès !");
+            } else {
+                session()->flash('success', "Échec du traitement de la tâche (code d'erreur : " . $exitCode . ")");
+            }
+
+            //dd($workflow->output());
+            /*  $this->demandeAbsence->applyTransition('soumettre', [
+                'comment' => $comment
+            ]); */
+
+
+
             $this->showSoumissionModal = false;
-            session()->flash('success', 'Demande d\'absence  soumise avec succès.');
+            //session()->flash('success', 'Demande d\'absence soumise avec succès.');
+
+            // Recharger les données
+            $this->mount();
         } catch (\Throwable $th) {
             //throw $th;
+            $this->showSoumissionModal = false;
+            session()->flash('error', 'Erreur lors de la soumission de la demande d\'absence ' . $th->getMessage());
         }
     }
 
