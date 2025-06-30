@@ -16,6 +16,8 @@ class RhFeuilleDeTempsReguliereShow extends Component
     public $lignesTravail = [];
     public $joursLabels = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
     public $workflowHistory = [];
+
+    public $statutFormate = [];
     
     // Permissions utilisateur
     public $canEdit = false;
@@ -48,7 +50,8 @@ class RhFeuilleDeTempsReguliereShow extends Component
                                       ->findOrFail($this->operationId);
             
             $this->employe = $this->operation->employe;
-            
+            // Statut du statut formaté
+            $this->initStatutFormate();
             // Vérifier les permissions d'accès
             $this->verifierPermissions();
             
@@ -255,9 +258,9 @@ class RhFeuilleDeTempsReguliereShow extends Component
     /**
      * Obtenir le statut formaté
      */
-       public function getStatutFormateProperty()
+public function initStatutFormate()
     {
-        return match($this->operation->workflow_state) {
+       $this->statutFormate = match($this->operation->workflow_state) {
             'brouillon' => [
                 'text' => 'Brouillon',
                 'class' => 'bg-warning text-dark',
@@ -290,6 +293,8 @@ class RhFeuilleDeTempsReguliereShow extends Component
             ]
         };
     }
+
+    // , 
 
     public function render()
     {
