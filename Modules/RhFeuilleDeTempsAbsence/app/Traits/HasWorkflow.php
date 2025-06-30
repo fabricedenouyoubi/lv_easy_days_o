@@ -183,6 +183,8 @@ trait HasWorkflow
         $this->updateQuietly(['workflow_log' => implode("\n", $logs)]);
     }
 
+
+
     /**
      * Obtenir l'historique des transitions
      */

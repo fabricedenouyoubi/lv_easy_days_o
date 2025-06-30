@@ -4,6 +4,7 @@ namespace Modules\RhFeuilleDeTempsAbsence\Livewire;
 
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Modules\Budget\Models\AnneeFinanciere;
 use Modules\RhFeuilleDeTempsAbsence\Models\DemandeAbsence;
@@ -120,25 +121,44 @@ class RhFeuilleDeTempsAbsenceForm extends Component
         $this->validate();
 
         try {
-            $this->build_workflow_log($this->statuts[0], $this->statuts[1], 'La demande est en cours de redaction');
+            // $this->build_workflow_log($this->statuts[0], $this->statuts[1], 'La demande est en cours de redaction');
 
             if (!$this->demande_absence_id) {
                 //dd($this->code_de_travail_id);
-                $demande_absence = DemandeAbsence::create(
-                    [
-                        'annee_financiere_id' => $this->annee_financiere_id,
-                        'employe_id' => $this->employeId ?? Auth::user()->employe->id,
-                        'codes_travail_id' => $this->code_de_travail_id,
-                        'date_debut' => $this->date_debut,
-                        'date_fin' => $this->date_fin,
-                        'heure_par_jour' => $this->heure_par_jour,
-                        'total_heure' => $this->calculateTotalHeures($this->date_debut, $this->date_fin, $this->heure_par_jour, $this->annee_financiere_id),
-                        'description' => $this->description,
-                        'workflow_log' => $this->workflow_log,
-                        'statut' => $this->statuts[1],
-                        'admin_id' => Auth::user()->id ?? null
-                    ]
-                );
+
+                DB::transaction(function () {
+                    $demande_absence = DemandeAbsence::create(
+                        [
+                            'annee_financiere_id' => $this->annee_financiere_id,
+                            'employe_id' => $this->employeId ?? Auth::user()->employe->id,
+                            'codes_travail_id' => $this->code_de_travail_id,
+                            'date_debut' => $this->date_debut,
+                            'date_fin' => $this->date_fin,
+                            'heure_par_jour' => $this->heure_par_jour,
+                            'total_heure' => $this->calculateTotalHeures($this->date_debut, $this->date_fin, $this->heure_par_jour, $this->annee_financiere_id),
+                            'description' => $this->description,
+                            //'workflow_log' => $this->workflow_log,
+                            //'statut' => $this->statuts[1],
+                            'admin_id' => Auth::user()->id ?? null
+                        ]
+                    );
+
+                    // Appliquer la transition workflow si nécessaire
+                    $comment = $this->employeId ? 'La demande est en cours de redaction par ' . Auth::user()->name : 'La demande est en cours de redaction';
+
+                    if ($demande_absence->canTransition('enregistrer')) {
+                        $demande_absence->applyTransition('enregistrer', [
+                            'comment' => $comment
+                        ]);
+                    }
+                });
+
+
+
+                /* $demande_absence->applyTransition('enregistrer', [
+                    'comment' => 'La demande est en cours de redaction'
+                ]); */
+
                 $this->dispatch('demandeAbsenceAjoute');
             } else {
                 $demande_absence = DemandeAbsence::findOrFail($this->demande_absence_id);

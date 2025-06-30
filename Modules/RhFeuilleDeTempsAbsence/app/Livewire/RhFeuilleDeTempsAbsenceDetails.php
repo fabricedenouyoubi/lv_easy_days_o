@@ -154,6 +154,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     public function soumettreDemandeAbsence()
     {
         try {
+
             $comment = $this->demandeAbsence->admin_id == Auth::user()->id ? 'La demande a été soumise par ' . Auth::user()->name : 'La demande a été soumise';
             $this->build_workflow_log($this->demandeAbsence->statut, $this->statuts[2], $comment);
             $this->demandeAbsence->update([

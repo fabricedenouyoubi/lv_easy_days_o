@@ -15,7 +15,7 @@ use Modules\RhFeuilleDeTempsAbsence\Traits\HasWorkflow;
 
 class DemandeAbsence extends Model
 {
-    use HasFactory/* , HasWorkflow */;
+    use HasFactory, HasWorkflow;
 
     protected $table = 'demande_absences';
 
