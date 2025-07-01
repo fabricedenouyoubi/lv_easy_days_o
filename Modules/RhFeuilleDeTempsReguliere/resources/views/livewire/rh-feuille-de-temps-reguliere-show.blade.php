@@ -22,12 +22,14 @@
                             </h5>
                         </div>
 
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="badge {{ $this->statutFormate['class'] }} rounded-pill px-3 py-2">
-                                <i class="{{ $this->statutFormate['icon'] }} align-middle me-1"></i>
-                                {{ $this->statutFormate['text'] }}
-                            </span> 
-                        </div>
+                        @if(!empty($statutFormate))
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge {{ $statutFormate['class'] }} rounded-pill px-3 py-2">
+                                    <i class="{{ $statutFormate['icon'] }} align-middle me-1"></i>
+                                    {{ $statutFormate['text'] }}
+                                </span> 
+                            </div>
+                        @endif
                     </div>
                 </div>
 

@@ -260,6 +260,7 @@ class RhFeuilleDeTempsReguliereShow extends Component
      */
 public function initStatutFormate()
     {
+       
        $this->statutFormate = match($this->operation->workflow_state) {
             'brouillon' => [
                 'text' => 'Brouillon',
