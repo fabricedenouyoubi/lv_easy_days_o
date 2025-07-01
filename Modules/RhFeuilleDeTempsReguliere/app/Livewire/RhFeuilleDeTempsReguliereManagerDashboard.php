@@ -27,27 +27,20 @@ class RhFeuilleDeTempsReguliereManagerDashboard extends Component
      */
     private function calculerStatistiques()
     {
-        $managerId = Auth::user()->employe->id;
+        // TEMPORAIRE : Enlever les contrôles d'accès
+        // $managerId = Auth::user()->employe->id;
         
         $this->stats = [
-            // Feuilles de temps
-            'feuilles_en_attente' => Operation::whereHas('employe', function($query) use ($managerId) {
-                $query->where('gestionnaire_id', $managerId);
-            })->where('workflow_state', 'soumis')->count(),
+            // Feuilles de temps - SANS filtrage par gestionnaire
+            'feuilles_en_attente' => Operation::where('workflow_state', 'soumis')->count(),
             
-            'feuilles_validees_semaine' => Operation::whereHas('employe', function($query) use ($managerId) {
-                $query->where('gestionnaire_id', $managerId);
-            })->where('workflow_state', 'valide')
+            'feuilles_validees_semaine' => Operation::where('workflow_state', 'valide')
               ->where('updated_at', '>=', now()->startOfWeek())->count(),
             
-            // Demandes d'absence
-            'absences_en_attente' => DemandeAbsence::whereHas('employe', function($query) use ($managerId) {
-                $query->where('gestionnaire_id', $managerId);
-            })->where('statut', 'Soumis')->count(),
+            // Demandes d'absence - SANS filtrage par gestionnaire
+            'absences_en_attente' => DemandeAbsence::where('statut', 'Soumis')->count(),
             
-            'absences_validees_mois' => DemandeAbsence::whereHas('employe', function($query) use ($managerId) {
-                $query->where('gestionnaire_id', $managerId);
-            })->where('statut', 'Validé')
+            'absences_validees_mois' => DemandeAbsence::where('statut', 'Validé')
               ->where('updated_at', '>=', now()->startOfMonth())->count(),
         ];
     }
@@ -57,12 +50,16 @@ class RhFeuilleDeTempsReguliereManagerDashboard extends Component
      */
     public function getFeuillesEnAttente()
     {
-        $managerId = Auth::user()->employe->id;
+        // TEMPORAIRE : Enlever les contrôles d'accès
+        // $managerId = Auth::user()->employe->id;
         
         return Operation::with(['employe', 'anneeSemaine'])
-            ->whereHas('employe', function($query) use ($managerId) {
-                $query->where('gestionnaire_id', $managerId);
-            })
+            // TEMPORAIRE : Commenté le filtrage par gestionnaire
+            // ->whereHas('employe', function($query) use ($managerId) {
+            //     $query->where('gestionnaire_id', $managerId);
+            // })
+            ->whereHas('anneeSemaine') 
+            ->whereHas('employe')
             ->where('workflow_state', 'soumis')
             ->orderBy('updated_at', 'desc')
             ->paginate(10, ['*'], 'feuilles_page');
@@ -73,12 +70,14 @@ class RhFeuilleDeTempsReguliereManagerDashboard extends Component
      */
     public function getAbsencesEnAttente()
     {
-        $managerId = Auth::user()->employe->id;
+        // TEMPORAIRE : Enlever les contrôles d'accès
+        // $managerId = Auth::user()->employe->id;
         
         return DemandeAbsence::with(['employe', 'codeTravail'])
-            ->whereHas('employe', function($query) use ($managerId) {
-                $query->where('gestionnaire_id', $managerId);
-            })
+            // TEMPORAIRE : Commenté le filtrage par gestionnaire
+            // ->whereHas('employe', function($query) use ($managerId) {
+            //     $query->where('gestionnaire_id', $managerId);
+            // })
             ->where('statut', 'Soumis')
             ->orderBy('updated_at', 'desc')
             ->paginate(10, ['*'], 'absences_page');
@@ -101,11 +100,12 @@ class RhFeuilleDeTempsReguliereManagerDashboard extends Component
         try {
             $operation = Operation::findOrFail($operationId);
             
+            // TEMPORAIRE : Enlever les contrôles d'accès
             // Vérifier les permissions
-            if ($operation->employe->gestionnaire_id !== Auth::user()->employe->id && !Auth::user()->hasRole('ADMIN')) {
-                session()->flash('error', 'Permission refusée');
-                return;
-            }
+            // if ($operation->employe->gestionnaire_id !== Auth::user()->employe->id && !Auth::user()->hasRole('ADMIN')) {
+            //     session()->flash('error', 'Permission refusée');
+            //     return;
+            // }
             
             $operation->applyTransition('valider', [
                 'comment' => 'Validation rapide par ' . Auth::user()->name
@@ -127,11 +127,12 @@ class RhFeuilleDeTempsReguliereManagerDashboard extends Component
         try {
             $absence = DemandeAbsence::findOrFail($absenceId);
             
+            // TEMPORAIRE : Enlever les contrôles d'accès
             // Vérifier les permissions
-            if ($absence->employe->gestionnaire_id !== Auth::user()->employe->id && !Auth::user()->hasRole('ADMIN')) {
-                session()->flash('error', 'Permission refusée');
-                return;
-            }
+            // if ($absence->employe->gestionnaire_id !== Auth::user()->employe->id && !Auth::user()->hasRole('ADMIN')) {
+            //     session()->flash('error', 'Permission refusée');
+            //     return;
+            // }
             
             $absence->applyTransition('valider', [
                 'comment' => 'Validation rapide par ' . Auth::user()->name

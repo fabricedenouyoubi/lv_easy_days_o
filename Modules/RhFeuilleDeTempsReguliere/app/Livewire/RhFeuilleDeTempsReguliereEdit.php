@@ -39,13 +39,13 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     public $joursFeries = [];
 
     protected $rules = [
-        'lignesTravail.*.duree_0' => 'nullable|numeric|min:0|max:12',
-        'lignesTravail.*.duree_1' => 'nullable|numeric|min:0|max:12',
-        'lignesTravail.*.duree_2' => 'nullable|numeric|min:0|max:12',
-        'lignesTravail.*.duree_3' => 'nullable|numeric|min:0|max:12',
-        'lignesTravail.*.duree_4' => 'nullable|numeric|min:0|max:12',
-        'lignesTravail.*.duree_5' => 'nullable|numeric|min:0|max:12',
-        'lignesTravail.*.duree_6' => 'nullable|numeric|min:0|max:12',
+        'lignesTravail.*.duree_0' => 'nullable|string|max:5',
+        'lignesTravail.*.duree_1' => 'nullable|string|max:5',
+        'lignesTravail.*.duree_2' => 'nullable|string|max:5',
+        'lignesTravail.*.duree_3' => 'nullable|string|max:5',
+        'lignesTravail.*.duree_4' => 'nullable|string|max:5',
+        'lignesTravail.*.duree_5' => 'nullable|string|max:5',
+        'lignesTravail.*.duree_6' => 'nullable|string|max:5',
     ];
 
     public function mount()
@@ -78,6 +78,42 @@ class RhFeuilleDeTempsReguliereEdit extends Component
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors du chargement: ' . $th->getMessage());
         }
+    }
+
+    /**
+     * Convertir une valeur décimale en format d'affichage (00.00)
+     */
+    private function formatDecimalToDisplay($value)
+    {
+        if (empty($value) || $value == 0) {
+            return '00.00';
+        }
+
+        $floatValue = floatval($value);
+        return sprintf('%05.2f', $floatValue);
+    }
+
+    /**
+     * Convertir une valeur saisie par l'utilisateur en décimal
+     */
+    private function parseUserInputToDecimal($input)
+    {
+        if (empty($input) || trim($input) === '') {
+            return 0.00;
+        }
+
+        // Remplacer les virgules par des points
+        $input = str_replace(',', '.', trim($input));
+
+        // Vérifier si c'est un nombre valide
+        if (!is_numeric($input)) {
+            return 0.00;
+        }
+
+        $value = floatval($input);
+
+        // Limiter à 12 heures maximum et 2 décimales
+        return min(12.00, round($value, 2));
     }
 
     /**
@@ -123,13 +159,13 @@ class RhFeuilleDeTempsReguliereEdit extends Component
                 'id' => $ligneExistante?->id,
                 'codes_travail_id' => $codeTravail->id,
                 'code_travail' => $codeTravail,
-                'duree_0' => $ligneExistante?->duree_0 ?? '00.00',
-                'duree_1' => $ligneExistante?->duree_1 ?? '00.00',
-                'duree_2' => $ligneExistante?->duree_2 ?? '00.00',
-                'duree_3' => $ligneExistante?->duree_3 ?? '00.00',
-                'duree_4' => $ligneExistante?->duree_4 ?? '00.00',
-                'duree_5' => $ligneExistante?->duree_5 ?? '00.00',
-                'duree_6' => $ligneExistante?->duree_6 ?? '00.00',
+                'duree_0' => $this->formatDecimalToDisplay($ligneExistante?->duree_0 ?? 0),
+                'duree_1' => $this->formatDecimalToDisplay($ligneExistante?->duree_1 ?? 0),
+                'duree_2' => $this->formatDecimalToDisplay($ligneExistante?->duree_2 ?? 0),
+                'duree_3' => $this->formatDecimalToDisplay($ligneExistante?->duree_3 ?? 0),
+                'duree_4' => $this->formatDecimalToDisplay($ligneExistante?->duree_4 ?? 0),
+                'duree_5' => $this->formatDecimalToDisplay($ligneExistante?->duree_5 ?? 0),
+                'duree_6' => $this->formatDecimalToDisplay($ligneExistante?->duree_6 ?? 0),
                 'auto_rempli' => $ligneExistante?->auto_rempli ?? false,
             ];
         }
@@ -155,7 +191,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
             // Calculer le total des heures pour cette ligne
             $totalLigne = 0;
             for ($jour = 0; $jour <= 6; $jour++) {
-                $duree = floatval($ligne["duree_{$jour}"] ?? 0);
+                $duree = $this->parseUserInputToDecimal($ligne["duree_{$jour}"] ?? '0');
                 $totalLigne += $duree;
             }
 
@@ -201,6 +237,25 @@ class RhFeuilleDeTempsReguliereEdit extends Component
      */
     public function updatedLignesTravail()
     {
+        $this->calculerTotaux();
+    }
+
+    /**
+     * Hook spécifique pour formater les valeurs lors de la saisie
+     */
+    public function updatedLignesTravailPropertyDuree($value, $key)
+    {
+        // $key sera au format "0.duree_1" par exemple
+        $parts = explode('.', $key);
+        if (count($parts) === 2) {
+            $ligneIndex = $parts[0];
+            $jourProperty = $parts[1];
+
+            // Reformater la valeur saisie
+            $formattedValue = $this->formatDecimalToDisplay($this->parseUserInputToDecimal($value));
+            $this->lignesTravail[$ligneIndex][$jourProperty] = $formattedValue;
+        }
+
         $this->calculerTotaux();
     }
 
@@ -282,27 +337,22 @@ class RhFeuilleDeTempsReguliereEdit extends Component
         foreach ($this->lignesTravail as $ligneData) {
             // Calculer le total des heures pour cette ligne
             $totalLigne = 0;
-            for ($jour = 0; $jour <= 6; $jour++) {
-                $totalLigne += floatval($ligneData["duree_{$jour}"] ?? 0);
-            }
-
-            // Préparer les données
-            $data = [
+            $dataToSave = [
                 'operation_id' => $this->operation->id,
                 'codes_travail_id' => $ligneData['codes_travail_id'],
-                'duree_0' => floatval($ligneData['duree_0'] ?? 0),
-                'duree_1' => floatval($ligneData['duree_1'] ?? 0),
-                'duree_2' => floatval($ligneData['duree_2'] ?? 0),
-                'duree_3' => floatval($ligneData['duree_3'] ?? 0),
-                'duree_4' => floatval($ligneData['duree_4'] ?? 0),
-                'duree_5' => floatval($ligneData['duree_5'] ?? 0),
-                'duree_6' => floatval($ligneData['duree_6'] ?? 0),
             ];
+
+            // Convertir et sauvegarder chaque jour
+            for ($jour = 0; $jour <= 6; $jour++) {
+                $duree = $this->parseUserInputToDecimal($ligneData["duree_{$jour}"] ?? '0');
+                $dataToSave["duree_{$jour}"] = $duree;
+                $totalLigne += $duree;
+            }
 
             if ($ligneData['id']) {
                 // Mettre à jour ligne existante seulement si elle a des heures
                 if ($totalLigne > 0) {
-                    LigneTravail::where('id', $ligneData['id'])->update($data);
+                    LigneTravail::where('id', $ligneData['id'])->update($dataToSave);
                 } else {
                     // Supprimer si plus d'heures
                     LigneTravail::find($ligneData['id'])?->delete();
@@ -310,7 +360,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
             } else {
                 // Créer nouvelle ligne seulement si elle a des heures
                 if ($totalLigne > 0) {
-                    LigneTravail::create($data);
+                    LigneTravail::create($dataToSave);
                 }
             }
         }

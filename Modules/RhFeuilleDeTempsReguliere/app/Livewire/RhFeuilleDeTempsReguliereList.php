@@ -145,6 +145,11 @@ class RhFeuilleDeTempsReguliereList extends Component
                 'class' => 'bg-success',
                 'icon' => 'fas fa-check-circle'
             ],
+            'rejete' => [
+                'text' => 'Rejeté',
+                'class' => 'bg-danger',
+                'icon' => 'fas fa-times-circle'
+            ],
             default => [
                 'text' => 'Inconnu',
                 'class' => 'bg-secondary',
@@ -175,11 +180,12 @@ class RhFeuilleDeTempsReguliereList extends Component
             switch($operation['workflow_state']) {
                 case 'brouillon':
                 case 'en_cours':
+                case 'rejete':  // Ajout de l'état rejeté pour permettre la modification
                     $actions[] = [
-                        'type' => 'warning',
-                        'text' => 'Modifier',
+                        'type' => $operation['workflow_state'] === 'rejete' ? 'warning' : 'warning',
+                        'text' => 'Consulter',
                         'icon' => 'fas fa-edit',
-                        'route' => 'feuille-temps.edit',
+                        'route' => 'feuille-temps.show',
                         'params' => ['semaineId' => $semaine->id, 'operationId' => $operation['id']]
                     ];
                     break;

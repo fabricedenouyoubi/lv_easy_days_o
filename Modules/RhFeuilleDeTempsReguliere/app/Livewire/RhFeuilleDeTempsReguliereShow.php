@@ -6,7 +6,6 @@ use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use Modules\Budget\Models\SemaineAnnee;
 use Modules\RhFeuilleDeTempsAbsence\Models\Operation;
-
 class RhFeuilleDeTempsReguliereShow extends Component
 {
     public $operationId;
@@ -256,33 +255,38 @@ class RhFeuilleDeTempsReguliereShow extends Component
     /**
      * Obtenir le statut formaté
      */
-    public function getStatutFormate()
+       public function getStatutFormateProperty()
     {
         return match($this->operation->workflow_state) {
             'brouillon' => [
                 'text' => 'Brouillon',
                 'class' => 'bg-warning text-dark',
-                'icon' => 'mdi-pencil-outline'
+                'icon' => 'fas fa-pencil-alt'
             ],
             'en_cours' => [
                 'text' => 'En cours',
                 'class' => 'bg-info text-dark',
-                'icon' => 'mdi-hourglass-half'
+                'icon' => 'fas fa-hourglass-half'
             ],
             'soumis' => [
                 'text' => 'Soumis',
                 'class' => 'bg-primary',
-                'icon' => 'mdi-send'
+                'icon' => 'fas fa-paper-plane'
             ],
             'valide' => [
                 'text' => 'Validé',
                 'class' => 'bg-success',
-                'icon' => 'mdi-check-circle'
+                'icon' => 'fas fa-check-circle'
+            ],
+            'rejete' => [
+                'text' => 'Rejeté',
+                'class' => 'bg-danger',
+                'icon' => 'fas fa-times-circle'
             ],
             default => [
                 'text' => 'Inconnu',
                 'class' => 'bg-secondary',
-                'icon' => 'mdi-help'
+                'icon' => 'fas fa-question-circle'
             ]
         };
     }

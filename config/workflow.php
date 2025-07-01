@@ -17,15 +17,16 @@ return [
             'brouillon',
             'en_cours', 
             'soumis',
-            'valide'
+            'valide',
+            'rejete'  
         ],
         'transitions' => [
             'enregistrer' => [
-                'from' => ['brouillon', 'en_cours'],
+                'from' => ['brouillon', 'en_cours', 'rejete'], 
                 'to' => 'en_cours'
             ],
             'soumettre' => [
-                'from' => 'en_cours',
+                'from' => ['en_cours', 'rejete'], 
                 'to' => 'soumis'
             ],
             'rappeler' => [
@@ -39,8 +40,12 @@ return [
             ],
             'rejeter' => [
                 'from' => 'soumis', 
-                'to' => 'en_cours', 
+                'to' => 'rejete',  
                 'guard' => 'App\Guards\RejetGuard' 
+            ],
+            'retourner' => [
+                'from' => ['valide', 'rejete'],  
+                'to' => 'en_cours'
             ]
         ]
     ],
@@ -61,15 +66,16 @@ return [
             'Brouillon',
             'En cours', 
             'Soumis',
-            'Validé'
+            'Validé',
+            'Rejeté'  
         ],
         'transitions' => [
             'enregistrer' => [
-                'from' => ['Brouillon', 'En cours'],
+                'from' => ['Brouillon', 'En cours', 'Rejeté'], 
                 'to' => 'En cours'
             ],
             'soumettre' => [
-                'from' => 'En cours', 
+                'from' => ['En cours', 'Rejeté'], 
                 'to' => 'Soumis'
             ],
             'rappeler' => [
@@ -83,8 +89,12 @@ return [
             ],
             'rejeter' => [
                 'from' => 'Soumis', 
-                'to' => 'En cours',
+                'to' => 'Rejeté',  
                 'guard' => 'App\Guards\RejetGuard'
+            ],
+            'retourner' => [
+                'from' => ['Validé', 'Rejeté'],  
+                'to' => 'En cours'
             ]
         ]
     ]

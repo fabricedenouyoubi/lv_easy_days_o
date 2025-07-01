@@ -10,8 +10,6 @@ use Modules\Rh\Models\Employe\Employe;
 use Modules\RhFeuilleDeTempsReguliere\Models\LigneTravail;
 use Modules\RhFeuilleDeTempsAbsence\Traits\HasWorkflow;
 
-// use Modules\RhFeuilleDeTempsAbsence\Database\Factories\OperationFactory;
-
 class Operation extends Model
 {
     use HasFactory, HasWorkflow;
@@ -39,6 +37,7 @@ class Operation extends Model
         'demande_absence_id',
         'employe_id',
         'annee_semaine_id',
+        'motif_rejet', // Ajout du champ motif de rejet
     ];
 
     //--- relation avec demande d'absence
@@ -67,7 +66,6 @@ class Operation extends Model
        return $this->hasMany(LigneTravail::class);
     }
 
-    // Méthode du workflow
     /**
      * Obtenir l'état actuel du workflow
      */
@@ -131,13 +129,20 @@ class Operation extends Model
     }
 
     /**
+     * Scope pour les opérations rejetées
+     */
+    public function scopeRejetees($query)
+    {
+        return $query->where('workflow_state', 'rejete');
+    }
+
+    /**
      * Scope pour les opérations en cours de rédaction
      */
     public function scopeBrouillons($query)
     {
         return $query->whereIn('workflow_state', ['brouillon', 'en_cours']);
     }
-
 
     /**
      * Obtenir une opération pour un employé et une semaine spécifique
@@ -185,73 +190,104 @@ class Operation extends Model
     }
 
     /**
- * Vérifier si l'opération peut être modifiée
- * Une opération est modifiable si elle est en état 'brouillon' ou 'en_cours'
- */
-public function isEditable(): bool
-{
-    $editableStates = ['brouillon', 'en_cours'];
-    return in_array($this->getCurrentState(), $editableStates);
-}
-
-/**
- * Vérifier si une transition est possible depuis l'état actuel
- */
-public function canTransition(string $transition): bool
-{
-    $currentState = $this->getCurrentState();
-
-    // Définir les transitions autorisées selon l'état actuel
-    $allowedTransitions = [
-        'brouillon' => ['enregistrer', 'soumettre'],
-        'en_cours' => ['enregistrer', 'soumettre'],
-        'soumis' => ['valider', 'rejeter'],
-        'valide' => [], // Une fois validé, aucune transition n'est possible
-        'rejete' => ['enregistrer', 'soumettre'], // Possibilité de corriger et resoumettre
-    ];
-
-    return isset($allowedTransitions[$currentState]) &&
-           in_array($transition, $allowedTransitions[$currentState]);
-}
-
-/**
- * Appliquer une transition de workflow
- */
-public function applyTransition(string $transition, array $options = []): bool
-{
-    $currentState = $this->getCurrentState();
-
-    if (!$this->canTransition($transition)) {
-        throw new \Exception("Transition '{$transition}' non autorisée depuis l'état '{$currentState}'");
+     * Vérifier si l'opération peut être modifiée
+     * Une opération est modifiable si elle est en état 'brouillon', 'en_cours' ou 'rejete'
+     */
+    public function isEditable(): bool
+    {
+        $editableStates = ['brouillon', 'en_cours', 'rejete'];
+        return in_array($this->getCurrentState(), $editableStates);
     }
 
-    // Définir les nouveaux états selon la transition
-    $newStates = [
-        'enregistrer' => 'en_cours',
-        'soumettre' => 'soumis',
-        'valider' => 'valide',
-        'rejeter' => 'rejete',
-    ];
+    /**
+     * Vérifier si une transition est possible depuis l'état actuel
+     */
+    public function canTransition(string $transition): bool
+    {
+        $currentState = $this->getCurrentState();
 
-    if (!isset($newStates[$transition])) {
-        throw new \Exception("Transition '{$transition}' non reconnue");
+        // Définir les transitions autorisées selon l'état actuel
+        $allowedTransitions = [
+            'brouillon' => ['enregistrer', 'soumettre'],
+            'en_cours' => ['enregistrer', 'soumettre'],
+            'soumis' => ['rappeler', 'valider', 'rejeter'],
+            'valide' => ['retourner'], 
+            'rejete' => ['enregistrer', 'soumettre', 'retourner'], 
+        ];
+
+        return isset($allowedTransitions[$currentState]) &&
+               in_array($transition, $allowedTransitions[$currentState]);
     }
 
-    $newState = $newStates[$transition];
+    /**
+     * Appliquer une transition de workflow
+     */
+    public function applyTransition(string $transition, array $options = []): bool
+    {
+        $currentState = $this->getCurrentState();
 
-    // Logger la transition
-    $this->logTransition($currentState, $newState, $options['comment'] ?? null);
+        if (!$this->canTransition($transition)) {
+            throw new \Exception("Transition '{$transition}' non autorisée depuis l'état '{$currentState}'");
+        }
 
-    // Mettre à jour l'état
-    $this->update([
-        'workflow_state' => $newState,
-        'statut' => ucfirst($newState), // Mettre à jour aussi l'ancien champ statut si nécessaire
-    ]);
+        // Définir les nouveaux états selon la transition
+        $newStates = [
+            'enregistrer' => 'en_cours',
+            'soumettre' => 'soumis',
+            'rappeler' => 'en_cours',
+            'valider' => 'valide',
+            'rejeter' => 'rejete',  
+            'retourner' => 'en_cours',
+        ];
 
-    return true;
-}
-    // protected static function newFactory(): OperationFactory
-    // {
-    //     // return OperationFactory::new();
-    // }
+        if (!isset($newStates[$transition])) {
+            throw new \Exception("Transition '{$transition}' non reconnue");
+        }
+
+        $newState = $newStates[$transition];
+
+        // Préparer les données à mettre à jour
+        $updateData = [
+            'workflow_state' => $newState,
+            'statut' => ucfirst($newState),
+        ];
+
+        // Si c'est un rejet, sauvegarder le motif
+        if ($transition === 'rejeter' && isset($options['motif_rejet'])) {
+            $updateData['motif_rejet'] = $options['motif_rejet'];
+        }
+
+        // Logger la transition
+        $this->logTransition($currentState, $newState, $options['comment'] ?? null);
+
+        // Mettre à jour l'état
+        $this->update($updateData);
+
+        return true;
+    }
+
+    /**
+     * Vérifier si l'opération est dans un état rejeté
+     */
+    public function isRejected(): bool
+    {
+        return $this->getCurrentState() === 'rejete';
+    }
+
+    /**
+     * Obtenir le motif de rejet formaté
+     */
+    public function getMotifRejetAttribute($value)
+    {
+        return $value;
+    }
+
+    /**
+     * Actions post-transition spécifiques (surchargée depuis HasWorkflow)
+     */
+    protected function onRejection(array $context = []): void
+    {
+        // Actions spécifiques lors du rejet
+        // Par exemple, notifier l'employé du rejet
+    }
 }
