@@ -128,9 +128,9 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Date de création</th>
+                                <th>Statut</th>
                                 <th>Heures</th>
                                 <th>Semaine</th>
-                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -138,6 +138,15 @@
                                 <tr>
                                     <td>
                                         <strong>{{ \Carbon\Carbon::parse($operation->created_at)->format('d/m/Y') }}</strong>
+                                    </td>
+                                    <td>
+                                        @php
+                                            $statutFormate = $this->getStatutFormate($operation->workflow_state);
+                                        @endphp
+                                        <span class="badge {{ $statutFormate['class'] }}">
+                                            <i class="{{ $statutFormate['icon'] }}"></i>
+                                            {{ $statutFormate['text'] }}
+                                        </span>
                                     </td>
                                     <td>
                                         <strong>{{ $operation->total_heure }}</strong>
@@ -172,7 +181,8 @@
                             <strong>{{ $log['title'] }}</strong>
                         </div>
                         <div class="col-12">
-                            <small class="text-muted">{{ $log['date'] }} à {{ $log['time'] }} par {{ $log['user'] }}</small>
+                            <small class="text-muted">{{ $log['date'] }} à {{ $log['time'] }} par
+                                {{ $log['user'] }}</small>
                         </div>
                         <div class="col-12">
                             <span>{{ $log['comment'] }}</span>.
