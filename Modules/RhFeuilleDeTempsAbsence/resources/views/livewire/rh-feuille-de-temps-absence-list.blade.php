@@ -61,7 +61,12 @@
                                                     <span>{{ $demande_absence->date_fin }}</span>
                                                 </td>
                                                 <td>
-                                                    <span class="badge bg-info">{{ $demande_absence->statut }}
+                                                    @php
+                                                        $statutFormate = $this->getStatutFormate($demande_absence->statut);
+                                                    @endphp
+                                                    <span class="badge {{ $statutFormate['class'] }}">
+                                                        <i class="{{ $statutFormate['icon'] }}"></i>
+                                                        {{ $statutFormate['text'] }}
                                                     </span>
                                                 </td>
                                                 <td>

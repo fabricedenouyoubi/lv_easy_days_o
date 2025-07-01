@@ -65,24 +65,6 @@
                                     wireClick="toogle_retrouner_modal" />
                             </div>
                         @endif
-
-                        {{-- Admininistrateur valide les demande d'absence   rejetée --}}
-                        @if ($demandeAbsence->statut == 'Rejeté' && auth()->user()->hasRole('ADMIN'))
-                            {{-- Bounton Valider --}}
-                            <div class="col-auto">
-                                <x-action-button type="success" size="sm" icon="fas fa-check-circle" text="Valider"
-                                    wireClick="toogle_approve_modal" />
-                            </div>
-                        @endif
-
-                        {{-- Admininistrateur rejete les demande d'absence validé --}}
-                        @if ($demandeAbsence->statut == 'Validé' && auth()->user()->hasRole('ADMIN'))
-                            {{-- Bounton Rejeter --}}
-                            <div class="col-auto">
-                                <x-action-button type="danger" size="sm" icon="fas fa-times-circle" text="Rejeter"
-                                    wireClick="toogle_rejeter_modal" />
-                            </div>
-                        @endif
                     </div>
                 </div>
                 <div class="card-body">
@@ -146,9 +128,9 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Date de création</th>
+                                <th>Statut</th>
                                 <th>Heures</th>
                                 <th>Semaine</th>
-                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -158,11 +140,22 @@
                                         <strong>{{ \Carbon\Carbon::parse($operation->created_at)->format('d/m/Y') }}</strong>
                                     </td>
                                     <td>
+                                        @php
+                                            $statutFormate = $this->getStatutFormate($operation->workflow_state);
+                                        @endphp
+                                        <span class="badge {{ $statutFormate['class'] }}">
+                                            <i class="{{ $statutFormate['icon'] }}"></i>
+                                            {{ $statutFormate['text'] }}
+                                        </span>
+                                    </td>
+                                    <td>
                                         <strong>{{ $operation->total_heure }}</strong>
                                     </td>
                                     <td>
-                                        <strong>Semaine du <code>{{ \Carbon\Carbon::parse($operation->anneeSemaine?->debut)->format('d/m/Y') }}</code> au
-                                           <code>{{ \Carbon\Carbon::parse($operation->anneeSemaine?->fin)->format('d/m/Y') }}</code></strong>
+                                        <strong>Semaine du
+                                            <code>{{ \Carbon\Carbon::parse($operation->anneeSemaine?->debut)->format('d/m/Y') }}</code>
+                                            au
+                                            <code>{{ \Carbon\Carbon::parse($operation->anneeSemaine?->fin)->format('d/m/Y') }}</code></strong>
                                     </td>
                                     <td></td>
                                 </tr>
@@ -184,16 +177,15 @@
                 @foreach ($logs as $log)
                     <div class="row mb-3">
                         <div class="col-12 d-flex align-items-center">
-                            <span class="badge bg-info"><i class="fas fa-exchange-alt"></i></span> &nbsp;
-                            {{ $log['to_state'] }}
+                            <span class="badge bg-info"><i class="mdi mdi-swap-horizontal"></i></span> &nbsp;
+                            <strong>{{ $log['title'] }}</strong>
                         </div>
                         <div class="col-12">
-                            <p class="mb-1"> Date: {{ $log['date'] }} </p>
-                            <p class="mb-1"> Heure: {{ $log['time'] }} </p>
+                            <small class="text-muted">{{ $log['date'] }} à {{ $log['time'] }} par
+                                {{ $log['user'] }}</small>
                         </div>
                         <div class="col-12">
-                            <span>{{ $log['title'] }}</span>.
-                            <strong>{{ $log['comment'] }}</strong>.
+                            <span>{{ $log['comment'] }}</span>.
                         </div>
                     </div>
                 @endforeach

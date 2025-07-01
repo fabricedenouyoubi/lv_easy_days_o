@@ -4,6 +4,7 @@ namespace Modules\RhFeuilleDeTempsAbsence\Livewire;
 
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Modules\Budget\Models\AnneeFinanciere;
 use Modules\RhFeuilleDeTempsAbsence\Models\DemandeAbsence;
@@ -90,41 +91,15 @@ class RhFeuilleDeTempsAbsenceForm extends Component
         'code_de_travail_id.required' => 'Le type d\'absence est obligatoire.'
     ];
 
-    //--- Contruction du journal de la demande d'absence
-    public function build_workflow_log($from, $to, $comment = null)
-    {
-        $timestamp = now();
-        $log = [
-            'timestamp' => $timestamp->format('Y-m-d H:i'),
-            'date' => $timestamp->format('d-m-Y'),
-            'time' => $timestamp->format('H:i'),
-            'from_state' => $from,
-            'to_state' => $to,
-            'comment' => $comment ?? '',
-            'title' => $from . ' à ' . $to
-        ];
-
-
-        $logs = $this->workflow_log ? explode("\n", $this->workflow_log) : [];
-
-        //--- chargement du nouveau journal de la demande d'absence
-        $logs[] = json_encode($log);
-
-        //--- mis a jour du journal de la demande d'absence
-        $this->workflow_log = implode("\n", $logs);
-    }
-
     //--- ajout et modification d'une demande d'absence
     public function save()
     {
         $this->validate();
 
         try {
-            $this->build_workflow_log($this->statuts[0], $this->statuts[1], 'La demande est en cours de redaction');
-
+            $comment = $this->employeId ? 'La demande est en cours de redaction par ' . Auth::user()->name : 'La demande est en cours de redaction';
             if (!$this->demande_absence_id) {
-                //dd($this->code_de_travail_id);
-                $demande_absence = DemandeAbsence::create(
+                $demandeAbsence = DemandeAbsence::create(
                     [
                         'annee_financiere_id' => $this->annee_financiere_id,
                         'employe_id' => $this->employeId ?? Auth::user()->employe->id,
@@ -134,15 +109,17 @@ class RhFeuilleDeTempsAbsenceForm extends Component
                         'heure_par_jour' => $this->heure_par_jour,
                         'total_heure' => $this->calculateTotalHeures($this->date_debut, $this->date_fin, $this->heure_par_jour, $this->annee_financiere_id),
                         'description' => $this->description,
-                        'workflow_log' => $this->workflow_log,
-                        'statut' => $this->statuts[1],
                         'admin_id' => Auth::user()->id ?? null
                     ]
                 );
+
+                //--- Workflow ---
+                $demandeAbsence->applyTransition('enregistrer', ['comment' => $comment]);
+
                 $this->dispatch('demandeAbsenceAjoute');
             } else {
-                $demande_absence = DemandeAbsence::findOrFail($this->demande_absence_id);
-                $demande_absence->update([
+                $demandeAbsence = DemandeAbsence::findOrFail($this->demande_absence_id);
+                $demandeAbsence->update([
                     'annee_financiere_id' => $this->annee_financiere_id,
                     'codes_travail_id' => $this->code_de_travail_id,
                     'date_debut' => $this->date_debut,
@@ -150,8 +127,6 @@ class RhFeuilleDeTempsAbsenceForm extends Component
                     'heure_par_jour' => $this->heure_par_jour,
                     'total_heure' => $this->calculateTotalHeures($this->date_debut, $this->date_fin, $this->heure_par_jour, $this->annee_financiere_id),
                     'description' => $this->description,
-                    //'workflow_log' => $this->workflow_log,
-                    'statut' => $this->statuts[1],
                 ]);
 
                 $nombreDeJoursEntre = $this->nombreDeJoursEntre($this->date_debut, $this->date_fin, $this->annee_financiere_id);
@@ -161,6 +136,7 @@ class RhFeuilleDeTempsAbsenceForm extends Component
             }
         } catch (\Throwable $th) {
             dd($th->getMessage());
+            session()->flash('error', 'Une erreur est survenue lors de la sauvegarde de la demande d\'absence.', $th->getMessage());
         }
     }
 

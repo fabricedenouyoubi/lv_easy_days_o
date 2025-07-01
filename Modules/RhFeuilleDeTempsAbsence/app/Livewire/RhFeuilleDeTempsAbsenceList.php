@@ -8,10 +8,11 @@ use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\RhFeuilleDeTempsAbsence\Models\DemandeAbsence;
+use Modules\RhFeuilleDeTempsAbsence\Traits\AbsenceResource;
 
 class RhFeuilleDeTempsAbsenceList extends Component
 {
-    use WithPagination;
+    use WithPagination, AbsenceResource;
 
     public $showAddAbsenceModal = false;
     public $demandeAbsenceId = null;

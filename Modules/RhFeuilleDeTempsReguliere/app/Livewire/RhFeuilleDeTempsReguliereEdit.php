@@ -17,11 +17,11 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     public $operation;
     public $semaine;
     public $employe;
-    
+
     // Données des lignes de travail
     public $lignesTravail = [];
     public $codesTravauxDisponibles = [];
-    
+
     // Totaux calculés
     public $totaux = [
         'total_heure' => 0,
@@ -33,7 +33,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
         'total_heure_caisse' => 0,
         'total_heure_conge_mobile' => 0,
     ];
-    
+
     // Jours de la semaine avec dates complètes
     public $datesSemaine = [];
     public $joursFeries = [];
@@ -54,27 +54,27 @@ class RhFeuilleDeTempsReguliereEdit extends Component
             $this->employe = Auth::user()->employe;
             $this->semaine = SemaineAnnee::findOrFail($this->semaineId);
             $this->operation = Operation::with(['lignesTravail.codeTravail'])->findOrFail($this->operationId);
-            
+
             // Vérifier les permissions
             if ($this->operation->employe_id !== $this->employe->id) {
                 abort(403, 'Accès non autorisé');
             }
-            
+
             // Charger les codes de travail disponibles
             $this->chargerCodesTravauxDisponibles();
-            
+
             // Calculer les dates de la semaine
             $this->calculerDatesSemaine();
-            
+
             // Générer les lignes de travail
             $this->genererLignesTravail();
-            
+
             // Calculer les jours fériés
             $this->calculerJoursFeries();
-            
+
             // Calculer les totaux
             $this->calculerTotaux();
-            
+
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors du chargement: ' . $th->getMessage());
         }
@@ -88,7 +88,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
         if (empty($value) || $value == 0) {
             return '00.00';
         }
-        
+
         $floatValue = floatval($value);
         return sprintf('%05.2f', $floatValue);
     }
@@ -101,17 +101,17 @@ class RhFeuilleDeTempsReguliereEdit extends Component
         if (empty($input) || trim($input) === '') {
             return 0.00;
         }
-        
+
         // Remplacer les virgules par des points
         $input = str_replace(',', '.', trim($input));
-        
+
         // Vérifier si c'est un nombre valide
         if (!is_numeric($input)) {
             return 0.00;
         }
-        
+
         $value = floatval($input);
-        
+
         // Limiter à 12 heures maximum et 2 décimales
         return min(12.00, round($value, 2));
     }
@@ -133,7 +133,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     private function calculerDatesSemaine()
     {
         $dateDebut = \Carbon\Carbon::parse($this->semaine->debut);
-        
+
         for ($i = 0; $i <= 6; $i++) {
             $date = $dateDebut->copy()->addDays($i);
             $this->datesSemaine[] = [
@@ -150,11 +150,11 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     private function genererLignesTravail()
     {
         $lignesExistantes = $this->operation->lignesTravail->keyBy('codes_travail_id');
-        
+
         // Créer une ligne pour chaque code de travail
         foreach ($this->codesTravauxDisponibles as $codeTravail) {
             $ligneExistante = $lignesExistantes->get($codeTravail->id);
-            
+
             $this->lignesTravail[] = [
                 'id' => $ligneExistante?->id,
                 'codes_travail_id' => $codeTravail->id,
@@ -194,10 +194,10 @@ class RhFeuilleDeTempsReguliereEdit extends Component
                 $duree = $this->parseUserInputToDecimal($ligne["duree_{$jour}"] ?? '0');
                 $totalLigne += $duree;
             }
-            
+
             // Ne pas comptabiliser les lignes vides
             if ($totalLigne == 0) continue;
-            
+
             // Répartir selon le code de travail
             $codeTravail = $ligne['code_travail'];
             if ($codeTravail) {
@@ -228,7 +228,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
 
         // Calculer le total général
         $totaux['total_heure'] = array_sum($totaux);
-        
+
         $this->totaux = $totaux;
     }
 
@@ -250,12 +250,12 @@ class RhFeuilleDeTempsReguliereEdit extends Component
         if (count($parts) === 2) {
             $ligneIndex = $parts[0];
             $jourProperty = $parts[1];
-            
+
             // Reformater la valeur saisie
             $formattedValue = $this->formatDecimalToDisplay($this->parseUserInputToDecimal($value));
             $this->lignesTravail[$ligneIndex][$jourProperty] = $formattedValue;
         }
-        
+
         $this->calculerTotaux();
     }
 
@@ -274,7 +274,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     public function enregistrer()
     {
         $this->validate();
-        
+
         try {
             DB::transaction(function () {
                 // Appliquer la transition workflow si nécessaire
@@ -283,16 +283,16 @@ class RhFeuilleDeTempsReguliereEdit extends Component
                         'comment' => 'Feuille de temps mise à jour par ' . Auth::user()->name
                     ]);
                 }
-                
+
                 // Sauvegarder les lignes de travail
                 $this->sauvegarderLignesTravail();
-                
+
                 // Mettre à jour les totaux de l'opération
                 $this->operation->update($this->totaux);
             });
-            
+
             session()->flash('success', 'Feuille de temps enregistrée avec succès.');
-            
+
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors de l\'enregistrement: ' . $th->getMessage());
         }
@@ -304,13 +304,13 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     public function soumettre()
     {
         $this->validate();
-        
+
         try {
             DB::transaction(function () {
                 // Sauvegarder d'abord
                 $this->sauvegarderLignesTravail();
                 $this->operation->update($this->totaux);
-                
+
                 // Puis soumettre
                 if ($this->operation->canTransition('soumettre')) {
                     $this->operation->applyTransition('soumettre', [
@@ -320,10 +320,10 @@ class RhFeuilleDeTempsReguliereEdit extends Component
                     throw new \Exception('Impossible de soumettre cette feuille de temps');
                 }
             });
-            
+
             session()->flash('success', 'Feuille de temps soumise avec succès.');
             return redirect()->route('feuille-temps.list');
-            
+
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors de la soumission: ' . $th->getMessage());
         }
@@ -341,14 +341,14 @@ class RhFeuilleDeTempsReguliereEdit extends Component
                 'operation_id' => $this->operation->id,
                 'codes_travail_id' => $ligneData['codes_travail_id'],
             ];
-            
+
             // Convertir et sauvegarder chaque jour
             for ($jour = 0; $jour <= 6; $jour++) {
                 $duree = $this->parseUserInputToDecimal($ligneData["duree_{$jour}"] ?? '0');
                 $dataToSave["duree_{$jour}"] = $duree;
                 $totalLigne += $duree;
             }
-            
+
             if ($ligneData['id']) {
                 // Mettre à jour ligne existante seulement si elle a des heures
                 if ($totalLigne > 0) {

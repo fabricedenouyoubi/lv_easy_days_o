@@ -15,7 +15,7 @@ use Modules\RhFeuilleDeTempsAbsence\Traits\HasWorkflow;
 
 class DemandeAbsence extends Model
 {
-    use HasFactory/* , HasWorkflow */;
+    use HasFactory, HasWorkflow;
 
     protected $table = 'demande_absences';
 
@@ -282,5 +282,126 @@ class DemandeAbsence extends Model
     public function scopeApprouve($query)
     {
         return $query->where('statut', 'Validé');
+    }
+
+    /**
+     * --- WORKFLOW ---
+     */
+
+    /**
+     * Obtenir l'état actuel du workflow
+     */
+    public function getCurrentState(): string
+    {
+        return $this->statut ?? 'Brouillon';
+    }
+
+    /**
+     * Logger une transition de workflow
+     */
+    public function logTransition(string $from, string $to, ?string $comment = null): void
+    {
+        $log = [
+            'timestamp' => now()->format('Y-m-d H:i'),
+            'date' => now()->format('d-m-Y'),
+            'time' => now()->format('H:i'),
+            'from_state' => $from,
+            'to_state' => $to,
+            'comment' => $comment ?? '',
+            'title' => "{$from} → {$to}",
+            'user' => Auth::user()->name
+        ];
+
+        $logs = $this->workflow_log ? explode("\n", $this->workflow_log) : [];
+        $logs[] = json_encode($log);
+
+        $this->update(['workflow_log' => implode("\n", $logs)]);
+    }
+
+
+    /**
+     *  Recuperer le journal du workflow
+     */
+    public function get_workflow_log()
+    {
+       // $logs = json_decode($this->workflow_log, true);
+        $logsArray = collect(explode("\n", $this->workflow_log))
+            ->filter() // élimine les lignes vides
+            ->map(fn($line) => json_decode(trim($line), true))
+            ->filter()  // élimine les lignes non valides (nulls)
+            ->reverse() // Tri du plus récent au plus ancien
+            ->values(); // Pour réindexer proprement;
+        return $logsArray;
+    }
+
+    /**
+     * Vérifier si l'opération peut être modifiée
+     * Une opération est modifiable si elle est en état 'brouillon', 'en_cours' ou 'rejete'
+     */
+    public function isEditable(): bool
+    {
+        $editableStates = ['brouillon', 'en_cours', 'rejete'];
+        return in_array($this->getCurrentState(), $editableStates);
+    }
+
+    /**
+     * Vérifier si une transition est possible depuis l'état actuel
+     */
+    public function canTransition(string $transition): bool
+    {
+        $currentState = $this->getCurrentState();
+
+        // Définir les transitions autorisées selon l'état actuel
+        $allowedTransitions = [
+            'Brouillon' => ['enregistrer', 'soumettre'],
+            'En cours' => ['enregistrer', 'soumettre'],
+            'Soumis' => ['rappeler', 'valider', 'rejeter'],
+            'Validé' => ['retourner'],
+            'Rejeté' => ['enregistrer', 'soumettre', 'retourner'],
+        ];
+
+        return isset($allowedTransitions[$currentState]) &&
+            in_array($transition, $allowedTransitions[$currentState]);
+    }
+
+    /**
+     * Appliquer une transition de workflow
+     */
+    public function applyTransition(string $transition, array $options = []): bool
+    {
+        $currentState = $this->getCurrentState();
+
+        if (!$this->canTransition($transition)) {
+            throw new \Exception("Transition '{$transition}' non autorisée depuis l'état '{$currentState}'");
+        }
+
+        // Définir les nouveaux états selon la transition
+        $newStates = [
+            'enregistrer' => 'En cours',
+            'soumettre' => 'Soumis',
+            'rappeler' => 'En cours',
+            'valider' => 'Validé',
+            'rejeter' => 'Rejeté',
+            'retourner' => 'Soumis',
+        ];
+
+        if (!isset($newStates[$transition])) {
+            throw new \Exception("Transition '{$transition}' non reconnue");
+        }
+
+        $newState = $newStates[$transition];
+
+        // Préparer les données à mettre à jour
+        $updateData = [
+            'statut' => $newState,
+        ];
+
+        // Logger la transition
+        $this->logTransition($currentState, $newState, $options['comment'] ?? null);
+
+        // Mettre à jour l'état
+        $this->update($updateData);
+
+        return true;
     }
 }

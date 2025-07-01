@@ -112,58 +112,18 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
         session()->flash('success', 'Demande d\'absence modifié avec succès.');
     }
 
-    //--- Contruction du journal de la demande d'absence après modification
-    public function build_workflow_log($from, $to, $comment = null)
-    {
-        $timestamp = now();
-        $log = [
-            'timestamp' => $timestamp->format('Y-m-d H:i'),
-            'date' => $timestamp->format('d-m-Y'),
-            'time' => $timestamp->format('H:i'),
-            'from_state' => $from,
-            'to_state' => $to,
-            'comment' => $comment ?? '',
-            'title' => $from . ' à ' . $to
-        ];
-
-
-        $logs = $this->workflow_log ? explode("\n", $this->workflow_log) : [];
-
-        //--- chargement du nouveau journal de la demande d'absence
-        $logs[] = json_encode($log);
-
-        //--- mis a jour du journal de la demande d'absence
-        $this->workflow_log = implode("\n", $logs);
-    }
-
-    //--- recuperation du journal de la demande d'absence
-    public function get_workflow_log()
-    {
-        $demande = DemandeAbsence::findOrFail($this->demandeAbsenceId);
-        $logs = json_decode($demande->workflow_log, true);
-        $logsArray = collect(explode("\n", $demande->workflow_log))
-            ->filter() // élimine les lignes vides
-            ->map(fn($line) => json_decode(trim($line), true))
-            ->filter()  // élimine les lignes non valides (nulls)
-            ->reverse() // Tri du plus récent au plus ancien
-            ->values(); // Pour réindexer proprement;
-        return $logsArray;
-    }
-
     //--- Soumission de la demande d'absence
     public function soumettreDemandeAbsence()
     {
         try {
-            $comment = $this->demandeAbsence->admin_id == Auth::user()->id ? 'La demande a été soumise par ' . Auth::user()->name : 'La demande a été soumise';
-            $this->build_workflow_log($this->demandeAbsence->statut, $this->statuts[2], $comment);
-            $this->demandeAbsence->update([
-                'statut' => $this->statuts[2],
-                'workflow_log' => $this->workflow_log
-            ]);
+
+            $comment = 'La demande a été soumise par ' . Auth::user()->name;
+            $this->demandeAbsence->applyTransition('soumettre', ['comment' => $comment]);
             $this->showSoumissionModal = false;
+
             session()->flash('success', 'Demande d\'absence  soumise avec succès.');
         } catch (\Throwable $th) {
-            //throw $th;
+            session()->flash('error', 'Une erreur est survenue lors de la soumission de la demande d\'absence.', $th->getMessage());
         }
     }
 
@@ -171,19 +131,16 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     public function rapelleDemandeAbsence()
     {
         try {
-            $comment = $this->demandeAbsence->admin_id == Auth::user()->id ? 'La demande a été rappelée par ' . Auth::user()->name : 'La demande a rappelée soumise';
+            $comment = 'La demande a été rappelée par ' . Auth::user()->name;
             $comment = $this->motif ? $comment .  ' avec pour motif :  << ' . $this->motif . ' >>' : $comment;
 
-            $this->build_workflow_log($this->demandeAbsence->statut, $this->statuts[1], $comment);
-            $this->demandeAbsence->update([
-                'statut' => $this->statuts[1],
-                'workflow_log' => $this->workflow_log
-            ]);
+            $this->demandeAbsence->applyTransition('rappeler', ['comment' => $comment]);
+
             $this->showRappelerModal = false;
             $this->reset('motif');
             session()->flash('success', 'Demande d\'absence rappelée avec succès.');
         } catch (\Throwable $th) {
-            //dd($th->getMessage());
+            session()->flush('error', 'Une erreur est survenue lors du rappel de la demande d\'absence.', $th->getMessage());
         }
     }
 
@@ -232,19 +189,19 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
                     'annee_semaine_id' => $semaine->id,
                     'employe_id' => $this->demandeAbsence->employe_id,
                     'total_heure' => $jours_absence * $this->demandeAbsence->heure_par_jour,
+                    'workflow_state' => 'valide',
+                    'statut' => 'valide'
                 ]);
             }
 
-            $this->build_workflow_log($this->demandeAbsence->statut, $this->statuts[3], 'La demande est approuvée par ' . Auth::user()->name);
-            $this->demandeAbsence->update([
-                'statut' => $this->statuts[3],
-                'workflow_log' => $this->workflow_log
-            ]);
+            $comment = 'La demande est approuvée par ' . Auth::user()->name;
+
+            $this->demandeAbsence->applyTransition('valider', ['comment' => $comment]);
 
             $this->showApprouverModal = false;
             session()->flash('success', 'Demande d\'absence validée avec succès.');
         } catch (\Throwable $th) {
-            dd($th->getMessage());
+            session()->flash('error', 'Une erreur est survenue lors de la validation de la demande d\'absence.' . $th->getMessage());
         }
     }
 
@@ -259,16 +216,13 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
             }
 
             $comment = 'La demande a été retournée par ' . Auth::user()->name .  ' avec pour motif :  << ' . $this->motif . ' >>';
-            $this->build_workflow_log($this->demandeAbsence->statut, $this->statuts[1], $comment);
-            $this->demandeAbsence->update([
-                'statut' => $this->statuts[1],
-                'workflow_log' => $this->workflow_log
-            ]);
+            $this->demandeAbsence->applyTransition('retourner', ['comment' => $comment]);
+
             $this->showRetournerModal = false;
             $this->reset('motif');
             session()->flash('success', 'Demande d\'absence retournée avec succès.');
         } catch (\Throwable $th) {
-            //throw $th;
+            session()->flash('error', 'Une erreur est survenue lors du retour de la demande d\'absence.', $th->getMessage());
         }
     }
 
@@ -281,16 +235,12 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
             $this->demandeAbsence->operations()->delete();
 
             $comment = 'La demande a été rejetée par : ' . Auth::user()->name . ' avec pour motif :  << ' . $this->motif . ' >>';
-            $this->build_workflow_log($this->demandeAbsence->statut, $this->statuts[4], $comment);
-            $this->demandeAbsence->update([
-                'statut' => $this->statuts[4],
-                'workflow_log' => $this->workflow_log
-            ]);
+            $this->demandeAbsence->applyTransition('rejeter', ['comment' => $comment]);
             $this->showRejeterModal = false;
             $this->reset('motif');
             session()->flash('success', 'Demande d\'absence rejetée avec succès.');
         } catch (\Throwable $th) {
-            //throw $th;
+            session()->flash('error', 'Une erreur est survenue lors du rejet de la demande d\'absence.', $th->getMessage());
         }
     }
 
@@ -299,7 +249,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
         return view(
             'rhfeuilledetempsabsence::livewire.rh-feuille-de-temps-absence-details',
             [
-                'logs' => $this->get_workflow_log()
+                'logs' => $this->demandeAbsence->get_workflow_log()
             ]
         );
     }

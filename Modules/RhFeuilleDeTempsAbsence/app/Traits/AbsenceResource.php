@@ -106,4 +106,48 @@ trait AbsenceResource
         // On multiplie le nombre de jours ouvrables par le nombre d'heures par jour pour obtenir le total
         return $totalJoursOuvrables * $heure_par_jour;
     }
+
+    /**
+     * Obtenir le statut formaté pour l'affichage
+     */
+    public function getStatutFormate($statut)
+    {
+        if (in_array($statut, ['Brouillon', 'brouillon'])) {
+            return [
+                'text' => 'Brouillon',
+                'class' => 'bg-warning text-dark',
+                'icon' => 'fas fa-pencil-alt'
+            ];
+        } elseif (in_array($statut, ['En cours', 'en_cours'])) {
+            return [
+                'text' => 'En cours',
+                'class' => 'bg-info text-dark',
+                'icon' => 'fas fa-hourglass-half'
+            ];
+        } elseif (in_array($statut, ['Soumis', 'soumis'])) {
+            return [
+                'text' => 'Soumis',
+                'class' => 'bg-primary',
+                'icon' => 'fas fa-inbox'
+            ];
+        } elseif (in_array($statut, ['Validé', 'valide'])) {
+            return [
+                'text' => 'Validé',
+                'class' => 'bg-success',
+                'icon' => 'fas fa-check-circle'
+            ];
+        } elseif (in_array($statut, ['Rejeté', 'rejete'])) {
+            return [
+                'text' => 'Rejeté',
+                'class' => 'bg-danger',
+                'icon' => 'fas fa-times-circle'
+            ];
+        } else {
+            return [
+                'text' => 'Inconnu',
+                'class' => 'bg-secondary',
+                'icon' => 'fas fa-question-circle'
+            ];
+        }
+    }
 }

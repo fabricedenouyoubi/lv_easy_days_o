@@ -127,13 +127,14 @@
             <div id="dialog-lg" class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title"><i class="fas fa-clock"></i> Nouvelle demande pour <strong>{{  $employeNom }}</strong>
+                        <h5 class="modal-title"><i class="fas fa-clock"></i> Nouvelle demande pour
+                            <strong>{{ $employeNom }}</strong>
                         </h5>
                         <x-action-button type="close" wire-click="close_add_employe_absence_modal"
                             aria-label="Close" />
                     </div>
                     <div class="modal-body">
-                        <livewire:rhfeuilledetempsabsence::rh-feuille-de-temps-absence-form  :employeId="$employeId" />
+                        <livewire:rhfeuilledetempsabsence::rh-feuille-de-temps-absence-form :employeId="$employeId" />
                     </div>
                 </div>
             </div>
