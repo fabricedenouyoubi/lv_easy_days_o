@@ -3,21 +3,20 @@
 namespace Modules\RhFeuilleDeTempsReguliere\Livewire;
 
 use Livewire\Component;
+use Livewire\Attributes\Computed;
 use Illuminate\Support\Facades\Auth;
 use Modules\Budget\Models\SemaineAnnee;
 use Modules\RhFeuilleDeTempsAbsence\Models\Operation;
+
 class RhFeuilleDeTempsReguliereShow extends Component
 {
     public $operationId;
     public $semaineId;
     public $operation;
     public $semaine;
-    public $employe;
     public $lignesTravail = [];
     public $joursLabels = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
     public $workflowHistory = [];
-
-    public $statutFormate = [];
     
     // Permissions utilisateur
     public $canEdit = false;
@@ -49,9 +48,11 @@ class RhFeuilleDeTempsReguliereShow extends Component
             $this->operation = Operation::with(['lignesTravail.codeTravail', 'employe', 'anneeSemaine'])
                                       ->findOrFail($this->operationId);
             
-            $this->employe = $this->operation->employe;
-            // Statut du statut formaté
-            $this->initStatutFormate();
+            // Vérifier que l'opération et l'employé existent
+            if (!$this->operation || !$this->operation->employe) {
+                throw new \Exception('Opération ou employé non trouvé');
+            }
+            
             // Vérifier les permissions d'accès
             $this->verifierPermissions();
             
@@ -63,7 +64,65 @@ class RhFeuilleDeTempsReguliereShow extends Component
             
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors du chargement: ' . $th->getMessage());
+            return redirect()->route('feuille-temps.list');
         }
+    }
+
+    /**
+     * Computed property pour l'employé
+     */
+    #[Computed]
+    public function employe()
+    {
+        return $this->operation?->employe;
+    }
+
+    /**
+     * Computed property pour le statut formaté
+     */
+    #[Computed]
+    public function statutFormate(): array
+    {
+        if (!$this->operation) {
+            return [
+                'text' => 'Aucune opération',
+                'class' => 'bg-secondary',
+                'icon' => 'fas fa-exclamation-triangle'
+            ];
+        }
+
+        return match($this->operation->workflow_state) {
+            'brouillon' => [
+                'text' => 'Brouillon',
+                'class' => 'bg-warning text-dark',
+                'icon' => 'fas fa-pencil-alt'
+            ],
+            'en_cours' => [
+                'text' => 'En cours',
+                'class' => 'bg-info text-dark',
+                'icon' => 'fas fa-hourglass-half'
+            ],
+            'soumis' => [
+                'text' => 'Soumis',
+                'class' => 'bg-primary',
+                'icon' => 'fas fa-paper-plane'
+            ],
+            'valide' => [
+                'text' => 'Validé',
+                'class' => 'bg-success',
+                'icon' => 'fas fa-check-circle'
+            ],
+            'rejete' => [
+                'text' => 'Rejeté',
+                'class' => 'bg-danger',
+                'icon' => 'fas fa-times-circle'
+            ],
+            default => [
+                'text' => 'Inconnu',
+                'class' => 'bg-secondary',
+                'icon' => 'fas fa-question-circle'
+            ]
+        };
     }
 
     /**
@@ -254,48 +313,6 @@ class RhFeuilleDeTempsReguliereShow extends Component
             session()->flash('error', 'Erreur lors du retour: ' . $th->getMessage());
         }
     }
-
-    /**
-     * Obtenir le statut formaté
-     */
-public function initStatutFormate()
-    {
-       
-       $this->statutFormate = match($this->operation->workflow_state) {
-            'brouillon' => [
-                'text' => 'Brouillon',
-                'class' => 'bg-warning text-dark',
-                'icon' => 'fas fa-pencil-alt'
-            ],
-            'en_cours' => [
-                'text' => 'En cours',
-                'class' => 'bg-info text-dark',
-                'icon' => 'fas fa-hourglass-half'
-            ],
-            'soumis' => [
-                'text' => 'Soumis',
-                'class' => 'bg-primary',
-                'icon' => 'fas fa-paper-plane'
-            ],
-            'valide' => [
-                'text' => 'Validé',
-                'class' => 'bg-success',
-                'icon' => 'fas fa-check-circle'
-            ],
-            'rejete' => [
-                'text' => 'Rejeté',
-                'class' => 'bg-danger',
-                'icon' => 'fas fa-times-circle'
-            ],
-            default => [
-                'text' => 'Inconnu',
-                'class' => 'bg-secondary',
-                'icon' => 'fas fa-question-circle'
-            ]
-        };
-    }
-
-    // , 
 
     public function render()
     {
