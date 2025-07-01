@@ -39,8 +39,8 @@
                                         <tr>
                                             <th>Employé(e)</th>
                                             <th>Type d'absence</th>
-                                            <th>Date de début de l'absence</th>
-                                            <th>Date de début de l'absence</th>
+                                            <th>Date de début</th>
+                                            <th>Date de fin</th>
                                             <th>Statut de la demande</th>
                                             <th>Actions</th>
                                         </tr>

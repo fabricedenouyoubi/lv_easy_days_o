@@ -45,7 +45,7 @@
                                                     href="{{ route('rh-employe.show', $employe->id) }}" />
                                             @endcan
 
-                                            @if (auth()->user()->hasRole('ADMIN'))
+                                            @if (auth()->user()->hasRole('ADMIN') && auth()->user()->id != $employe->id)
                                                 {{-- Bouton Ajouter de demande d'absence --}}
                                                 <x-action-button type="outline-primary" icon="fas fa-clock"
                                                     tooltip="Ajouter une demande d'absence"
