@@ -132,9 +132,8 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     {
         try {
             $comment = 'La demande a été rappelée par ' . Auth::user()->name;
-            $comment = $this->motif ? $comment .  ' avec pour motif :  << ' . $this->motif . ' >>' : $comment;
 
-            $this->demandeAbsence->applyTransition('rappeler', ['comment' => $comment]);
+            $this->demandeAbsence->applyTransition('rappeler', ['comment' => $comment, 'motif' => $this->motif]);
 
             $this->showRappelerModal = false;
             $this->reset('motif');
@@ -215,8 +214,8 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
                 $this->demandeAbsence->operations()->delete();
             }
 
-            $comment = 'La demande a été retournée par ' . Auth::user()->name .  ' avec pour motif :  << ' . $this->motif . ' >>';
-            $this->demandeAbsence->applyTransition('retourner', ['comment' => $comment]);
+            $comment = 'La demande a été retournée par ' . Auth::user()->name;
+            $this->demandeAbsence->applyTransition('retourner', ['comment' => $comment, 'motif' => $this->motif]);
 
             $this->showRetournerModal = false;
             $this->reset('motif');
@@ -234,8 +233,8 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
             //--- Suppresion des opérations et liaison avec la feuille de temps
             $this->demandeAbsence->operations()->delete();
 
-            $comment = 'La demande a été rejetée par : ' . Auth::user()->name . ' avec pour motif :  << ' . $this->motif . ' >>';
-            $this->demandeAbsence->applyTransition('rejeter', ['comment' => $comment]);
+            $comment = 'La demande a été rejetée par : ' . Auth::user()->name;
+            $this->demandeAbsence->applyTransition('rejeter', ['comment' => $comment, 'motif' => $this->motif]);
             $this->showRejeterModal = false;
             $this->reset('motif');
             session()->flash('success', 'Demande d\'absence rejetée avec succès.');

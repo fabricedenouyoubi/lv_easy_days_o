@@ -187,6 +187,11 @@
                         <div class="col-12">
                             <span>{{ $log['comment'] }}</span>.
                         </div>
+                        @if ($log['motif'])
+                            <div class="col-12">
+                                <span>Note: {{ $log['motif'] }}</span>.
+                            </div>
+                        @endif
                     </div>
                 @endforeach
             </x-table-card>
