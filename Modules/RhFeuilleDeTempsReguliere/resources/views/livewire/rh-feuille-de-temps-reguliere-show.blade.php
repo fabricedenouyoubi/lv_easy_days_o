@@ -1,12 +1,21 @@
 <div>
-    <!-- Breadcrumb -->
-    <x-breadcrumb :items="[
-        ['label' => 'Feuilles de temps', 'url' => route('feuille-temps.list')],
-        ['label' => 'Détails feuille']
-    ]" />
-
     {{-- Messages de feedback --}}
     <x-alert-messages />
+
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ route('feuille-temps.list') }}">Feuilles de temps</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        Détails semaine {{ $semaine->numero_semaine }}
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
 
     <!-- Main content area -->
     <div class="row">
@@ -21,137 +30,81 @@
                                 Feuille de temps
                             </h5>
                         </div>
-
-                        @if($this->workflowState)
-                            <div class="d-flex align-items-center gap-2">
-                                @if($this->workflowState === 'brouillon')
-                                    <span class="badge bg-warning text-dark rounded-pill px-3 py-2">
-                                        <i class="fas fa-pencil-alt align-middle me-1"></i>
-                                        Brouillon
-                                    </span>
-                                @elseif($this->workflowState === 'en_cours')
-                                    <span class="badge bg-info text-dark rounded-pill px-3 py-2">
-                                        <i class="fas fa-hourglass-half align-middle me-1"></i>
-                                        En cours
-                                    </span>
-                                @elseif($this->workflowState === 'soumis')
-                                    <span class="badge bg-primary rounded-pill px-3 py-2">
-                                        <i class="fas fa-paper-plane align-middle me-1"></i>
-                                        Soumis
-                                    </span>
-                                @elseif($this->workflowState === 'valide')
-                                    <span class="badge bg-success rounded-pill px-3 py-2">
-                                        <i class="fas fa-check-circle align-middle me-1"></i>
-                                        Validé
-                                    </span>
-                                @elseif($this->workflowState === 'rejete')
-                                    <span class="badge bg-danger rounded-pill px-3 py-2">
-                                        <i class="fas fa-times-circle align-middle me-1"></i>
-                                        Rejeté
-                                    </span>
-                                @else
-                                    <span class="badge bg-secondary rounded-pill px-3 py-2">
-                                        <i class="fas fa-question-circle align-middle me-1"></i>
-                                        Inconnu
-                                    </span>
-                                @endif
-                            </div>
-                        @endif
+                        <div class="d-flex align-items-center gap-2">
+                            @php $statut = $this->getStatutFormate(); @endphp
+                            <span class="badge {{ $statut['class'] }} rounded-pill px-3 py-2">
+                                <i class="{{ $statut['icon'] }} align-middle me-1"></i>
+                                {{ $statut['text'] }}
+                            </span>
+                            
+                            <!-- Actions selon les permissions -->
+                            @if($canEdit)
+                                <a href="{{ route('feuille-temps.edit', ['semaineId' => $semaineId, 'operationId' => $operationId]) }}" 
+                                   class="btn btn-sm btn-outline-warning">
+                                    <i class="mdi mdi-square-edit-outline me-1"></i>
+                                    Modifier
+                                </a>
+                            @endif
+                            
+                            @if($canSubmit)
+                                <button wire:click="toggleSubmitModal" class="btn btn-sm btn-outline-primary">
+                                    <i class="mdi mdi-send-circle-outline me-1"></i>
+                                    Soumettre
+                                </button>
+                            @endif
+                            
+                            @if($canRecall)
+                                <button wire:click="toggleRecallModal" class="btn btn-sm btn-outline-warning">
+                                    <i class="mdi mdi-backup-restore me-1"></i>
+                                    Rappeler
+                                </button>
+                            @endif
+                            
+                            @if($canApprove)
+                                <button wire:click="toggleApproveModal" class="btn btn-sm btn-outline-success">
+                                    <i class="mdi mdi-checkbox-marked-circle-outline me-1"></i>
+                                    Valider
+                                </button>
+                            @endif
+                            
+                            @if($canReject)
+                                <button wire:click="toggleRejectModal" class="btn btn-sm btn-outline-danger">
+                                    <i class="mdi mdi-close-circle-outline me-1"></i>
+                                    Rejeter
+                                </button>
+                            @endif
+                            
+                            @if($canReturn)
+                                <button wire:click="toggleReturnModal" class="btn btn-sm btn-outline-warning">
+                                    <i class="mdi mdi-reply me-1"></i>
+                                    Retourner
+                                </button>
+                            @endif
+                        </div>
                     </div>
                 </div>
 
                 <div class="card-body">
                     <!-- Informations employé -->
-            <div class="row align-items-center mb-4">
-                <div class="col-auto">
-                    <div class="avatar-wrapper">
-                        <div class="avatar-placeholder d-flex align-items-center justify-content-center bg-light rounded-circle shadow-sm border border-3 border-white"
-                             style="width: 100px; height: 100px;">
-                            <i class="fa fa-user-circle text-primary" style="font-size: 3rem;"></i>
+                    <div class="row align-items-center mb-4">
+                        <div class="col-auto">
+                            <div class="avatar-wrapper">
+                                <div class="avatar-placeholder d-flex align-items-center justify-content-center bg-light rounded-circle shadow-sm border border-3 border-white"
+                                     style="width: 100px; height: 100px;">
+                                    <i class="fa fa-user-circle text-primary" style="font-size: 3rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <h4 class="mb-1">{{ $employe->nom }} {{ $employe->prenom }}</h4>
+                            <p class="text-muted mb-0">Semaine {{ $semaine->numero_semaine }} - Du {{ \Carbon\Carbon::parse($semaine->debut)->format('d/m/Y') }} au {{ \Carbon\Carbon::parse($semaine->fin)->format('d/m/Y') }}</p>
                         </div>
                     </div>
-                </div>
-                <div class="col-auto">
-                    <h4 class="mb-1">{{ $this->employe->nom }} {{ $this->employe->prenom }}</h4>
-                    <p class="text-muted mb-0">Semaine {{ $this->semaine->numero_semaine }} - Du {{ \Carbon\Carbon::parse($this->semaine->debut)->format('d/m/Y') }} au {{ \Carbon\Carbon::parse($this->semaine->fin)->format('d/m/Y') }}</p>
-                </div>
-            </div>
-
-            {{-- Affichage du motif de rejet si la feuille est rejetée --}}
-            @if($this->workflowState === 'rejete' && $this->operation->motif_rejet)
-                <div class="alert alert-danger border-0 mb-4">
-                    <div class="d-flex align-items-start">
-                        <i class="mdi mdi-alert-circle-outline me-2 mt-1" style="font-size: 1.2em;"></i>
-                        <div>
-                            <h6 class="alert-heading mb-2">Feuille de temps rejetée</h6>
-                            <p class="mb-0"><strong>Motif :</strong> {{ $this->operation->motif_rejet }}</p>
-                            <hr class="my-2">
-                        </div>
-                    </div>
-                </div>
-            @endif
 
                     <!-- Détail des lignes de travail -->
                     <div class="card mt-3 border-0 shadow-sm">
                         <div class="card-header bg-light">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h6 class="card-title mb-0">
-                                    Détail de la feuille de temps
-                                </h6>
-
-                                <div class="d-flex align-items-center gap-2">
-                                    <!-- Boutons d'action déplacés dans le header -->
-                                    <div class="d-flex gap-2">
-                                        <a href="{{ route('feuille-temps.list') }}" class="btn btn-outline-secondary btn-sm">
-                                            <i class="mdi mdi-arrow-left me-1"></i>
-                                            Retour
-                                        </a>
-                                        <!-- Actions selon les permissions -->
-                                        @if($canEdit)
-                                            <a href="{{ route('feuille-temps.edit', ['semaineId' => $semaineId, 'operationId' => $operationId]) }}" 
-                                               class="btn btn-sm btn-outline-warning">
-                                                <i class="mdi mdi-square-edit-outline me-1"></i>
-                                                Modifier
-                                            </a>
-                                        @endif
-                                        
-                                        @if($canSubmit)
-                                            <button wire:click="toggleSubmitModal" class="btn btn-sm btn-outline-primary">
-                                                <i class="mdi mdi-send-circle-outline me-1"></i>
-                                                Soumettre
-                                            </button>
-                                        @endif
-                                        
-                                        @if($canRecall)
-                                            <button wire:click="toggleRecallModal" class="btn btn-sm btn-outline-warning">
-                                                <i class="mdi mdi-backup-restore me-1"></i>
-                                                Rappeler
-                                            </button>
-                                        @endif
-                                        
-                                        @if($canApprove)
-                                            <button wire:click="toggleApproveModal" class="btn btn-sm btn-outline-success">
-                                                <i class="mdi mdi-checkbox-marked-circle-outline me-1"></i>
-                                                Valider
-                                            </button>
-                                        @endif
-                                        
-                                        @if($canReject)
-                                            <button wire:click="toggleRejectModal" class="btn btn-sm btn-outline-danger">
-                                                <i class="mdi mdi-close-circle-outline me-1"></i>
-                                                Rejeter
-                                            </button>
-                                        @endif
-                                        
-                                        @if($canReturn)
-                                            <button wire:click="toggleReturnModal" class="btn btn-sm btn-outline-warning">
-                                                <i class="mdi mdi-reply me-1"></i>
-                                                Retourner
-                                            </button>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>                           
+                            <h6 class="card-title mb-0">Détail de la feuille de temps</h6>
                         </div>
                         <div class="card-body p-0">
                             <div class="table-responsive">
@@ -164,7 +117,7 @@
                                                     {{ $jour }}
                                                     <br>
                                                     <small class="text-muted">
-                                                        {{ \Carbon\Carbon::parse($this->semaine->debut)->addDays($index)->format('d/m') }}
+                                                        {{ \Carbon\Carbon::parse($semaine->debut)->addDays($index)->format('d/m') }}
                                                     </small>
                                                 </th>
                                             @endforeach
@@ -267,35 +220,35 @@
             <x-table-card title="Résumé des heures" icon="fas fa-clock">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-muted">Formation</span>
-                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $this->operation->total_heure_formation ?? 0 }}h</span>
+                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $operation->total_heure_formation ?? 0 }}h</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-muted">CSN</span>
-                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $this->operation->total_heure_csn ?? 0 }}h</span>
+                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $operation->total_heure_csn ?? 0 }}h</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-muted">Caisse</span>
-                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $this->operation->total_heure_caisse ?? 0 }}h</span>
+                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $operation->total_heure_caisse ?? 0 }}h</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-muted">Congé Mobile</span>
-                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $this->operation->total_heure_conge_mobile ?? 0 }}h</span>
+                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $operation->total_heure_conge_mobile ?? 0 }}h</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-muted">Déplacement</span>
-                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $this->operation->total_heure_deplacement ?? 0 }}h</span>
+                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $operation->total_heure_deplacement ?? 0 }}h</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-muted">Régulier</span>
-                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $this->operation->total_heure_regulier ?? 0 }}h</span>
+                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $operation->total_heure_regulier ?? 0 }}h</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-muted">Heure Supplémentaire</span>
-                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $this->operation->total_heure_supp ?? 0 }}h</span>
+                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $operation->total_heure_supp ?? 0 }}h</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="text-muted">Total des heures</span>
-                    <span class="badge bg-dark px-3 py-2 rounded-pill">{{ $this->operation->total_heure ?? 0 }}h</span>
+                    <span class="badge bg-dark px-3 py-2 rounded-pill">{{ $operation->total_heure ?? 0 }}h</span>
                 </div>
             </x-table-card>
 

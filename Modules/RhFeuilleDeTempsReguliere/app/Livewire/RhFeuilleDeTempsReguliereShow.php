@@ -17,9 +17,6 @@ class RhFeuilleDeTempsReguliereShow extends Component
     public $lignesTravail = [];
     public $joursLabels = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
     public $workflowHistory = [];
-
-    // Propriété simple pour le statut
-    public $workflowState = '';
     
     // Permissions utilisateur
     public $canEdit = false;
@@ -47,22 +44,11 @@ class RhFeuilleDeTempsReguliereShow extends Component
     public function mount()
     {
         try {
-            // Charger la semaine
             $this->semaine = SemaineAnnee::findOrFail($this->semaineId);
-            
-            // Charger l'opération avec toutes ses relations
             $this->operation = Operation::with(['lignesTravail.codeTravail', 'employe', 'anneeSemaine'])
                                       ->findOrFail($this->operationId);
             
-            // S'assurer que l'employé est bien chargé
-            if (!$this->operation->employe) {
-                throw new \Exception('Employé non trouvé pour cette opération');
-            }
-            
             $this->employe = $this->operation->employe;
-            
-            // Affecter simplement la valeur du workflow_state
-            $this->workflowState = $this->operation->workflow_state;
             
             // Vérifier les permissions d'accès
             $this->verifierPermissions();
@@ -74,18 +60,7 @@ class RhFeuilleDeTempsReguliereShow extends Component
             $this->chargerWorkflowHistory();
             
         } catch (\Throwable $th) {
-            // Log l'erreur pour le débogage
-            \Log::error('Erreur dans RhFeuilleDeTempsReguliereShow::mount()', [
-                'error' => $th->getMessage(),
-                'trace' => $th->getTraceAsString(),
-                'operationId' => $this->operationId,
-                'semaineId' => $this->semaineId
-            ]);
-            
             session()->flash('error', 'Erreur lors du chargement: ' . $th->getMessage());
-            
-            // Rediriger vers la liste en cas d'erreur critique
-            return redirect()->route('feuille-temps.list');
         }
     }
 
@@ -276,6 +251,40 @@ class RhFeuilleDeTempsReguliereShow extends Component
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors du retour: ' . $th->getMessage());
         }
+    }
+
+    /**
+     * Obtenir le statut formaté
+     */
+    public function getStatutFormate()
+    {
+        return match($this->operation->workflow_state) {
+            'brouillon' => [
+                'text' => 'Brouillon',
+                'class' => 'bg-warning text-dark',
+                'icon' => 'mdi-pencil-outline'
+            ],
+            'en_cours' => [
+                'text' => 'En cours',
+                'class' => 'bg-info text-dark',
+                'icon' => 'mdi-hourglass-half'
+            ],
+            'soumis' => [
+                'text' => 'Soumis',
+                'class' => 'bg-primary',
+                'icon' => 'mdi-send'
+            ],
+            'valide' => [
+                'text' => 'Validé',
+                'class' => 'bg-success',
+                'icon' => 'mdi-check-circle'
+            ],
+            default => [
+                'text' => 'Inconnu',
+                'class' => 'bg-secondary',
+                'icon' => 'mdi-help'
+            ]
+        };
     }
 
     public function render()
