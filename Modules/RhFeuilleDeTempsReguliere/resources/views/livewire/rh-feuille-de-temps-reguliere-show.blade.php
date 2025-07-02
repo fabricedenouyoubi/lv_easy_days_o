@@ -22,12 +22,39 @@
                             </h5>
                         </div>
 
-                        @if(!empty($statutFormate))
+                        @if($workflowState)
                             <div class="d-flex align-items-center gap-2">
-                                <span class="badge {{ $statutFormate['class'] }} rounded-pill px-3 py-2">
-                                    <i class="{{ $statutFormate['icon'] }} align-middle me-1"></i>
-                                    {{ $statutFormate['text'] }}
-                                </span> 
+                                @if($workflowState === 'brouillon')
+                                    <span class="badge bg-warning text-dark rounded-pill px-3 py-2">
+                                        <i class="fas fa-pencil-alt align-middle me-1"></i>
+                                        Brouillon
+                                    </span>
+                                @elseif($workflowState === 'en_cours')
+                                    <span class="badge bg-info text-dark rounded-pill px-3 py-2">
+                                        <i class="fas fa-hourglass-half align-middle me-1"></i>
+                                        En cours
+                                    </span>
+                                @elseif($workflowState === 'soumis')
+                                    <span class="badge bg-primary rounded-pill px-3 py-2">
+                                        <i class="fas fa-paper-plane align-middle me-1"></i>
+                                        Soumis
+                                    </span>
+                                @elseif($workflowState === 'valide')
+                                    <span class="badge bg-success rounded-pill px-3 py-2">
+                                        <i class="fas fa-check-circle align-middle me-1"></i>
+                                        Validé
+                                    </span>
+                                @elseif($workflowState === 'rejete')
+                                    <span class="badge bg-danger rounded-pill px-3 py-2">
+                                        <i class="fas fa-times-circle align-middle me-1"></i>
+                                        Rejeté
+                                    </span>
+                                @else
+                                    <span class="badge bg-secondary rounded-pill px-3 py-2">
+                                        <i class="fas fa-question-circle align-middle me-1"></i>
+                                        Inconnu
+                                    </span>
+                                @endif
                             </div>
                         @endif
                     </div>
@@ -51,7 +78,7 @@
             </div>
 
             {{-- Affichage du motif de rejet si la feuille est rejetée --}}
-            @if($this->operation->workflow_state === 'rejete' && $this->operation->motif_rejet)
+            @if($workflowState === 'rejete' && $this->operation->motif_rejet)
                 <div class="alert alert-danger border-0 mb-4">
                     <div class="d-flex align-items-start">
                         <i class="mdi mdi-alert-circle-outline me-2 mt-1" style="font-size: 1.2em;"></i>

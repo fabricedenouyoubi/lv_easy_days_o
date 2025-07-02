@@ -6,6 +6,7 @@ use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use Modules\Budget\Models\SemaineAnnee;
 use Modules\RhFeuilleDeTempsAbsence\Models\Operation;
+
 class RhFeuilleDeTempsReguliereShow extends Component
 {
     public $operationId;
@@ -17,7 +18,8 @@ class RhFeuilleDeTempsReguliereShow extends Component
     public $joursLabels = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
     public $workflowHistory = [];
 
-    public $statutFormate = [];
+    // Propriété simple pour le statut
+    public $workflowState = '';
     
     // Permissions utilisateur
     public $canEdit = false;
@@ -50,8 +52,10 @@ class RhFeuilleDeTempsReguliereShow extends Component
                                       ->findOrFail($this->operationId);
             
             $this->employe = $this->operation->employe;
-            // Statut du statut formaté
-            $this->initStatutFormate();
+            
+            // Affecter simplement la valeur du workflow_state
+            $this->workflowState = $this->operation->workflow_state;
+            
             // Vérifier les permissions d'accès
             $this->verifierPermissions();
             
@@ -254,48 +258,6 @@ class RhFeuilleDeTempsReguliereShow extends Component
             session()->flash('error', 'Erreur lors du retour: ' . $th->getMessage());
         }
     }
-
-    /**
-     * Obtenir le statut formaté
-     */
-public function initStatutFormate()
-    {
-       
-       $this->statutFormate = match($this->operation->workflow_state) {
-            'brouillon' => [
-                'text' => 'Brouillon',
-                'class' => 'bg-warning text-dark',
-                'icon' => 'fas fa-pencil-alt'
-            ],
-            'en_cours' => [
-                'text' => 'En cours',
-                'class' => 'bg-info text-dark',
-                'icon' => 'fas fa-hourglass-half'
-            ],
-            'soumis' => [
-                'text' => 'Soumis',
-                'class' => 'bg-primary',
-                'icon' => 'fas fa-paper-plane'
-            ],
-            'valide' => [
-                'text' => 'Validé',
-                'class' => 'bg-success',
-                'icon' => 'fas fa-check-circle'
-            ],
-            'rejete' => [
-                'text' => 'Rejeté',
-                'class' => 'bg-danger',
-                'icon' => 'fas fa-times-circle'
-            ],
-            default => [
-                'text' => 'Inconnu',
-                'class' => 'bg-secondary',
-                'icon' => 'fas fa-question-circle'
-            ]
-        };
-    }
-
-    // , 
 
     public function render()
     {
