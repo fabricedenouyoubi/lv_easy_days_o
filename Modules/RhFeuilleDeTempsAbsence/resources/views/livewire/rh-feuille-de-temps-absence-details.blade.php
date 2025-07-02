@@ -21,7 +21,7 @@
                         </div>
                         @if (
                             $demandeAbsence->statut == 'En cours' &&
-                                ($demandeAbsence->employe_id == auth()->user()->employe->id || $demandeAbsence->admin_id == auth()->user()->id))
+                                ($demandeAbsence->employe_id == auth()->user()->employe?->id || $demandeAbsence->admin_id == auth()->user()->id))
                             {{-- Bounton Nodifier --}}
                             <div class="col-auto">
                                 <x-action-button type="primary" size="sm" icon="fas fa-edit" text="Modifier"
@@ -36,7 +36,7 @@
 
 
                         @if ($demandeAbsence->statut == 'Soumis')
-                            @if ($demandeAbsence->employe_id == auth()->user()->employe->id || $demandeAbsence->admin_id == auth()->user()->id)
+                            @if ($demandeAbsence->employe_id == auth()->user()->employe?->id || $demandeAbsence->admin_id == auth()->user()->id)
                                 {{-- Bounton Rappeller --}}
                                 <div class="col-auto">
                                     <x-action-button type="primary" size="sm" icon="fas fa-undo-alt"
@@ -44,7 +44,7 @@
                                 </div>
                             @endif
 
-                            @if ($demandeAbsence->employe->gestionnaire_id == auth()->user()->employe->id)
+                            @if ($demandeAbsence->employe?->gestionnaire_id == auth()->user()->employe?->id)
                                 {{-- Bounton Valider --}}
                                 <div class="col-auto">
                                     <x-action-button type="success" size="sm" icon="fas fa-check-circle"
@@ -93,7 +93,7 @@
                                         {{ \Carbon\Carbon::parse($demandeAbsence->date_debut)->format('d/m/Y') }}</p>
                                     <p class="mb-1"><strong>Au:</strong>
                                         {{ \Carbon\Carbon::parse($demandeAbsence->date_fin)->format('d/m/Y') }}</p>
-                                    <p class="badge bg-info">{{ $nombreJourAbsence }} jours réguliers</p>
+                                    <p class="badge bg-info">{{ $nombreJourAbsence }} jour(s) régulier(s)</p>
                                 </div>
                             </div>
                         </div>

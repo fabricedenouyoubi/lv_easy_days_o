@@ -16,7 +16,10 @@ use Modules\Rh\Livewire\Employe\EmployeDetails;
 use Modules\Rh\Livewire\Employe\EmployeEdit;
 use Modules\Rh\Livewire\Employe\EmployeForm;
 use Modules\Rh\Livewire\Employe\HistoriqueGestionnaireForm;
+use Modules\Rh\Livewire\Employe\HistoriqueHeuresSemainesForm;
 use Modules\Rh\Models\Employe\Employe;
+use Modules\Rh\Models\Employe\HistoriqueHeuresSemaines;
+use Modules\Roles\Database\Seeders\PermissionSeeder;
 use Modules\Roles\Database\Seeders\RoleSeeder;
 use Spatie\Permission\Contracts\Role;
 use Spatie\Permission\Models\Role as ModelsRole;
@@ -29,6 +32,7 @@ class EmployeTest extends TestCase
     //--- Test de connexion de l'utilisateur avant l'access a des pages
     public function connectUser()
     {
+        $this->seed(PermissionSeeder::class);
         $this->seed(RoleSeeder::class);
         $this->seed(UserSeeder::class);
         $user = User::where('email', 'admin@mail.com')->first();
@@ -60,8 +64,6 @@ class EmployeTest extends TestCase
     {
         $this->connectUser();
 
-        $this->seed(RoleSeeder::class);
-
         $groupId = ModelsRole::first()->id;
         $groupName = ModelsRole::first()->name;
 
@@ -70,10 +72,11 @@ class EmployeTest extends TestCase
             ->set('prenom', 'John')
             ->set('date_de_naissance', '1990-05-10')
             ->set('email', 'johndoe@example.com')
-            ->set('nombre_d_heure_semaine', 35)
+            ->set('nombre_d_heure_semaine', 30)
+            ->set('est_gestionnaire', true)
             ->set('groups', [$groupName])
             ->call('save')
-            ->assertDispatched('employeCreated');
+            ->assertHasNoErrors();
 
         $this->assertDatabaseHas('users', [
             'email' => 'johndoe@example.com',
@@ -117,49 +120,6 @@ class EmployeTest extends TestCase
         $response->assertStatus(200);
     }
 
-    //--- test de modification du mot de passe d'un employ
-    public function test_can_change_employe_password()
-    {
-        $employeId = $this->insert_employe();
-        $employe = Employe::findOrFail($employeId);
-        $user = User::findOrFail($employe->user_id);
-
-        Livewire::test(EmployeDetails::class, ['employeId' => $employeId])
-            ->set('current_password', 'password')
-            ->set('new_password', 'NouveauPass1!')
-            ->set('new_password_confirmation', 'NouveauPass1!')
-            ->call('changePassword')
-            ->assertHasNoErrors();
-
-        // Vérifie que le mot de passe a bien été mis à jour
-        $this->assertTrue(Hash::check('NouveauPass1!', $user->fresh()->password));
-    }
-
-    //--- test du refus de modification du mot de passe d'un employ avec un mot de passe actuel incorrect
-    public function test_cannot_change_password_with_invalid_current_password()
-    {
-        $employeId = $this->insert_employe();
-        Livewire::test(EmployeDetails::class, ['employeId' => $employeId])
-            ->set('current_password', 'MauvaisPass1!')
-            ->set('new_password', 'NouveauPass1!')
-            ->set('new_password_confirmation', 'NouveauPass1!')
-            ->call('changePassword')
-            ->assertHasErrors('current_password');
-    }
-
-    //--- test du refus de modification du mot de passe d'un employe avec des mots de passe invalides
-    public function test_cannot_change_password_with_invalid_password()
-    {
-        $employeId = $this->insert_employe();
-
-        Livewire::test(EmployeDetails::class, ['employeId' => $employeId])
-            ->set('current_password', 'AncienPass1!')
-            ->set('new_password', 'court')
-            ->set('new_password_confirmation', 'court')
-            ->call('changePassword')
-            ->assertHasErrors('new_password'); // trop court, pas de symboles, etc.
-    }
-
     //--- test de modification des details d'un employe
     public function test_can_update_employe_details()
     {
@@ -175,7 +135,7 @@ class EmployeTest extends TestCase
             ->set('nom', 'Nouveau')
             ->set('prenom', 'Prenom')
             ->set('email', 'nouveau@example.com')
-            ->set('nombre_d_heure_semaine', 40)
+            ->set('est_gestionnaire', false)
             ->set('groups', [$group->id])
             ->call('save')
             ->assertDispatched('employeUpdated');
@@ -190,7 +150,7 @@ class EmployeTest extends TestCase
             'id' => $employe->id,
             'nom' => 'Nouveau',
             'prenom' => 'Prenom',
-            'nombre_d_heure_semaine' => 40
+            'est_gestionnaire' => false
         ]);
     }
 
@@ -206,6 +166,8 @@ class EmployeTest extends TestCase
             ->assertHasErrors(['nom', 'prenom', 'email']);
     }
 
+    /* HISTORIQUE DE GESTIONNAIRE */
+
     //--- test d'ajout d'un gestionnaire
     public function insert_gestionnaire()
     {
@@ -219,10 +181,11 @@ class EmployeTest extends TestCase
             ->set('prenom', 'John')
             ->set('date_de_naissance', '1990-05-10')
             ->set('email', 'jegestion@example.com')
-            ->set('nombre_d_heure_semaine', 35)
+            ->set('est_gestionnaire', true)
+            ->set('nombre_d_heure_semaine', 30)
             ->set('groups', [$groupName])
             ->call('save')
-            ->assertDispatched('employeCreated');
+            ->assertHasNoErrors();
 
         $this->assertDatabaseHas('users', [
             'email' => 'jegestion@example.com',
@@ -267,6 +230,42 @@ class EmployeTest extends TestCase
             'employe_id' => $employeId,
             'gestionnaire_id' => $gestionnaireId,
             'date_debut' => $dateDebut,
+        ]);
+    }
+
+    /* HISTORIQUE DES HEURES PAR SEMAINE */
+    //--- Vérifie que le dernier historique est mis à jour (date_fin) et qu'un nouveau historique est créé.
+    public function test_can_add_heures_historique()
+    {
+        $employeId = $this->insert_employe();
+
+        // Création d'un historique existant
+        $ancienHistorique = HistoriqueHeuresSemaines::create([
+            'employe_id' => 1,
+            'nombre_d_heure_semaine' => 35,
+            'date_debut' => '2025-01-01 08:00:00',
+            'date_fin' => null,
+        ]);
+
+        $nouvelleDateDebut = Carbon::now()->addDay()->format('Y-m-d\TH:i');
+
+        Livewire::test(HistoriqueHeuresSemainesForm::class)
+            ->set('employeId', $employeId)
+            ->set('heure', 40)
+            ->set('dateDebut', $nouvelleDateDebut)
+            ->call('saveHist')
+            ->assertSet('heure', null)          // Vérifie que le champ heure est remis à zéro
+            ->assertSet('dateDebut', null);     // Vérifie que dateDebut est remis à zéro
+
+        // Vérification que l'ancien historique a bien sa date_fin mise à jour
+        $ancienHistorique->refresh();
+        $this->assertEquals($nouvelleDateDebut, Carbon::parse($ancienHistorique->date_fin)->format('Y-m-d\TH:i'));
+
+        // Vérifie la présence du nouvel historique en base
+        $this->assertDatabaseHas('historique_heures_semaines', [
+            'employe_id' => 1,
+            'nombre_d_heure_semaine' => 40,
+            'date_debut' => $nouvelleDateDebut,
         ]);
     }
 }

@@ -3,6 +3,7 @@
 namespace Modules\Rh\Livewire\Employe;
 
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Carbon;
 use Livewire\Component;
 use Modules\Rh\Models\Employe\Employe;

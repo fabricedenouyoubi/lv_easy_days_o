@@ -102,7 +102,7 @@ class RhFeuilleDeTempsAbsenceForm extends Component
                 $demandeAbsence = DemandeAbsence::create(
                     [
                         'annee_financiere_id' => $this->annee_financiere_id,
-                        'employe_id' => $this->employeId ?? Auth::user()->employe->id,
+                        'employe_id' => $this->employeId ?? Auth::user()->employe?->id,
                         'codes_travail_id' => $this->code_de_travail_id,
                         'date_debut' => $this->date_debut,
                         'date_fin' => $this->date_fin,
@@ -135,7 +135,6 @@ class RhFeuilleDeTempsAbsenceForm extends Component
                 $this->dispatch('demandeAbsenceModifie');
             }
         } catch (\Throwable $th) {
-            dd($th->getMessage());
             session()->flash('error', 'Une erreur est survenue lors de la sauvegarde de la demande d\'absence.', $th->getMessage());
         }
     }
