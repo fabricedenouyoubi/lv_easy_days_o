@@ -37,49 +37,6 @@
                                 {{ $statut['text'] }}
                             </span>
                             
-                            <!-- Actions selon les permissions -->
-                            @if($canEdit)
-                                <a href="{{ route('feuille-temps.edit', ['semaineId' => $semaineId, 'operationId' => $operationId]) }}" 
-                                   class="btn btn-sm btn-outline-warning">
-                                    <i class="mdi mdi-square-edit-outline me-1"></i>
-                                    Modifier
-                                </a>
-                            @endif
-                            
-                            @if($canSubmit)
-                                <button wire:click="toggleSubmitModal" class="btn btn-sm btn-outline-primary">
-                                    <i class="mdi mdi-send-circle-outline me-1"></i>
-                                    Soumettre
-                                </button>
-                            @endif
-                            
-                            @if($canRecall)
-                                <button wire:click="toggleRecallModal" class="btn btn-sm btn-outline-warning">
-                                    <i class="mdi mdi-backup-restore me-1"></i>
-                                    Rappeler
-                                </button>
-                            @endif
-                            
-                            @if($canApprove)
-                                <button wire:click="toggleApproveModal" class="btn btn-sm btn-outline-success">
-                                    <i class="mdi mdi-checkbox-marked-circle-outline me-1"></i>
-                                    Valider
-                                </button>
-                            @endif
-                            
-                            @if($canReject)
-                                <button wire:click="toggleRejectModal" class="btn btn-sm btn-outline-danger">
-                                    <i class="mdi mdi-close-circle-outline me-1"></i>
-                                    Rejeter
-                                </button>
-                            @endif
-                            
-                            @if($canReturn)
-                                <button wire:click="toggleReturnModal" class="btn btn-sm btn-outline-warning">
-                                    <i class="mdi mdi-reply me-1"></i>
-                                    Retourner
-                                </button>
-                            @endif
                         </div>
                     </div>
                 </div>
@@ -104,7 +61,66 @@
                     <!-- Détail des lignes de travail -->
                     <div class="card mt-3 border-0 shadow-sm">
                         <div class="card-header bg-light">
-                            <h6 class="card-title mb-0">Détail de la feuille de temps</h6>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="card-title mb-0">
+                                Détail de la feuille de temps
+                            </h6>
+
+                            <div class="d-flex align-items-center gap-2">
+                                    <!-- Boutons d'action déplacés dans le header -->
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ route('feuille-temps.list') }}" class="btn btn-outline-secondary btn-sm">
+                                            <i class="mdi mdi-arrow-left me-1"></i>
+                                            Retour
+                                        </a>
+                                        <!-- Actions selon les permissions -->
+                                        @if($canEdit)
+                                            <a href="{{ route('feuille-temps.edit', ['semaineId' => $semaineId, 'operationId' => $operationId]) }}" 
+                                               class="btn btn-sm btn-outline-warning">
+                                                <i class="mdi mdi-square-edit-outline me-1"></i>
+                                                Modifier
+                                            </a>
+                                        @endif
+                                        
+                                        @if($canSubmit)
+                                            <button wire:click="toggleSubmitModal" class="btn btn-sm btn-outline-primary">
+                                                <i class="mdi mdi-send-circle-outline me-1"></i>
+                                                Soumettre
+                                            </button>
+                                        @endif
+                                        
+                                        @if($canRecall)
+                                            <button wire:click="toggleRecallModal" class="btn btn-sm btn-outline-warning">
+                                                <i class="mdi mdi-backup-restore me-1"></i>
+                                                Rappeler
+                                            </button>
+                                        @endif
+                                        
+                                        @if($canApprove)
+                                            <button wire:click="toggleApproveModal" class="btn btn-sm btn-outline-success">
+                                                <i class="mdi mdi-checkbox-marked-circle-outline me-1"></i>
+                                                Valider
+                                            </button>
+                                        @endif
+                                        
+                                        @if($canReject)
+                                            <button wire:click="toggleRejectModal" class="btn btn-sm btn-outline-danger">
+                                                <i class="mdi mdi-close-circle-outline me-1"></i>
+                                                Rejeter
+                                            </button>
+                                        @endif
+                                        
+                                        @if($canReturn)
+                                            <button wire:click="toggleReturnModal" class="btn btn-sm btn-outline-warning">
+                                                <i class="mdi mdi-reply me-1"></i>
+                                                Retourner
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
+
+                            </div>
+                            
                         </div>
                         <div class="card-body p-0">
                             <div class="table-responsive">

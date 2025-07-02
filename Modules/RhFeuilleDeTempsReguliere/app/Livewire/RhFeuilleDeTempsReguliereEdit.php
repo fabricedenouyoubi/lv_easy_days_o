@@ -21,6 +21,10 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     // Données des lignes de travail
     public $lignesTravail = [];
     public $codesTravauxDisponibles = [];
+    public $joursLabels = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+    public $datesSemaine = [];
+    // Jours de la semaine avec dates complètes
+    public $joursFeries = [];
 
     // Totaux calculés
     public $totaux = [
@@ -34,9 +38,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
         'total_heure_conge_mobile' => 0,
     ];
 
-    // Jours de la semaine avec dates complètes
-    public $datesSemaine = [];
-    public $joursFeries = [];
+    
 
     protected $rules = [
         'lignesTravail.*.duree_0' => 'nullable|string|max:5',

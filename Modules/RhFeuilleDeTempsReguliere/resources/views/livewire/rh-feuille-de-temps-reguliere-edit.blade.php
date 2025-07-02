@@ -128,12 +128,17 @@
                                                 <thead class="table-light">
                                                     <tr>
                                                         <th style="min-width: 200px;">Code de travail</th>
-                                                        @foreach($datesSemaine as $index => $dateInfo)
-                                                            <th class="text-center {{ $dateInfo['is_dimanche'] ? 'bg-warning bg-opacity-25' : '' }}" 
-                                                                style="min-width: 120px;">
-                                                                {{ $dateInfo['format'] }}
-                                                            </th>
-                                                        @endforeach
+
+
+                                                        @foreach($joursLabels as $index => $jour)
+                                                <th class="text-center">
+                                                    {{ $jour }}
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        {{ \Carbon\Carbon::parse($this->semaine->debut)->addDays($index)->format('d/m') }}
+                                                    </small>
+                                                </th>
+                                            @endforeach
                                                     </tr>
                                                 </thead>
                                                 <tbody>
