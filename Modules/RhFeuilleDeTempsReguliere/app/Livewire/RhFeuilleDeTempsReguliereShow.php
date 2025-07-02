@@ -47,9 +47,17 @@ class RhFeuilleDeTempsReguliereShow extends Component
     public function mount()
     {
         try {
+            // Charger la semaine
             $this->semaine = SemaineAnnee::findOrFail($this->semaineId);
+            
+            // Charger l'opération avec toutes ses relations
             $this->operation = Operation::with(['lignesTravail.codeTravail', 'employe', 'anneeSemaine'])
                                       ->findOrFail($this->operationId);
+            
+            // S'assurer que l'employé est bien chargé
+            if (!$this->operation->employe) {
+                throw new \Exception('Employé non trouvé pour cette opération');
+            }
             
             $this->employe = $this->operation->employe;
             
@@ -66,7 +74,18 @@ class RhFeuilleDeTempsReguliereShow extends Component
             $this->chargerWorkflowHistory();
             
         } catch (\Throwable $th) {
+            // Log l'erreur pour le débogage
+            \Log::error('Erreur dans RhFeuilleDeTempsReguliereShow::mount()', [
+                'error' => $th->getMessage(),
+                'trace' => $th->getTraceAsString(),
+                'operationId' => $this->operationId,
+                'semaineId' => $this->semaineId
+            ]);
+            
             session()->flash('error', 'Erreur lors du chargement: ' . $th->getMessage());
+            
+            // Rediriger vers la liste en cas d'erreur critique
+            return redirect()->route('feuille-temps.list');
         }
     }
 
