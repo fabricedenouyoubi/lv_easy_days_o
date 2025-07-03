@@ -159,9 +159,22 @@
                         </ul>
                     </li>
                 @endcan
+
+                <!-- JOURNALISATION -->
+                @can('Voir Journalisation')
+                    <li class="menu-title" data-key="t-journalisation">JOURNALISATION</li>
+                    <li>
+                        <a href="/journalisation">
+                            <i class="icon nav-icon" data-eva="file-text-outline"></i>
+                            <span class="menu-item" data-key="t-journal">Journalisation</span>
+                        </a>
+                    </li>
+                @endcan
+
             </ul>
         </div>
         <!-- Sidebar -->
+
 
         <div class="p-3 px-4 sidebar-footer">
             <p class="mb-1 main-title">
