@@ -183,6 +183,13 @@ class DemandeAbsenceTest extends TestCase
             ->assertSet('code_de_travail_id', null);
     }
 
+    public function test_can_see_demande_absence_details_page()
+    {
+        $demandeAbsenceId = $this->insert_demande_absence();
+        $response = $this->get(route('absence.show',['id' => $demandeAbsenceId]));
+        $response->assertOk();
+    }
+
     /**
      * Vérifie que resetAll recharge les valeurs de la demande d'absence existante.
      */
