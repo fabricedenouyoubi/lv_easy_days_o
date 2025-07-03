@@ -15,10 +15,14 @@ class AuthController extends Controller
 
     public function logout()
     {
+        $user = Auth::user();
+
         Auth::guard('web')->logout();
 
         session()->invalidate();
         session()->regenerateToken();
+
+        Log::channel('daily')->info("L'utilisateur ".$user->name." vient de se déconnecter.", ['userEnail' => $user->email, 'UserId' => $user->id]);
 
         return redirect()->route('login');
     }

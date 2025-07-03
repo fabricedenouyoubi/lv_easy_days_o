@@ -3,6 +3,8 @@
 namespace Modules\Rh\Livewire\Employe;
 
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Modules\Rh\Models\Employe\HistoriqueHeuresSemaines;
 
@@ -46,6 +48,7 @@ class HistoriqueHeuresSemainesForm extends Component
     public function saveHist()
     {
         $this->validate();
+        $user_connect = Auth::user();
 
         try {
             $dernierHistorique = HistoriqueHeuresSemaines::orderBy('id', 'desc')->first();
@@ -56,15 +59,25 @@ class HistoriqueHeuresSemainesForm extends Component
                 ]);
             }
 
-            HistoriqueHeuresSemaines::create([
+            $hist = HistoriqueHeuresSemaines::create([
                 'employe_id' => $this->employeId,
                 'nombre_d_heure_semaine' => $this->heure,
                 'date_debut' => $this->dateDebut,
             ]);
 
+            //--- Journalisation
+            Log::channel('daily')->info("L'heure de la semaine de l'employé " . $hist->employe?->nom . " " . $hist->employe?->prenom . " vient d'être modifiée par l' utilisateur " . $user_connect->name);
+
             $this->reset(['heure', 'dateDebut']);
             $this->dispatch('HeureAjoute');
         } catch (\Throwable $th) {
+
+            //--- Journalisation
+            Log::channel('daily')->error(
+                "Erreur lors de la modification de l'heure de la semaine de l'employé " . $hist->employe?->nom . " " . $hist->employe?->prenom . " par l' utilisateur " . $user_connect->name,
+                ['message' => $th->getMessage()]
+            );
+
             session()->flash('error', 'Erreur lors de l’enregistrement : ' . $th->getMessage());
         }
     }

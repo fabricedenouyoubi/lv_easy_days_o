@@ -5,6 +5,8 @@ namespace Modules\Rh\Livewire\Employe;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Modules\Rh\Models\Employe\Employe;
 use Modules\Rh\Models\Employe\HistoriqueGestionnaire;
@@ -93,6 +95,7 @@ class EmployeForm extends Component
     public function save()
     {
         $this->validate();
+        $user_connect = Auth::user();
 
         try {
             $user =  User::create([
@@ -137,9 +140,18 @@ class EmployeForm extends Component
                 'date_debut' => Carbon::now(),
             ]);
 
+            //--- Journalisation
+            Log::channel('daily')->info("L'employé " . $this->nom . " " . $this->prenom . " vient d'être ajouté par l' utilisateur " . $user_connect->name);
+
             $this->dispatch('employeCreated');
         } catch (\Throwable $th) {
-            //dd($th->getMessage());
+
+            //--- Journalisation
+            Log::channel('daily')->error(
+                "Erreur lors de l'ajout de l'employé " . $this->nom . " " . $this->prenom . " par l' utilisateur " . $user_connect->name,
+                ['message' => $th->getMessage()]
+            );
+
             session()->flash('error', 'Erreur lors de la sauvegarde : ' . $th->getMessage());
         }
     }

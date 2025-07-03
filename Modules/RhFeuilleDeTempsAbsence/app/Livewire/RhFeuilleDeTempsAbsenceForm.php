@@ -5,6 +5,7 @@ namespace Modules\RhFeuilleDeTempsAbsence\Livewire;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Modules\Budget\Models\AnneeFinanciere;
 use Modules\RhFeuilleDeTempsAbsence\Models\DemandeAbsence;
@@ -95,6 +96,7 @@ class RhFeuilleDeTempsAbsenceForm extends Component
     public function save()
     {
         $this->validate();
+        $user_connect = Auth::user();
 
         try {
             $comment = $this->employeId ? 'La demande est en cours de redaction par ' . Auth::user()->name : 'La demande est en cours de redaction';
@@ -116,6 +118,10 @@ class RhFeuilleDeTempsAbsenceForm extends Component
                 //--- Workflow ---
                 $demandeAbsence->applyTransition('enregistrer', ['comment' => $comment]);
 
+                //--- Journalisation
+                Log::channel('daily')->info("La demande d'absence de l'employé " . $demandeAbsence->employe?->nom . " " . $demandeAbsence->employe?->prenom . " vient d'être ajoutée par l' utilisateur " . $user_connect->name);
+
+
                 $this->dispatch('demandeAbsenceAjoute');
             } else {
                 $demandeAbsence = DemandeAbsence::findOrFail($this->demande_absence_id);
@@ -131,10 +137,21 @@ class RhFeuilleDeTempsAbsenceForm extends Component
 
                 $nombreDeJoursEntre = $this->nombreDeJoursEntre($this->date_debut, $this->date_fin, $this->annee_financiere_id);
 
+                //--- Journalisation
+                Log::channel('daily')->info("La demande d'absence de l'employé " . $demandeAbsence->employe?->nom . " " . $demandeAbsence->employe?->prenom . " vient d'être modifiée par l' utilisateur " . $user_connect->name);
+
+
                 $this->dispatch('nombreDeJoursEntre', $nombreDeJoursEntre);
                 $this->dispatch('demandeAbsenceModifie');
             }
         } catch (\Throwable $th) {
+
+            //--- Journalisation
+            Log::channel('daily')->error(
+                "Erreur lors de la sauvegarde de la demande d'absence de l'employé par l' utilisateur " . $user_connect->name,
+                ['message' => $th->getMessage()]
+            );
+
             session()->flash('error', 'Une erreur est survenue lors de la sauvegarde de la demande d\'absence.', $th->getMessage());
         }
     }
