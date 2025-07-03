@@ -51,19 +51,29 @@ class ManagerGuard
 
             case 'valider':
             case 'rejeter':
-                // Seul le gestionnaire de l'employé ou un admin peut valider/rejeter
-                $isManager = $operationEmploye->gestionnaire_id === $userEmploye->id;
-                $isAdmin = $user->hasRole('ADMIN');
+                // NOUVELLE RÈGLE: Seul le gestionnaire direct peut valider/rejeter
+                // L'admin ne peut plus valider/rejeter sauf s'il est le gestionnaire direct
+                $isDirectManager = $operationEmploye->gestionnaire_id === $userEmploye->id;
                 
-                if (!$isManager && !$isAdmin) {
-                    $event->setBlocked(true, 'Seul le gestionnaire ou un administrateur peut valider/rejeter');
+                if (!$isDirectManager) {
+                    $event->setBlocked(true, 'Seul le gestionnaire direct de l\'employé peut valider/rejeter cette feuille de temps');
                 }
                 break;
 
             case 'retourner':
-                // Admin uniquement pour retourner une opération validée/rejetée
-                if (!$user->hasRole('ADMIN')) {
-                    $event->setBlocked(true, 'Seul un administrateur peut retourner cette opération');
+                // NOUVELLE RÈGLE: Pour le rappel, on vérifie l'état actuel
+                $currentState = $operation->getCurrentState();
+                
+                if ($currentState === 'valide') {
+                    // Une feuille validée ne peut être rappelée que par un admin
+                    if (!$user->hasRole('ADMIN')) {
+                        $event->setBlocked(true, 'Seul un administrateur peut rappeler une feuille de temps validée');
+                    }
+                } else {
+                    // Pour les autres états (rejeté), admin uniquement
+                    if (!$user->hasRole('ADMIN')) {
+                        $event->setBlocked(true, 'Seul un administrateur peut retourner cette opération');
+                    }
                 }
                 break;
         }
@@ -93,19 +103,29 @@ class ManagerGuard
 
             case 'valider':
             case 'rejeter':
-                // Seul le gestionnaire de l'employé ou un admin peut valider/rejeter
-                $isManager = $demandeEmploye->gestionnaire_id === $userEmploye->id;
-                $isAdmin = $user->hasRole('ADMIN');
+                // NOUVELLE RÈGLE: Seul le gestionnaire direct peut valider/rejeter
+                // L'admin ne peut plus valider/rejeter sauf s'il est le gestionnaire direct
+                $isDirectManager = $demandeEmploye->gestionnaire_id === $userEmploye->id;
                 
-                if (!$isManager && !$isAdmin) {
-                    $event->setBlocked(true, 'Seul le gestionnaire ou un administrateur peut valider/rejeter');
+                if (!$isDirectManager) {
+                    $event->setBlocked(true, 'Seul le gestionnaire direct de l\'employé peut valider/rejeter cette demande');
                 }
                 break;
 
             case 'retourner':
-                // Admin uniquement pour retourner une demande validée/rejetée
-                if (!$user->hasRole('ADMIN')) {
-                    $event->setBlocked(true, 'Seul un administrateur peut retourner cette demande');
+                // NOUVELLE RÈGLE: Pour le rappel, on vérifie l'état actuel
+                $currentState = $demande->getCurrentPlace(); // Supposant que DemandeAbsence utilise aussi HasWorkflow
+                
+                if ($currentState === 'Validé') {
+                    // Une demande validée ne peut être rappelée que par un admin
+                    if (!$user->hasRole('ADMIN')) {
+                        $event->setBlocked(true, 'Seul un administrateur peut rappeler une demande d\'absence validée');
+                    }
+                } else {
+                    // Pour les autres états (rejeté), admin uniquement
+                    if (!$user->hasRole('ADMIN')) {
+                        $event->setBlocked(true, 'Seul un administrateur peut retourner cette demande');
+                    }
                 }
                 break;
         }

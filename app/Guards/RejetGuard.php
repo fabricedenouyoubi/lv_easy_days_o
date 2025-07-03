@@ -32,18 +32,18 @@ class RejetGuard
             return;
         }
 
-        // Vérifier les permissions manager (réutiliser la logique du ManagerGuard)
+        // NOUVELLE RÈGLE: Vérifier les permissions manager (seul le gestionnaire direct)
         $subject = $event->getSubject();
         $userEmploye = $user->employe;
 
         // Selon le type d'objet, vérifier les permissions
         if (method_exists($subject, 'employe')) {
             $subjectEmploye = $subject->employe;
-            $isManager = $subjectEmploye->gestionnaire_id === $userEmploye->id;
-            $isAdmin = $user->hasRole('ADMIN');
+            // L'admin ne peut plus rejeter sauf s'il est le gestionnaire direct
+            $isDirectManager = $subjectEmploye->gestionnaire_id === $userEmploye->id;
             
-            if (!$isManager && !$isAdmin) {
-                $event->setBlocked(true, 'Seul le gestionnaire ou un administrateur peut rejeter');
+            if (!$isDirectManager) {
+                $event->setBlocked(true, 'Seul le gestionnaire direct de l\'employé peut rejeter');
             }
         }
     }

@@ -71,21 +71,32 @@ class RhFeuilleDeTempsReguliereShow extends Component
     {
         $user = Auth::user();
         $isOwner = $this->operation->employe_id === $user->employe->id;
-        $isManager = $this->operation->employe->gestionnaire_id === $user->employe->id;
+        $isDirectManager = $this->operation->employe->gestionnaire_id === $user->employe->id;
         $isAdmin = $user->hasRole('ADMIN');
 
         // Vérifier l'accès en lecture
-        if (!$isOwner && !$isManager && !$isAdmin) {
+        if (!$isOwner && !$isDirectManager && !$isAdmin) {
             abort(403, 'Accès non autorisé à cette feuille de temps');
         }
 
-        // Définir les permissions d'action
+        // Définir les permissions d'action selon les nouvelles règles
         $this->canEdit = $isOwner && $this->operation->canTransition('enregistrer');
         $this->canSubmit = $isOwner && $this->operation->canTransition('soumettre');
         $this->canRecall = $isOwner && $this->operation->canTransition('rappeler');
-        $this->canApprove = ($isManager || $isAdmin) && $this->operation->canTransition('valider');
-        $this->canReject = ($isManager || $isAdmin) && $this->operation->canTransition('rejeter');
-        $this->canReturn = $isAdmin && $this->operation->canTransition('retourner');
+        
+        // NOUVELLE RÈGLE: Seul le gestionnaire direct peut valider/rejeter
+        // L'admin ne peut plus valider/rejeter sauf s'il est le gestionnaire direct
+        $this->canApprove = $isDirectManager && $this->operation->canTransition('valider');
+        $this->canReject = $isDirectManager && $this->operation->canTransition('rejeter');
+        
+        // NOUVELLE RÈGLE: Pour le rappel d'une feuille validée, seul l'admin peut le faire
+        $currentState = $this->operation->getCurrentState();
+        if ($currentState === 'valide') {
+            $this->canReturn = $isAdmin && $this->operation->canTransition('retourner');
+        } else {
+            // Pour les autres états, admin uniquement
+            $this->canReturn = $isAdmin && $this->operation->canTransition('retourner');
+        }
     }
 
     /**
