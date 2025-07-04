@@ -180,7 +180,7 @@ return [
     */
 
     'exclude_files' => [
-        'laravel.log'
+        //'laravel.log'
     ],
 
     /*
