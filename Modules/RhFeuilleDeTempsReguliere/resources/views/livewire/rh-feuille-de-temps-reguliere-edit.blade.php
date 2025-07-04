@@ -253,43 +253,30 @@
 
                 <!-- Colonne latérale (3/12) -->
                 <div class="col-xxl-3">
-                    <!-- Totaux calculés -->
+                    <!-- Récapitulatif dynamique -->
                     <x-table-card title="Récapitulatif" icon="mdi mdi-calculator-variant-outline">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-muted small">Formation</span>
-                            <span class="badge bg-primary">{{ number_format($totaux['total_heure_formation'], 2) }}h</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-muted small">CSN</span>
-                            <span class="badge bg-primary">{{ number_format($totaux['total_heure_csn'], 2) }}h</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-muted small">Caisse</span>
-                            <span class="badge bg-primary">{{ number_format($totaux['total_heure_caisse'], 2) }}h</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-muted small">Congé Mobile</span>
-                            <span class="badge bg-primary">{{ number_format($totaux['total_heure_conge_mobile'], 2) }}h</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-muted small">Déplacement</span>
-                            <span class="badge bg-primary">{{ number_format($totaux['total_heure_deplacement'], 2) }}h</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-muted small">Régulier</span>
-                            <span class="badge bg-primary">{{ number_format($totaux['total_heure_regulier'], 2) }}h</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-muted small">Heures Supp.</span>
-                            <span class="badge bg-primary">{{ number_format($totaux['total_heure_supp'], 2) }}h</span>
-                        </div>
-                        
-                        <hr class="my-3">
-                        
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-muted fw-bold">Total des heures</span>
-                            <span class="badge bg-dark px-3 py-2">{{ number_format($totaux['total_heure'], 2) }}h</span>
-                        </div>
+                        @if(count($totauxrecapitulatif) > 0)
+                            @foreach($totauxrecapitulatif as $item)
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted small">{{ $item['code_travail']->libelle }}</span>
+                                    <span class="badge bg-success">
+                                        {{ number_format($item['total_heures'], 2) }}h
+                                    </span>
+                                </div>
+                            @endforeach
+                            
+                            <hr class="my-3">
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted fw-bold">Total des heures</span>
+                                <span class="badge bg-dark px-3 py-2">{{ number_format($totalGeneral, 2) }}h</span>
+                            </div>
+                        @else
+                            <div class="text-center py-3">
+                                <i class="mdi mdi-information-outline text-muted mb-2" style="font-size: 24px;"></i>
+                                <p class="text-muted small mb-0">Aucune heure saisie</p>
+                            </div>
+                        @endif
                     </x-table-card>
 
                     <!-- Banque de temps -->

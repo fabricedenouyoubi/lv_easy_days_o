@@ -132,48 +132,59 @@
             <x-table-card title="Informations" icon="fas fa-business-time">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-muted">Semaine normale</span>
-                    <span class="badge bg-primary px-3 py-2 rounded-pill">35h</span>
+                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ $informationsEmploye['semaine_normale'] }}</span>
                 </div>
                 
-                <!-- Jours fériés et anniversaires à venir (exemple) -->
+                @if($informationsEmploye['prochain_jour_ferie'])
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">
+                            <i class="fas fa-calendar-times text-info me-1"></i>
+                            Prochain jour férié
+                        </span>
+                        <span class="badge bg-light text-dark px-3 py-2 rounded-pill fw-bold">
+                            {{ \Carbon\Carbon::parse($informationsEmploye['prochain_jour_ferie']->date)->format('d M Y') }}
+                        </span>
+                    </div>
+                @endif
+                
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="text-muted">
-                        <i class="fas fa-star text-warning me-1"></i>
+                        <i class="fas fa-birthday-cake text-warning me-1"></i>
                         Anniversaire
                     </span>
-                    <span class="badge bg-light text-dark px-3 py-2 rounded-pill">
-                        10 Avril 1997
+                    <span class="badge bg-light text-dark px-3 py-2 rounded-pill fw-bold">
+                        {{ \Carbon\Carbon::parse($informationsEmploye['anniversaire'])->format('d M Y') }}
                     </span>
                 </div>
             </x-table-card>
 
             <!-- Banque de temps -->
-            <x-table-card title="Banque de temps" icon="fas fa-piggy-bank">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="text-muted">Vacances</span>
-                    <span class="badge bg-success px-3 py-2 rounded-pill">
-                        {{ $banqueTemps['vacances'] }}h
-                    </span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="text-muted">Banque de temps</span>
-                    <span class="badge bg-success px-3 py-2 rounded-pill">
-                        {{ $banqueTemps['banque_temps'] }}h
-                    </span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="text-muted">Heure CSN</span>
-                    <span class="badge bg-success px-3 py-2 rounded-pill">
-                        {{ $banqueTemps['heure_csn'] }}h
-                    </span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-3 border-top pt-3">
-                    <span class="text-muted">Total des heures en banque</span>
-                    <span class="badge bg-dark px-3 py-2 rounded-pill">
-                        {{ $banqueTemps['total_heures_banque'] }}h
-                    </span>
-                </div>
-            </x-table-card>
+        <x-table-card title="Banque de temps" icon="fas fa-piggy-bank">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted">Vacances restantes</span>
+                <span class="badge bg-success px-3 py-2 rounded-pill">
+                    {{ number_format($banqueTemps['vacances'], 1) }}h
+                </span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted">Banque de temps restante</span>
+                <span class="badge bg-success px-3 py-2 rounded-pill">
+                    {{ number_format($banqueTemps['banque_temps'], 1) }}h
+                </span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted">Heure CSN restante</span>
+                <span class="badge bg-success px-3 py-2 rounded-pill">
+                    {{ number_format($banqueTemps['heure_csn'], 1) }}h
+                </span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3 border-top pt-3">
+                <span class="text-muted">Total des heures restantes</span>
+                <span class="badge bg-dark px-3 py-2 rounded-pill">
+                    {{ number_format($banqueTemps['total_heures_banque'], 1) }}h
+                </span>
+            </div>
+        </x-table-card>
         </div>
     </div>
 </div>

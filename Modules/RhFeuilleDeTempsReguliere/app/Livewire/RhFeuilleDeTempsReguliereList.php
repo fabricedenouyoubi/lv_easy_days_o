@@ -8,7 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use Modules\Budget\Models\AnneeFinanciere;
 use Modules\Budget\Models\SemaineAnnee;
 use Modules\RhFeuilleDeTempsAbsence\Models\Operation;
-use Modules\Rh\Models\Employe\Employe;
+use Modules\RhFeuilleDeTempsConfig\Models\CodeTravail;
+use Modules\RhFeuilleDeTempsConfig\Models\Comportement\Configuration;
 
 class RhFeuilleDeTempsReguliereList extends Component
 {
@@ -18,6 +19,8 @@ class RhFeuilleDeTempsReguliereList extends Component
     public $anneeFinanciere;
     public $feuillesActives = [];
     public $banqueTemps = [];
+
+    public $informationsEmploye = [];
 
     protected $paginationTheme = 'bootstrap';
 
@@ -32,6 +35,9 @@ class RhFeuilleDeTempsReguliereList extends Component
 
             // Calculer la banque de temps
             $this->calculerBanqueTemps();
+
+            // Calculer les informations supplémentaires
+            $this->calculerInformationsEmploye();
 
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors du chargement des données: ' . $th->getMessage());
@@ -203,6 +209,47 @@ class RhFeuilleDeTempsReguliereList extends Component
 
         return $actions;
     }
+
+    /**
+ * Calculer les informations supplémentaires de l'employé
+ */
+private function calculerInformationsEmploye()
+{
+    $this->informationsEmploye = [
+        'anniversaire' => $this->employe->date_de_naissance,
+        'prochain_jour_ferie' => $this->getProchainJourFerie(),
+        'semaine_normale' => '35h' 
+    ];
+}
+
+/**
+ * Obtenir le prochain jour férié
+ */
+private function getProchainJourFerie()
+{
+    if (!$this->employe || !$this->anneeFinanciere) {
+        return null;
+    }
+
+    // Rechercher les codes de travail contenant "férié"
+    $codesFeries = CodeTravail::where('libelle', 'LIKE', '%férié%')
+        ->orWhere('libelle', 'LIKE', '%ferie%')
+        ->orWhere('code', 'LIKE', '%FERIE%')
+        ->pluck('id');
+
+    if ($codesFeries->isEmpty()) {
+        return null;
+    }
+
+    // Rechercher la prochaine date de jour férié dans les configurations
+    $prochainJourFerie = Configuration::whereIn('code_travail_id', $codesFeries)
+        ->where('annee_budgetaire_id', $this->anneeFinanciere->id)
+        ->where('date', '>=', now()->toDateString())
+        ->orderBy('date')
+        ->first();
+
+    return $prochainJourFerie;
+}
 
     public function render()
     {

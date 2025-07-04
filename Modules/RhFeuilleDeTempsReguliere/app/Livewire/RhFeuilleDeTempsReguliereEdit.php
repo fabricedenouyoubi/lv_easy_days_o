@@ -18,6 +18,10 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     public $semaine;
     public $employe;
 
+    // Calcul totaux
+    public $totauxrecapitulatif = [];
+    public $totalGeneral = 0;
+
     // Données des lignes de travail
     public $lignesTravail = [];
     public $codesTravauxDisponibles = [];
@@ -75,7 +79,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
             $this->calculerJoursFeries();
 
             // Calculer les totaux
-            $this->calculerTotaux();
+            $this->calculerRecapitulatif();
 
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors du chargement: ' . $th->getMessage());
@@ -174,22 +178,16 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     }
 
     /**
-     * Calculer les totaux à partir des lignes
+     * Calculer le récapitulatif dynamique basé sur les lignes saisies
      */
-    public function calculerTotaux()
+    public function calculerRecapitulatif()
     {
-        $totaux = [
-            'total_heure' => 0,
-            'total_heure_regulier' => 0,
-            'total_heure_formation' => 0,
-            'total_heure_deplacement' => 0,
-            'total_heure_supp' => 0,
-            'total_heure_csn' => 0,
-            'total_heure_caisse' => 0,
-            'total_heure_conge_mobile' => 0,
-        ];
+        $recapitulatif = [];
+        $totalGeneral = 0;
 
         foreach ($this->lignesTravail as $ligne) {
+            $codeTravail = $ligne['code_travail'];
+            
             // Calculer le total des heures pour cette ligne
             $totalLigne = 0;
             for ($jour = 0; $jour <= 6; $jour++) {
@@ -197,41 +195,24 @@ class RhFeuilleDeTempsReguliereEdit extends Component
                 $totalLigne += $duree;
             }
 
-            // Ne pas comptabiliser les lignes vides
-            if ($totalLigne == 0) continue;
-
-            // Répartir selon le code de travail
-            $codeTravail = $ligne['code_travail'];
-            if ($codeTravail) {
-                switch (strtoupper($codeTravail->code)) {
-                    case 'FOR':
-                        $totaux['total_heure_formation'] += $totalLigne;
-                        break;
-                    case 'DEP':
-                        $totaux['total_heure_deplacement'] += $totalLigne;
-                        break;
-                    case 'CSN':
-                        $totaux['total_heure_csn'] += $totalLigne;
-                        break;
-                    case 'CAISSE':
-                        $totaux['total_heure_caisse'] += $totalLigne;
-                        break;
-                    case 'CONGE':
-                        $totaux['total_heure_conge_mobile'] += $totalLigne;
-                        break;
-                    case 'HEURESUP':
-                        $totaux['total_heure_supp'] += $totalLigne;
-                        break;
-                    default:
-                        $totaux['total_heure_regulier'] += $totalLigne;
-                }
+            // Ajouter au récapitulatif seulement si il y a des heures
+            if ($totalLigne > 0) {
+                $recapitulatif[] = [
+                    'code_travail' => $codeTravail,
+                    'total_heures' => $totalLigne
+                ];
+                
+                $totalGeneral += $totalLigne;
             }
         }
 
-        // Calculer le total général
-        $totaux['total_heure'] = array_sum($totaux);
+        // Trier par libellé
+        usort($recapitulatif, function($a, $b) {
+            return strcmp($a['code_travail']->libelle, $b['code_travail']->libelle);
+        });
 
-        $this->totaux = $totaux;
+        $this->totauxrecapitulatif = $recapitulatif;
+        $this->totalGeneral = $totalGeneral;
     }
 
     /**
@@ -239,7 +220,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
      */
     public function updatedLignesTravail()
     {
-        $this->calculerTotaux();
+        $this->calculerRecapitulatif();
     }
 
     /**
@@ -258,7 +239,8 @@ class RhFeuilleDeTempsReguliereEdit extends Component
             $this->lignesTravail[$ligneIndex][$jourProperty] = $formattedValue;
         }
 
-        $this->calculerTotaux();
+        // Recalculer les totaux
+        $this->calculerRecapitulatif();
     }
 
     /**
@@ -290,7 +272,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
                 $this->sauvegarderLignesTravail();
 
                 // Mettre à jour les totaux de l'opération
-                $this->operation->update($this->totaux);
+                $this->operation->update(['total_heure' => $this->totalGeneral]);
             });
 
             session()->flash('success', 'Feuille de temps enregistrée avec succès.');

@@ -1,21 +1,13 @@
 <div>
+
+<!-- Breadcrumb -->
+    <x-breadcrumb :items="[
+        ['label' => 'Feuilles de temps', 'url' => route('feuille-temps.list')],
+        ['label' => 'Détails semaine ' . ($semaine->numero_semaine)]
+    ]" />
+
     {{-- Messages de feedback --}}
     <x-alert-messages />
-
-    <div class="row mb-3">
-        <div class="col-md-8">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="{{ route('feuille-temps.list') }}">Feuilles de temps</a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">
-                        Détails semaine {{ $semaine->numero_semaine }}
-                    </li>
-                </ol>
-            </nav>
-        </div>
-    </div>
 
     <!-- Main content area -->
     <div class="row">
