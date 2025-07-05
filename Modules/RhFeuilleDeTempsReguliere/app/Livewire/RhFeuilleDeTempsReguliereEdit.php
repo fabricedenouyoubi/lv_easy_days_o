@@ -5,10 +5,12 @@ namespace Modules\RhFeuilleDeTempsReguliere\Livewire;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Modules\Budget\Models\AnneeFinanciere;
 use Modules\Budget\Models\SemaineAnnee;
 use Modules\RhFeuilleDeTempsAbsence\Models\Operation;
 use Modules\RhFeuilleDeTempsReguliere\Models\LigneTravail;
 use Modules\RhFeuilleDeTempsConfig\Models\CodeTravail;
+use Modules\RhFeuilleDeTempsConfig\Models\Comportement\Configuration;
 
 class RhFeuilleDeTempsReguliereEdit extends Component
 {
@@ -22,6 +24,9 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     public $totauxrecapitulatif = [];
     public $totalGeneral = 0;
 
+    public $heureSupplementaireAjuste = '00.00';
+    public $heureSupplementaireAPayer = '00.00';
+
     // Données des lignes de travail
     public $lignesTravail = [];
     public $codesTravauxDisponibles = [];
@@ -29,6 +34,9 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     public $datesSemaine = [];
     // Jours de la semaine avec dates complètes
     public $joursFeries = [];
+
+    // Banque de temps
+    public $banqueDeTemps = [];
 
     // Totaux calculés
     public $totaux = [
@@ -42,7 +50,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
         'total_heure_conge_mobile' => 0,
     ];
 
-    
+
 
     protected $rules = [
         'lignesTravail.*.duree_0' => 'nullable|string|max:5',
@@ -52,6 +60,8 @@ class RhFeuilleDeTempsReguliereEdit extends Component
         'lignesTravail.*.duree_4' => 'nullable|string|max:5',
         'lignesTravail.*.duree_5' => 'nullable|string|max:5',
         'lignesTravail.*.duree_6' => 'nullable|string|max:5',
+        'heureSupplementaireAjuste' => 'nullable|string|max:5',
+        'heureSupplementaireAPayer' => 'nullable|string|max:5',
     ];
 
     public function mount()
@@ -81,6 +91,12 @@ class RhFeuilleDeTempsReguliereEdit extends Component
             // Calculer les totaux
             $this->calculerRecapitulatif();
 
+            // Calculer la heure supplémentaire ajusté et à payer
+            $this->chargerHeuresSupplementaires();
+
+            // Calculer la banque de temps
+            $this->calculerBanqueDeTemps();
+            
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors du chargement: ' . $th->getMessage());
         }
@@ -187,7 +203,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
 
         foreach ($this->lignesTravail as $ligne) {
             $codeTravail = $ligne['code_travail'];
-            
+
             // Calculer le total des heures pour cette ligne
             $totalLigne = 0;
             for ($jour = 0; $jour <= 6; $jour++) {
@@ -201,13 +217,19 @@ class RhFeuilleDeTempsReguliereEdit extends Component
                     'code_travail' => $codeTravail,
                     'total_heures' => $totalLigne
                 ];
-                
+
                 $totalGeneral += $totalLigne;
             }
         }
 
+        // Les heures supplémentaires au total
+        $heureSupAjuste = $this->parseUserInputToDecimal($this->heureSupplementaireAjuste);
+        $heureSupAPayer = $this->parseUserInputToDecimal($this->heureSupplementaireAPayer);
+
+        $totalGeneral += $heureSupAjuste + $heureSupAPayer;
+
         // Trier par libellé
-        usort($recapitulatif, function($a, $b) {
+        usort($recapitulatif, function ($a, $b) {
             return strcmp($a['code_travail']->libelle, $b['code_travail']->libelle);
         });
 
@@ -272,11 +294,14 @@ class RhFeuilleDeTempsReguliereEdit extends Component
                 $this->sauvegarderLignesTravail();
 
                 // Mettre à jour les totaux de l'opération
-                $this->operation->update(['total_heure' => $this->totalGeneral]);
+                $this->operation->update([
+                    'total_heure' => $this->totalGeneral,
+                    'total_heure_supp_ajuster' => $this->parseUserInputToDecimal($this->heureSupplementaireAjuste),
+                    'total_heure_sup_a_payer' => $this->parseUserInputToDecimal($this->heureSupplementaireAPayer)
+                ]);
             });
 
             session()->flash('success', 'Feuille de temps enregistrée avec succès.');
-
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors de l\'enregistrement: ' . $th->getMessage());
         }
@@ -293,7 +318,12 @@ class RhFeuilleDeTempsReguliereEdit extends Component
             DB::transaction(function () {
                 // Sauvegarder d'abord
                 $this->sauvegarderLignesTravail();
-                $this->operation->update($this->totaux);
+                // Mise a jour totaux
+                $this->operation->update([
+                    'total_heure' => $this->totalGeneral,
+                    'total_heure_supp_ajuster' => $this->parseUserInputToDecimal($this->heureSupplementaireAjuste),
+                    'total_heure_sup_a_payer' => $this->parseUserInputToDecimal($this->heureSupplementaireAPayer)
+                ]);
 
                 // Puis soumettre
                 if ($this->operation->canTransition('soumettre')) {
@@ -307,7 +337,6 @@ class RhFeuilleDeTempsReguliereEdit extends Component
 
             session()->flash('success', 'Feuille de temps soumise avec succès.');
             return redirect()->route('feuille-temps.list');
-
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors de la soumission: ' . $th->getMessage());
         }
@@ -364,6 +393,142 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     public function peutModifier()
     {
         return $this->operation->isEditable();
+    }
+
+    /**
+     * Charger les heures supplémentaires existantes
+     */
+    private function chargerHeuresSupplementaires()
+    {
+        $this->heureSupplementaireAjuste = $this->formatDecimalToDisplay($this->operation->total_heure_supp_ajuster ?? 0);
+        $this->heureSupplementaireAPayer = $this->formatDecimalToDisplay($this->operation->total_heure_sup_a_payer ?? 0);
+    }
+
+    /**
+     * Listener pour recalculer quand les heures supplémentaires changent
+     */
+    public function updatedHeureSupplementaireAjuste($value)
+    {
+        $this->heureSupplementaireAjuste = $this->formatDecimalToDisplay($this->parseUserInputToDecimal($value));
+        $this->calculerRecapitulatif();
+    }
+
+    /**
+     * Listener pour recalculer quand les heures supplémentaires à payer changent
+     */
+    public function updatedHeureSupplementaireAPayer($value)
+    {
+        $this->heureSupplementaireAPayer = $this->formatDecimalToDisplay($this->parseUserInputToDecimal($value));
+        $this->calculerRecapitulatif();
+    }
+
+    /**
+     * Calculer la banque de temps dynamique
+     */
+    private function calculerBanqueDeTemps()
+    {
+        $banqueTemps = [];
+
+        // Récupérer l'année financière active
+        $anneeFinanciere = AnneeFinanciere::where('actif', true)->first();
+
+        if (!$anneeFinanciere || !$this->employe) {
+            $this->banqueDeTemps = [];
+            return;
+        }
+
+        // Définir les codes à rechercher pour la banque de temps
+        $codesRecherches = [
+            'vacances' => ['VAC', 'VACATION', 'VACANCE', 'CONGE'],
+            'banque_temps' => ['CAISS', 'BANQUE', 'BANK', 'BT'],
+            'heure_csn' => ['CSN', 'HCSN', 'CSN_H']
+        ];
+
+        foreach ($codesRecherches as $type => $patterns) {
+            $configuration = $this->rechercherConfigurationParCode($patterns, $anneeFinanciere->id);
+
+            if ($configuration) {
+                $banqueTemps[] = [
+                    'type' => $type,
+                    'libelle' => $this->getLibelleBanqueTemps($type, $configuration->codeTravail->libelle),
+                    'valeur' => $configuration->reste ?? 0,
+                    'code_travail' => $configuration->codeTravail
+                ];
+            }
+        }
+
+        $this->banqueDeTemps = $banqueTemps;
+    }
+
+
+    /**
+     * Version corrigée - reste collectif partagé
+     */
+    private function rechercherConfigurationParCode($patterns, $anneeBudgetaireId)
+    {
+        // Recherche individuelle
+        $configIndividuelle = Configuration::with('codeTravail')
+            ->where('employe_id', $this->employe->id)
+            ->where('annee_budgetaire_id', $anneeBudgetaireId)
+            ->whereHas('codeTravail', function ($query) use ($patterns) {
+                $query->where(function ($subQuery) use ($patterns) {
+                    foreach ($patterns as $pattern) {
+                        $subQuery->orWhere('code', 'LIKE', "%{$pattern}%")
+                            ->orWhere('libelle', 'LIKE', "%{$pattern}%");
+                    }
+                });
+            })
+            ->first();
+
+        if ($configIndividuelle) {
+            return $configIndividuelle;
+        }
+
+        // Recherche collective avec reste partagé
+        $configCollective = Configuration::with(['codeTravail', 'employes'])
+            ->whereNull('employe_id')
+            ->whereNull('date')
+            ->where('annee_budgetaire_id', $anneeBudgetaireId)
+            ->whereHas('codeTravail', function ($query) use ($patterns) {
+                $query->where(function ($subQuery) use ($patterns) {
+                    foreach ($patterns as $pattern) {
+                        $subQuery->orWhere('code', 'LIKE', "%{$pattern}%")
+                            ->orWhere('libelle', 'LIKE', "%{$pattern}%");
+                    }
+                });
+            })
+            ->whereHas('employes', function ($query) {
+                $query->where('employe_id', $this->employe->id);
+            })
+            ->first();
+
+        if ($configCollective) {
+            // Retourner la configuration avec son reste
+            return $configCollective;
+        }
+
+        return null;
+    }
+
+    /**
+     * Obtenir le libellé formaté pour la banque de temps
+     */
+    private function getLibelleBanqueTemps($type, $libelleBrut)
+    {
+        return match ($type) {
+            'vacances' => 'Vacances',
+            'banque_temps' => 'Banque de temps',
+            'heure_csn' => 'Heure CSN',
+            default => $libelleBrut
+        };
+    }
+
+    /**
+     * Calculer le total de la banque de temps
+     */
+    public function getTotalBanqueTempsProperty()
+    {
+        return collect($this->banqueDeTemps)->sum('valeur');
     }
 
     public function render()
