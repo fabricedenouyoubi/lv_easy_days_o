@@ -130,12 +130,12 @@
                                                     <th style="min-width: 200px;">Code de travail</th>
 
 
-                                                    @foreach($joursLabels as $index => $jour)
+                                                    @foreach($datesSemaine as $dateInfo)
                                                     <th class="text-center">
-                                                        {{ $jour }}
+                                                        {{ $dateInfo['jour_nom'] }}
                                                         <br>
                                                         <small class="text-muted">
-                                                            {{ \Carbon\Carbon::parse($this->semaine->debut)->addDays($index)->format('d/m') }}
+                                                            {{ $dateInfo['date']->format('d/m') }}
                                                         </small>
                                                     </th>
                                                     @endforeach

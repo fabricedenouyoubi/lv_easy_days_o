@@ -18,7 +18,6 @@ class RhFeuilleDeTempsReguliereShow extends Component
     public $semaine;
     public $employe;
     public $lignesTravail = [];
-    public $joursLabels = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
     public $workflowHistory = [];
     
     // Permissions utilisateur
@@ -40,6 +39,8 @@ class RhFeuilleDeTempsReguliereShow extends Component
     public $commentaire = '';
     // Banque de temps
     public $banqueDeTemps = [];
+
+    public $datesSemaine = [];
 
     public $totauxrecapitulatif = [];
     public $totalGeneral = 0;
@@ -74,6 +75,9 @@ class RhFeuilleDeTempsReguliereShow extends Component
 
             // Calculer le récapitulatif dynamique
             $this->calculerRecapitulatif();
+
+            // Calculer semaines
+            $this->calculerDatesSemaine();
             
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors du chargement: ' . $th->getMessage());
@@ -465,6 +469,24 @@ private function calculerRecapitulatif()
 
     $this->totauxrecapitulatif = $recapitulatif;
     $this->totalGeneral = $totalGeneral;
+}
+/**
+ * Calculer les dates de la semaine pour affichage
+ */
+private function calculerDatesSemaine()
+{
+    $dateDebut = \Carbon\Carbon::parse($this->semaine->debut);
+
+    for ($i = 0; $i <= 6; $i++) {
+        $date = $dateDebut->copy()->addDays($i);
+        $this->datesSemaine[] = [
+            'date' => $date,
+            'format' => $date->format('d') . ' ' . $date->locale('fr')->monthName . ' ' . $date->format('Y'),
+            'is_dimanche' => $date->isSunday(),
+            'jour_nom' => $date->locale('fr')->dayName,
+            'jour_court' => $date->locale('fr')->shortDayName
+        ];
+    }
 }
     public function render()
     {

@@ -120,12 +120,12 @@
                                     <thead class="table-light">
                                         <tr>
                                             <th>Code de travail</th>
-                                            @foreach($joursLabels as $index => $jour)
+                                            @foreach($datesSemaine as $dateInfo)
                                             <th class="text-center">
-                                                {{ $jour }}
+                                                {{ $dateInfo['jour_nom'] }}
                                                 <br>
                                                 <small class="text-muted">
-                                                    {{ \Carbon\Carbon::parse($semaine->debut)->addDays($index)->format('d/m') }}
+                                                    {{ $dateInfo['date']->format('d/m') }}
                                                 </small>
                                             </th>
                                             @endforeach
@@ -205,7 +205,7 @@
                             </div>
                             @if(!empty($entry['comment']))
                             <div class="col-12">
-                                <p class="mb-0">{{ $entry['comment'] }}</p>
+                                <p class="mb-0" style="white-space: pre-line;">{{ str_replace('Motif:', "\nNote : ", $entry['comment']) }}</p>
                             </div>
                             @endif
                         </div>

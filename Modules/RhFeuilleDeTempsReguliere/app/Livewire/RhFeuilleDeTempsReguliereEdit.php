@@ -30,7 +30,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     // Données des lignes de travail
     public $lignesTravail = [];
     public $codesTravauxDisponibles = [];
-    public $joursLabels = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+
     public $datesSemaine = [];
     // Jours de la semaine avec dates complètes
     public $joursFeries = [];
@@ -161,7 +161,9 @@ class RhFeuilleDeTempsReguliereEdit extends Component
             $this->datesSemaine[] = [
                 'date' => $date,
                 'format' => $date->format('d') . ' ' . $date->locale('fr')->monthName . ' ' . $date->format('Y'),
-                'is_dimanche' => $date->isSunday()
+                'is_dimanche' => $date->isSunday(),
+                'jour_nom' => $date->locale('fr')->dayName,
+                'jour_court' => $date->locale('fr')->shortDayName
             ];
         }
     }
