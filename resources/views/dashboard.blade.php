@@ -6,7 +6,7 @@
 @section('content')
     <!-- Breadcrumb -->
     <x-breadcrumb :items="[
-        ['label' => 'Accueil']
+        ['label' => 'Dashboard']
     ]" />
 
     <div class="card shadow-sm">
