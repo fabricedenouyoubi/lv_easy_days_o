@@ -5,6 +5,7 @@ namespace Modules\RhFeuilleDeTempsAbsence\Livewire;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Budget\Models\SemaineAnnee;
@@ -115,14 +116,25 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     //--- Soumission de la demande d'absence
     public function soumettreDemandeAbsence()
     {
+        $user_connect = Auth::user();
         try {
 
             $comment = 'La demande a été soumise par ' . Auth::user()->name;
             $this->demandeAbsence->applyTransition('soumettre', ['comment' => $comment]);
             $this->showSoumissionModal = false;
 
+            //--- Journalisation
+            Log::channel('daily')->info("La demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " vient d'être soumise par l' utilisateur " . $user_connect->name);
+
             session()->flash('success', 'Demande d\'absence  soumise avec succès.');
         } catch (\Throwable $th) {
+
+            //--- Journalisation
+            Log::channel('daily')->error(
+                "Erreur lors de la soumission de la demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " par l' utilisateur " . $user_connect->name,
+                ['message' => $th->getMessage()]
+            );
+
             session()->flash('error', 'Une erreur est survenue lors de la soumission de la demande d\'absence.', $th->getMessage());
         }
     }
@@ -130,6 +142,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     //--- Rappelle de la demande d'absence
     public function rapelleDemandeAbsence()
     {
+        $user_connect = Auth::user();
         try {
             $comment = 'La demande a été rappelée par ' . Auth::user()->name;
 
@@ -137,8 +150,19 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
 
             $this->showRappelerModal = false;
             $this->reset('motif');
+
+            //--- Journalisation
+            Log::channel('daily')->info("La demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " vient d'être rappelée par l' utilisateur " . $user_connect->name);
+
             session()->flash('success', 'Demande d\'absence rappelée avec succès.');
         } catch (\Throwable $th) {
+
+            //--- Journalisation
+            Log::channel('daily')->error(
+                "Erreur lors du rappel de la demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " par l' utilisateur " . $user_connect->name,
+                ['message' => $th->getMessage()]
+            );
+
             session()->flush('error', 'Une erreur est survenue lors du rappel de la demande d\'absence.', $th->getMessage());
         }
     }
@@ -146,6 +170,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     //--- Approuver la demande d'absence
     public function approuverDemandeAbsence()
     {
+        $user_connect = Auth::user();
         try {
             //--- Selection des semaines de l'année ---
             $semaines = SemaineAnnee::where('annee_financiere_id', $this->demandeAbsence->annee_financiere_id)
@@ -196,10 +221,20 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
             $comment = 'La demande est approuvée par ' . Auth::user()->name;
 
             $this->demandeAbsence->applyTransition('valider', ['comment' => $comment]);
-
             $this->showApprouverModal = false;
+
+            //--- Journalisation
+            Log::channel('daily')->info("La demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " vient d'être validée par l' utilisateur " . $user_connect->name);
+
             session()->flash('success', 'Demande d\'absence validée avec succès.');
         } catch (\Throwable $th) {
+
+            //--- Journalisation
+            Log::channel('daily')->error(
+                "Erreur lors de la validation de la demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " par l' utilisateur " . $user_connect->name,
+                ['message' => $th->getMessage()]
+            );
+
             session()->flash('error', 'Une erreur est survenue lors de la validation de la demande d\'absence.' . $th->getMessage());
         }
     }
@@ -208,6 +243,8 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     public function retournerDemandeAbsence()
     {
         $this->validate(['motif' => ['required', 'string', 'min:5']]);
+        $user_connect = Auth::user();
+
         try {
 
             if ($this->demandeAbsence->operations()->count() > 0) {
@@ -219,8 +256,19 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
 
             $this->showRetournerModal = false;
             $this->reset('motif');
+
+            //--- Journalisation
+            Log::channel('daily')->info("La demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " vient d'être retournée par l' utilisateur " . $user_connect->name);
+
             session()->flash('success', 'Demande d\'absence retournée avec succès.');
         } catch (\Throwable $th) {
+
+            //--- Journalisation
+            Log::channel('daily')->error(
+                "Erreur lors du retour de la demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " par l' utilisateur " . $user_connect->name,
+                ['message' => $th->getMessage()]
+            );
+
             session()->flash('error', 'Une erreur est survenue lors du retour de la demande d\'absence.', $th->getMessage());
         }
     }
@@ -228,7 +276,9 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     //--- Rejeter la demande d'absence
     public function rejeterDemandeAbsence()
     {
-        $this->validate(['motif' => ['required', 'string', 'min:5'],]);
+        $this->validate(['motif' => ['required', 'string', 'min:5']]);
+        $user_connect = Auth::user();
+
         try {
             //--- Suppresion des opérations et liaison avec la feuille de temps
             $this->demandeAbsence->operations()->delete();
@@ -237,8 +287,19 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
             $this->demandeAbsence->applyTransition('rejeter', ['comment' => $comment, 'motif' => $this->motif]);
             $this->showRejeterModal = false;
             $this->reset('motif');
+
+            //--- Journalisation
+            Log::channel('daily')->info("La demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " vient d'être rejetée par l' utilisateur " . $user_connect->name);
+
             session()->flash('success', 'Demande d\'absence rejetée avec succès.');
         } catch (\Throwable $th) {
+
+            //--- Journalisation
+            Log::channel('daily')->error(
+                "Erreur lors du rejet de la demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " par l' utilisateur " . $user_connect->name,
+                ['message' => $th->getMessage()]
+            );
+
             session()->flash('error', 'Une erreur est survenue lors du rejet de la demande d\'absence.', $th->getMessage());
         }
     }

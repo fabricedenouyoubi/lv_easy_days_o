@@ -4,6 +4,8 @@ namespace Modules\Rh\Livewire\Employe;
 
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Modules\Rh\Models\Employe\Employe;
 use Modules\Rh\Models\Employe\HistoriqueGestionnaire;
@@ -61,6 +63,7 @@ class HistoriqueGestionnaireForm extends Component
     public function saveHist()
     {
         $this->validate();
+        $user_connect = Auth::user();
 
         try {
             $employe = Employe::findOrFail($this->employeId);
@@ -83,9 +86,19 @@ class HistoriqueGestionnaireForm extends Component
                 'date_debut' => $this->dateDebut,
             ]);
 
+            //--- Journalisation
+            Log::channel('daily')->info("le gestionnaire de l'employé " . $employe->nom . " " . $employe->prenom . " vient d'être modifié par l' utilisateur " . $user_connect->name);
+
             $this->reset(['gestionnaire', 'dateDebut']);
             $this->dispatch('gestionnaireAjoute');
         } catch (\Throwable $th) {
+
+            //--- Journalisation
+            Log::channel('daily')->error(
+                "Erreur lors de la modification du gestionnaire de l'employé " . $this->nom . " " . $this->prenom . " par l' utilisateur " . $user_connect->name,
+                ['message' => $th->getMessage()]
+            );
+
             session()->flash('error', 'Erreur lors de l’enregistrement : ' . $th->getMessage());
         }
     }

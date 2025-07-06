@@ -17,6 +17,9 @@ class extends Component {
 
         Session::regenerate();
 
+        $user = Auth::user();
+        Log::channel('daily')->info("L'utilisateur ".$user->name." vient de se connecter", ['userEnail' => $user->email, 'UserId' => $user->id]);
+
         $this->redirectIntended(default: route('dashboard', absolute: false), navigate: false);
     }
 };
@@ -75,7 +78,8 @@ class extends Component {
 
                                                         <div id="div_id_password" class="mb-2"> <label
                                                                 for="id_password" class="form-label requiredField">
-                                                                Mot de Passe<span class="asteriskField text-danger">*</span>
+                                                                Mot de Passe<span
+                                                                    class="asteriskField text-danger">*</span>
                                                             </label> <input type="password" name="password"
                                                                 wire:model="form.password" autocomplete="password"
                                                                 class="form-control @error('form.password') is-invalid @enderror">

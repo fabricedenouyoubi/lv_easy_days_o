@@ -3,6 +3,8 @@
 namespace Modules\Rh\Livewire\Employe;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Modules\Rh\Models\Employe\Employe;
@@ -113,8 +115,7 @@ class EmployeEdit extends Component
     public function save()
     {
         $this->validate();
-
-
+        $user_connect = Auth::user();
 
         try {
 
@@ -139,9 +140,18 @@ class EmployeEdit extends Component
                 'est_gestionnaire' => $this->est_gestionnaire,
             ]);
 
+            //--- Journalisation
+            Log::channel('daily')->info("les informations de l'employé " . $this->nom . " " . $this->prenom . " viennent d'être modifiées par l' utilisateur " . $user_connect->name);
+
             $this->dispatch('employeUpdated');
         } catch (\Throwable $th) {
-            //dd($th->getMessage());
+
+            //--- Journalisation
+            Log::channel('daily')->error(
+                "Erreur lors de la modification des informations de l'employé " . $this->nom . " " . $this->prenom . " par l' utilisateur " . $user_connect->name,
+                ['message' => $th->getMessage()]
+            );
+
             session()->flash('error', 'Erreur lors de l’enregistrement : ' . $th->getMessage());
         }
     }

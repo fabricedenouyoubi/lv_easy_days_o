@@ -35,7 +35,7 @@ class EmployeSeeder extends Seeder
                 'date_embauche' => Carbon::parse('2020-01-15 06:00:00+01'),
                 'adresse_id' => null,
                 'user_id' => 2,
-                'matricule' => 'EMP2025-0011',
+                'matricule' => 'EMP2025-006',
             ],
             [
                 'nom' => 'Duval',

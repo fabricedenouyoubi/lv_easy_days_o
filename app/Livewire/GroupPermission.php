@@ -2,6 +2,8 @@
 
 namespace App\Livewire;
 
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Spatie\Permission\Models\Permission;
@@ -59,13 +61,25 @@ class GroupPermission extends Component
     //--- fontion de modification des permissions d'un utilisateur
     public function set_group_permission()
     {
+        $user_connect = Auth::user();
+
         try {
             //--- mise a jour des permission du groupe
             $group = Role::query()->with('permissions')->where('id', $this->groupId)->first();
             $group->syncPermissions($this->checkedPermissions);
+
+            //--- Journalisation
+            Log::channel('daily')->info("Les permissions du groupe " . $group->name . " viennent d'être modifiées par l' utilisateur " . $user_connect->name);
+
             $this->dispatch('groupPermissionUpdated', $group->name);
         } catch (\Throwable $th) {
-            dd($th->getMessage());
+
+            //--- Journalisation
+            Log::channel('daily')->error(
+                "Erreur lors de la modification des permissions du groupe  " . $group->name . " par l' utilisateur " . $user_connect->name,
+                ['message' => $th->getMessage()]
+            );
+
             $this->addError('error', 'Erreur de sauvegarde ' . $th->getMessage());
         }
     }
