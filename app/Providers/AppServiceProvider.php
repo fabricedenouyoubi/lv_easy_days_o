@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
+use Modules\RhFeuilleDeTempsReguliere\Livewire\RhFeuilleDeTempsReguliereManagerDashboard;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,7 +21,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Enregistrement manuel du composant
+        Livewire::component('rh-feuille-de-temps-reguliere-manager-dashboard', RhFeuilleDeTempsReguliereManagerDashboard::class);
     }
 }
 

@@ -65,7 +65,7 @@ class RhFeuilleDeTempsReguliereServiceProvider extends ServiceProvider
 
         Livewire::component('rhfeuilledetempsreguliere::rh-feuille-de-temps-reguliere-edit', RhFeuilleDeTempsReguliereEdit::class);
         Livewire::component('rhfeuilledetempsreguliere::rh-feuille-de-temps-reguliere-show', RhFeuilleDeTempsReguliereShow::class);
-        Livewire::component('rhfeuilledetempsreguliere::livewire.rh-feuille-de-temps-reguliere-manager-dashboard', RhFeuilleDeTempsReguliereManagerDashboard::class);
+        Livewire::component('rhfeuilledetempsreguliere::rh-feuille-de-temps-reguliere-manager-dashboard', RhFeuilleDeTempsReguliereManagerDashboard::class);
     }
     /**
      * Register command Schedules.
