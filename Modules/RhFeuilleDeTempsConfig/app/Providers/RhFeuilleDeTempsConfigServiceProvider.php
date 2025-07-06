@@ -19,6 +19,7 @@ use Modules\RhFeuilleDeTempsConfig\Livewire\Individuel\IndividuelForm;
 use Modules\RhFeuilleDeTempsConfig\Livewire\Individuel\IndividuelList;
 use Modules\RhFeuilleDeTempsConfig\Livewire\Jour\JourFerieForm;
 use Modules\RhFeuilleDeTempsConfig\Livewire\Jour\JoursFeriesList;
+use Modules\RhFeuilleDeTempsConfig\Services\HolidayGeneratorService;
 
 class RhFeuilleDeTempsConfigServiceProvider extends ServiceProvider
 {
@@ -42,6 +43,7 @@ class RhFeuilleDeTempsConfigServiceProvider extends ServiceProvider
 
         // Enregistrer les composants Livewire
         $this->registerLivewireComponents();
+        
     }
 
     /**
@@ -51,7 +53,13 @@ class RhFeuilleDeTempsConfigServiceProvider extends ServiceProvider
     {
         $this->app->register(EventServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);
+
+        // Registrer le service de génération des jours fériés
+        $this->app->singleton(HolidayGeneratorService::class, function ($app) {
+            return new HolidayGeneratorService();
+        });
     }
+    
     protected function registerLivewireComponents(): void
     {
         // Composants pour les catégories
