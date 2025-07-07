@@ -61,6 +61,6 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(['name' => 'Voir Permissions Utilisateur', 'module' => 'AUTORISATION', 'guard_name' => 'web']);
 
         //--- Permission module JOURNALISATION
-        Permission::firstOrCreate(['name' => 'Voir Journalisation', 'module' => 'JOURNALISATION', 'guard_name' => 'web']);
+        /* Permission::firstOrCreate(['name' => 'Voir Journalisation', 'module' => 'JOURNALISATION', 'guard_name' => 'web']); */
     }
 }

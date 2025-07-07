@@ -18,7 +18,7 @@ class extends Component {
         Session::regenerate();
 
         $user = Auth::user();
-        Log::channel('daily')->info("L'utilisateur ".$user->name." vient de se connecter", ['userEnail' => $user->email, 'UserId' => $user->id]);
+        Log::channel('daily')->info("L'utilisateur ".$user->name." vient de se connecter", ['userEmail' => $user->email, 'UserId' => $user->id]);
 
         $this->redirectIntended(default: route('dashboard', absolute: false), navigate: false);
     }
