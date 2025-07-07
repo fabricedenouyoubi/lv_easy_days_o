@@ -11,20 +11,26 @@ class EntrepriseInfo extends Component
     public $editing = false;
     public $name;
     public $description;
+    public $premierJourSemaine = 1;
+    public $joursSemaineOptions = [];
 
     protected $rules = [
         'name' => 'required|string|max:100',
-        'description' => 'nullable|string'
+        'description' => 'nullable|string',
+        'premierJourSemaine' => 'required|integer|between:1,7'
     ];
 
     protected $messages = [
         'name.required' => 'Le nom de l\'entreprise est obligatoire.',
-        'name.max' => 'Le nom ne peut pas dépasser 100 caractères.'
+        'name.max' => 'Le nom ne peut pas dépasser 100 caractères.',
+        'premierJourSemaine.required' => 'Le premier jour de la semaine est obligatoire.',
+        'premierJourSemaine.between' => 'Le premier jour doit être entre 1 et 7.'
     ];
 
     public function mount()
     {
         $this->loadEntreprise();
+        $this->joursSemaineOptions = Entreprise::getJoursSemaineOptions();
     }
 
     private function loadEntreprise()
@@ -34,6 +40,7 @@ class EntrepriseInfo extends Component
         if ($this->entreprise) {
             $this->name = $this->entreprise->name;
             $this->description = $this->entreprise->description;
+            $this->premierJourSemaine = $this->entreprise->premier_jour_semaine;
         }
     }
 
@@ -59,12 +66,14 @@ class EntrepriseInfo extends Component
                 $this->entreprise->update([
                     'name' => $this->name,
                     'description' => $this->description,
+                    'premier_jour_semaine' => $this->premierJourSemaine,
                 ]);
             } else {
                 // Créer nouvelle entreprise
                 $this->entreprise = Entreprise::create([
                     'name' => $this->name,
                     'description' => $this->description,
+                    'premier_jour_semaine' => $this->premierJourSemaine,
                 ]);
             }
 

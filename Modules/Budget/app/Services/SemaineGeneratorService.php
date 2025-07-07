@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Modules\Budget\Models\AnneeFinanciere;
 use Modules\Budget\Models\SemaineAnnee;
+use Modules\Entreprise\Models\Entreprise;
 
 class SemaineGeneratorService
 {
@@ -15,37 +16,33 @@ class SemaineGeneratorService
     public function generateFeuillesDeTemps(AnneeFinanciere $anneeFinanciere)
     {
         DB::transaction(function () use ($anneeFinanciere) {
+
+            // Récupérer le premier jour de la semaine depuis l'entreprise
+            $entreprise = Entreprise::first();
+            $premierJourSemaine = $entreprise ? $entreprise->premier_jour_semaine : 1;
+
             $currentDate = $anneeFinanciere->debut->copy();
             $weekNumber = 1;
+            // Ajuster la date de début pour commencer au premier jour de la semaine défini
+            $currentDate = $this->ajusterAuPremierJourSemaine($currentDate, $premierJourSemaine);
 
             while ($currentDate->lte($anneeFinanciere->fin)) {
-                // Calculer le jour de la semaine avec dimanche comme jour 0
-                $adjustedWeekday = ($currentDate->dayOfWeek + 1) % 7;
+                // Calculer la date de fin de semaine (6 jours après le début)
+            $endOfWeek = $currentDate->copy()->addDays(6);
 
-                // Si ce n'est pas un dimanche, reculer au dimanche précédent
-                if ($adjustedWeekday !== 0) {
-                    $currentDate = $this->getPreviousSunday($currentDate);
-                    $adjustedWeekday = ($currentDate->dayOfWeek + 1) % 7;
-                }
+            // Créer la feuille de temps pour cette semaine
+            SemaineAnnee::create([
+                'numero_semaine' => $weekNumber,
+                'debut' => $currentDate->toDateString(),
+                'fin' => $endOfWeek->toDateString(),
+                'actif' => false,
+                'annee_financiere_id' => $anneeFinanciere->id,
+                'est_semaine_de_paie' => false
+            ]);
 
-                // Calculer la date de fin de semaine (samedi)
-                $daysUntilEndOfWeek = 6 - $adjustedWeekday;
-                $endOfWeek = $currentDate->copy()->addDays($daysUntilEndOfWeek);
-
-                // Créer la feuille de temps pour cette semaine
-                SemaineAnnee::create([
-                    'numero_semaine' => $weekNumber,
-                    'debut' => $currentDate->toDateString(),
-                    'fin' => $endOfWeek->toDateString(),
-                    'actif' => false,
-                    'annee_financiere_id' => $anneeFinanciere->id,
-                    'est_semaine_de_paie' => false
-                ]);
-
-                $weekNumber++;
-
-                // Passer à la semaine suivante (dimanche suivant)
-                $currentDate = $endOfWeek->copy()->addDay();
+            $weekNumber++;
+            // Passer à la semaine suivante
+            $currentDate = $endOfWeek->copy()->addDay();
             }
         });
 
@@ -53,15 +50,21 @@ class SemaineGeneratorService
     }
 
     /**
-     * Obtenir le dimanche précédent
-     */
-    private function getPreviousSunday(Carbon $currentDate)
-    {
-        $currentWeekday = $currentDate->dayOfWeek;
-        $daysToSubtract = ($currentWeekday + 1) % 7;
-        
-        return $currentDate->copy()->subDays($daysToSubtract);
-    }
+ * Ajuster une date au premier jour de la semaine défini
+ */
+private function ajusterAuPremierJourSemaine(Carbon $date, int $premierJourSemaine)
+{
+    // Convertir le premier jour de l'entreprise en jour Carbon
+    // Carbon: 0=Dimanche, 1=Lundi, 2=Mardi, etc.
+    // Notre système: 1=Lundi, 2=Mardi, ..., 7=Dimanche
+    $carbonPremierJour = $premierJourSemaine === 7 ? 0 : $premierJourSemaine;
+    
+    // Calculer le nombre de jours à reculer pour atteindre le premier jour de la semaine
+    $jourActuel = $date->dayOfWeek;
+    $joursAReculer = ($jourActuel - $carbonPremierJour + 7) % 7;
+    
+    return $date->copy()->subDays($joursAReculer);
+}
 
     /**
      * Désactiver toutes les feuilles de temps

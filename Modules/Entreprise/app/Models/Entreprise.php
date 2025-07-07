@@ -14,8 +14,40 @@ class Entreprise extends Model
 
     protected $fillable = [
         'name',
-        'description'
+        'description',
+        'premier_jour_semaine'
     ];
+
+    // Constantes pour les jours de la semaine
+    const JOURS_SEMAINE = [
+        1 => 'Lundi',
+        2 => 'Mardi',
+        3 => 'Mercredi',
+        4 => 'Jeudi',
+        5 => 'Vendredi',
+        6 => 'Samedi',
+        7 => 'Dimanche'
+    ];
+
+    // Accesseur pour le libellé du premier jour
+    public function getPremierJourSemaineLibelleAttribute()
+    {
+        return self::JOURS_SEMAINE[$this->premier_jour_semaine] ?? 'Lundi';
+    }
+
+    // Méthode statique pour obtenir les options de jours
+    public static function getJoursSemaineOptions()
+    {
+        return self::JOURS_SEMAINE;
+    }
+    /**
+     * Obtenir le premier jour de la semaine de l'entreprise par défaut
+     */
+    public static function getPremierJourSemaine()
+    {
+        $entreprise = self::first();
+        return $entreprise ? $entreprise->premier_jour_semaine : 1; // Lundi par défaut
+    }
 
     protected $casts = [
         'created_at' => 'datetime',
@@ -36,14 +68,15 @@ class Entreprise extends Model
     public static function getOrCreateDefault()
     {
         $entreprise = self::first();
-        
+
         if (!$entreprise) {
             $entreprise = self::create([
                 'name' => 'TCRI Canada',
-                'description' => 'La Table de concertation des organismes au service des personnes réfugiées et immigrantes (TCRI) est un regroupement de plus de 150 organismes œuvrant auprès des personnes réfugiées, immigrantes et sans statut'
+                'description' => 'La Table de concertation des organismes au service des personnes réfugiées et immigrantes (TCRI) est un regroupement de plus de 150 organismes œuvrant auprès des personnes réfugiées, immigrantes et sans statut',
+                'premier_jour_semaine' => 1
             ]);
         }
-        
+
         return $entreprise;
     }
 
