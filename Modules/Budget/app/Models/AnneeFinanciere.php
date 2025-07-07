@@ -48,7 +48,7 @@ class AnneeFinanciere extends Model
     {
         $query = self::where(function ($q) use ($debut, $fin) {
             $q->where('debut', '<=', $fin)
-              ->where('fin', '>=', $debut);
+                ->where('fin', '>=', $debut);
         });
 
         if ($excludeId) {
@@ -75,10 +75,10 @@ class AnneeFinanciere extends Model
         try {
             $dateDebut = Carbon::parse($debut);
             $dateFin = Carbon::parse($fin);
-            
-            return $dateFin->month == 3 && 
-                   $dateFin->day == 31 && 
-                   $dateFin->year == ($dateDebut->year + 1);
+
+            return $dateFin->month == 3 &&
+                $dateFin->day == 31 &&
+                $dateFin->year == ($dateDebut->year + 1);
         } catch (\Exception $e) {
             return false;
         }
@@ -132,9 +132,12 @@ class AnneeFinanciere extends Model
         // Activer celle-ci
         $this->update(['actif' => true]);
 
+        // Mettre à jour la session
+        app('Modules\Budget\Services\AnneeFinanciereSessionService')::setAnneeCourante($this);
+
         return $this;
     }
-     
+
     // Accesseur pour le libellé
     public function getLibelleAttribute()
     {
@@ -157,6 +160,15 @@ class AnneeFinanciere extends Model
                 self::where('id', '!=', $model->id)->update(['actif' => false]);
             }
         });
+    }
+
+    /**
+     * Mettre à jour la session après activation
+     */
+    public function updateSession()
+    {
+        app('Modules\Budget\Services\AnneeFinanciereSessionService')::setAnneeCourante($this);
+        return $this;
     }
 
     // Relation avec les feuilles de temps

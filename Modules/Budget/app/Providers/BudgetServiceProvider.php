@@ -11,6 +11,7 @@ use Livewire\Livewire;
 use Modules\Budget\Livewire\AnneeFinanciereForm;
 use Modules\Budget\Livewire\AnneeFinanciereList;
 use Modules\Budget\Livewire\SemaineAnneeDetails;
+use Modules\Budget\Services\AnneeFinanciereSessionService;
 
 class BudgetServiceProvider extends ServiceProvider
 {
@@ -32,6 +33,11 @@ class BudgetServiceProvider extends ServiceProvider
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->name, 'database/migrations'));
 
+        // Initialiser l'année financière courante au démarrage
+        if (!AnneeFinanciereSessionService::hasAnneeCourante()) {
+            AnneeFinanciereSessionService::getAnneeCourante();
+        }
+
         // Enregistrement du composant Livewire
         $this->registerLivewireComponents();
     }
@@ -43,6 +49,10 @@ class BudgetServiceProvider extends ServiceProvider
     {
         $this->app->register(EventServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);
+
+        $this->app->singleton('annee-financiere-session', function () {
+            return new AnneeFinanciereSessionService();
+        });
     }
 
     /**

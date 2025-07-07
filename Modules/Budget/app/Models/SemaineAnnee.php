@@ -161,8 +161,9 @@ class SemaineAnnee extends Model
         $query = parent::newQuery();
 
         // Ajouter automatiquement l'année financière active si pas spécifiée
-        if (session()->has('annee_financiere_id')) {
-            $query->where('annee_financiere_id', session('annee_financiere_id'));
+        $anneeId = app('Modules\Budget\Services\AnneeFinanciereSessionService')::getAnneeId();
+        if ($anneeId) {
+            $query->where('annee_financiere_id', $anneeId);
         }
 
         return $query;

@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Modules\Budget\Models\AnneeFinanciere;
 use Modules\RhFeuilleDeTempsConfig\Models\ConfigurationCodeDeTravail;
+use Modules\Budget\Services\AnneeFinanciereSessionService;
 
 class AnneeFinanciereService
 {
@@ -32,7 +33,7 @@ class AnneeFinanciereService
             // 2. Désactiver toutes les autres années financières
             Log::info("Désactivation des années financières précédentes...");
             AnneeFinanciere::where('id', '!=', $newAnneeFinanciere->id)
-                          ->update(['actif' => false]);
+                ->update(['actif' => false]);
 
             // 3. Désactiver toutes les feuilles de temps des années précédentes
             Log::info("Désactivation des feuilles de temps des années financières précédentes...");
@@ -81,8 +82,8 @@ class AnneeFinanciereService
     ) {
         // Récupérer les anciens codes de travail avec employés
         $anciensCodeTravail = ConfigurationCodeDeTravail::parAnneeFinanciere($oldAnneeFinanciere->id)
-                                                       ->employeConfigurations()
-                                                       ->get();
+            ->employeConfigurations()
+            ->get();
 
         Log::info("Nous avons " . $anciensCodeTravail->count() . " anciens codes de travail à transférer");
 
@@ -138,12 +139,7 @@ class AnneeFinanciereService
      */
     public function updateAnneeFinanciereSessionData(AnneeFinanciere $annee)
     {
-        session([
-            'annee_debut' => $annee->debut->format('d-m-Y'),
-            'annee_fin' => $annee->fin->format('d-m-Y'),
-            'annee_financiere_id' => $annee->id
-        ]);
-
+        AnneeFinanciereSessionService::setAnneeCourante($annee);
         return $this;
     }
 
@@ -153,15 +149,15 @@ class AnneeFinanciereService
     public function getAnneeFinanciereStats(AnneeFinanciere $anneeFinanciere)
     {
         $feuilleStats = $this->semaineGenerator->getGenerationStats($anneeFinanciere);
-        
+
         $configStats = [
             'total_configurations' => ConfigurationCodeDeTravail::parAnneeFinanciere($anneeFinanciere->id)->count(),
             'configurations_employes' => ConfigurationCodeDeTravail::parAnneeFinanciere($anneeFinanciere->id)
-                                                                  ->employeConfigurations()
-                                                                  ->count(),
+                ->employeConfigurations()
+                ->count(),
             'configurations_globales' => ConfigurationCodeDeTravail::parAnneeFinanciere($anneeFinanciere->id)
-                                                                   ->globalConfigurations()
-                                                                   ->count()
+                ->globalConfigurations()
+                ->count()
         ];
 
         return array_merge($feuilleStats, $configStats);
@@ -175,7 +171,7 @@ class AnneeFinanciereService
         return DB::transaction(function () use ($anneeFinanciere) {
             // Générer les feuilles de temps
             $this->semaineGenerator->generateFeuillesDeTemps($anneeFinanciere);
-            
+
             // Mettre à jour la session
             $this->updateAnneeFinanciereSessionData($anneeFinanciere);
 

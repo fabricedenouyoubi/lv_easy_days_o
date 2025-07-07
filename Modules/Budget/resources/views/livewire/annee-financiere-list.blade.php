@@ -49,12 +49,12 @@
                                         </span>
                                     @endif
                                 </td>
-                                <td class="text-center">
-                                    <div class="d-flex justify-content-center gap-2">
+                                <td>
+                                    <div class="d-flex gap-2">
                                         <!-- Bouton Voir feuilles de temps avec génération automatique -->
                                         @can('Générer les semaines d\'une année')
                                             <x-action-button type="outline-primary" icon="mdi mdi-file-table" size="sm"
-                                                tooltip="Voir les feuilles de temps"
+                                                tooltip="Voir les semaines"
                                                 wireClick="voirFeuillesDeTemps({{ $annee->id }})"
                                                 loadingTarget="voirFeuillesDeTemps({{ $annee->id }})" />
                                         @endcan
@@ -63,11 +63,12 @@
                                         @can('Activer une année financière')
                                             @if (!$annee->actif)
                                                 <x-action-button type="outline-success" icon="mdi mdi-check-circle"
-                                                    size="sm" tooltip="Activer"
+                                                    size="sm" tooltip="Activer l'année"
                                                     wireClick="activer({{ $annee->id }})" />
                                             @endif
                                         @endcan
                                     </div>
+
                                 </td>
                             </tr>
                         @empty

@@ -9,6 +9,7 @@ use Modules\RhFeuilleDeTempsConfig\Models\CodeTravail;
 use Modules\RhFeuilleDeTempsConfig\Models\Comportement\Configuration;
 use Modules\RhFeuilleDeTempsConfig\Services\HolidayGeneratorService;
 use Illuminate\Support\Facades\Log;
+use Modules\Budget\Services\AnneeFinanciereSessionService;
 
 class JoursFeriesList extends Component
 {
@@ -98,7 +99,7 @@ class JoursFeriesList extends Component
                 return;
             }
 
-            $anneeBudgetaire = AnneeFinanciere::where('actif', true)->first();
+            $anneeBudgetaire = AnneeFinanciereSessionService::getAnneeCourante();
             
             if (!$anneeBudgetaire) {
                 Log::warning('Aucune année budgétaire active trouvée');
@@ -150,7 +151,7 @@ class JoursFeriesList extends Component
     public function deleteGeneratedHolidays()
     {
         try {
-            $anneeBudgetaire = AnneeFinanciere::where('actif', true)->first();
+            $anneeBudgetaire = AnneeFinanciereSessionService::getAnneeCourante();
             
             if (!$anneeBudgetaire) {
                 session()->flash('error', 'Aucune année budgétaire active trouvée.');
@@ -172,7 +173,6 @@ class JoursFeriesList extends Component
         }
     }
 
-    // === MÉTHODES EXISTANTES ===
 
     public function handleJourFerieCreated()
     {
@@ -188,7 +188,7 @@ class JoursFeriesList extends Component
 
     public function getJoursFeriesProperty()
     {
-        $anneeBudgetaire = AnneeFinanciere::where('actif', true)->first();
+        $anneeBudgetaire = AnneeFinanciereSessionService::getAnneeCourante();
         
         if (!$anneeBudgetaire) {
             return collect();
@@ -229,7 +229,7 @@ class JoursFeriesList extends Component
 
     public function getAnneeBudgetaireActiveProperty()
     {
-        return AnneeFinanciere::where('actif', true)->first();
+        return AnneeFinanciereSessionService::getAnneeCourante();
     }
 
     public function getTitleModalProperty()
@@ -242,7 +242,7 @@ class JoursFeriesList extends Component
      */
     public function getHasGeneratedHolidaysProperty()
     {
-        $anneeBudgetaire = AnneeFinanciere::where('actif', true)->first();
+        $anneeBudgetaire = AnneeFinanciereSessionService::getAnneeCourante();
         
         if (!$anneeBudgetaire) {
             return false;
@@ -262,7 +262,7 @@ class JoursFeriesList extends Component
      */
     public function getGeneratedHolidaysCountProperty()
     {
-        $anneeBudgetaire = AnneeFinanciere::where('actif', true)->first();
+        $anneeBudgetaire = AnneeFinanciereSessionService::getAnneeCourante();
         
         if (!$anneeBudgetaire) {
             return 0;
