@@ -34,12 +34,12 @@
             <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" id="estAjustable" wire:model="estAjustable">
                 <label class="form-check-label" for="estAjustable">
-                    <strong>Inclure dans le calcul du total des heures</strong>
+                    <strong>Inclure dans le calcul des heures</strong>
                 </label>
             </div>
             <div class="form-text">
                 <i class="fas fa-info-circle me-1"></i>
-                Décochez cette option si ce code ne doit pas être pris en compte dans le calcul du total des heures travaillées
+                A décochez si ce code ne doit pas être pris en compte dans le calcul des heures travaillées
             </div>
         </div>
 
@@ -69,16 +69,6 @@
             </div>
         </div>
 
-        {{-- Information sur les catégories configurables --}}
-        <div class="alert alert-light border mb-4">
-            <h6 class="mb-2">
-                <i class="fas fa-lightbulb me-2"></i>Information
-            </h6>
-            <p class="mb-0 small">
-                Si vous sélectionnez une catégorie <strong>configurable</strong>, vous pourrez ensuite
-                accéder aux options de configuration avancées pour ce code de travail.
-            </p>
-        </div>
 
         {{-- Boutons d'action --}}
         <div class="d-flex justify-content-end gap-2">

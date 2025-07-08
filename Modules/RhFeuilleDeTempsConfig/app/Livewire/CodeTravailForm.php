@@ -76,6 +76,7 @@ class CodeTravailForm extends Component
             $this->code = $codeTravail->code;
             $this->libelle = $codeTravail->libelle;
             $this->categorie_id = $codeTravail->categorie_id;
+            $this->estAjustable = $codeTravail->est_ajustable;
         }
     }
 
@@ -88,7 +89,7 @@ class CodeTravailForm extends Component
                 'code' => strtoupper($this->code), 
                 'libelle' => $this->libelle,
                 'categorie_id' => $this->categorie_id,
-                'est_Ajustable' => $this->estAjustable,
+                'est_ajustable' => $this->estAjustable,
             ];
 
             if ($this->codeTravailId) {
