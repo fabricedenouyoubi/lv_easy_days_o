@@ -109,13 +109,13 @@ class EmployeDetails extends Component
     //---  recuperation de l'historique des gestionnaires d'un employe
     public function get_historique_gestionnaire()
     {
-        return HistoriqueGestionnaire::with('gestionnaire')->where('employe_id', $this->employeId)->paginate(10);
+        return HistoriqueGestionnaire::with('gestionnaire')->where('employe_id', $this->employeId)->paginate(10, ['*'], 'historique_gestionnaire');
     }
 
     //---  recuperation de l'historique des heures par semaine d'un employe
     public function get_historique_heure_par_semaine()
     {
-        return HistoriqueHeuresSemaines::where('employe_id', $this->employeId)->paginate(10);
+        return HistoriqueHeuresSemaines::where('employe_id', $this->employeId)->paginate(10, ['*'], 'historique_heure');
     }
 
     public function render()
