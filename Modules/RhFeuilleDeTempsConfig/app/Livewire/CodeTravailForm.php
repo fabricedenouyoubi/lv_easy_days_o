@@ -12,6 +12,7 @@ class CodeTravailForm extends Component
     public $code;
     public $libelle;
     public $categorie_id;
+    public $estAjustable = true;
 
     protected $listeners = ['editCodeTravail'];
 
@@ -26,6 +27,7 @@ class CodeTravailForm extends Component
             ],
             'libelle' => 'required|string|max:150',
             'categorie_id' => 'required|exists:categories,id',
+            'estAjustable' => 'boolean',
         ];
 
         // Si on modifie, exclure l'ID actuel de la validation d'unicité
@@ -83,9 +85,10 @@ class CodeTravailForm extends Component
 
         try {
             $data = [
-                'code' => strtoupper($this->code), // Convertir en majuscules
+                'code' => strtoupper($this->code), 
                 'libelle' => $this->libelle,
                 'categorie_id' => $this->categorie_id,
+                'est_Ajustable' => $this->estAjustable,
             ];
 
             if ($this->codeTravailId) {

@@ -4,6 +4,8 @@ namespace Modules\RhFeuilleDeTempsConfig\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Modules\RhFeuilleDeTempsConfig\Models\Comportement\Configuration;
+
 // use Modules\RhFeuilleDeTempsConfig\Database\Factories\CodeTravailFactory;
 
 class CodeTravail extends Model
@@ -16,6 +18,7 @@ class CodeTravail extends Model
         'code',
         'libelle',
         'categorie_id',
+        'est_ajustable',
     ];
 
     /**
@@ -46,6 +49,13 @@ class CodeTravail extends Model
     }
 
     /**
+     * Scope pour filtrer les codes configurables pour le calcul d'heures
+     */
+    public function scopeConfigurablePourCalcul($query)
+    {
+        return $query->where('est_ajustable', true);
+    }
+    /**
      * Scope pour recherche par code ou libellé
      */
     public function scopeSearch($query, $search)
@@ -54,9 +64,9 @@ class CodeTravail extends Model
             return $query;
         }
 
-        return $query->where(function($q) use ($search) {
+        return $query->where(function ($q) use ($search) {
             $q->where('code', 'like', '%' . $search . '%')
-              ->orWhere('libelle', 'like', '%' . $search . '%');
+                ->orWhere('libelle', 'like', '%' . $search . '%');
         });
     }
 
@@ -89,6 +99,6 @@ class CodeTravail extends Model
      */
     public function configurations()
     {
-        //return $this->hasMany(\Modules\RhFeuilleDeTempsConfig\Models\Configuration::class);
+        return $this->hasMany(Configuration::class);
     }
 }

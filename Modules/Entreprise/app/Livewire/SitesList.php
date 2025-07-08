@@ -11,15 +11,13 @@ class SitesList extends Component
     use WithPagination;
 
     public $search = '';
-    public $searchTerm = ''; 
+    public $searchTerm = '';
     public $showModal = false;
     public $editingId = null;
     public $confirmingDelete = false;
     public $deletingId = null;
     public $showDetail = false;
     public $detailSiteId = null;
-    public $isSearching = false; 
-    public $searchError = ''; 
 
     protected $paginationTheme = 'bootstrap';
 
@@ -29,25 +27,8 @@ class SitesList extends Component
         'refreshComponent' => '$refresh'
     ];
 
-    // Méthode pour effacer l'erreur quand l'utilisateur tape
-    public function updatedSearch()
-    {
-        if (!empty(trim($this->search))) {
-            $this->searchError = '';
-        }
-    }
-
     public function performSearch()
     {
-        // Réinitialiser le message d'erreur
-        $this->searchError = '';
-        
-        // Vérifier si le champ de recherche est vide
-        if (empty(trim($this->search))) {
-            $this->searchError = 'Veuillez entrer l\'élément à rechercher';
-            return;
-        }
-        
         $this->searchTerm = $this->search;
         $this->resetPage();
     }
@@ -56,7 +37,6 @@ class SitesList extends Component
     {
         $this->search = '';
         $this->searchTerm = '';
-        $this->searchError = ''; 
         $this->resetPage();
     }
 
@@ -106,14 +86,14 @@ class SitesList extends Component
     {
         try {
             $site = Site::findOrFail($this->deletingId);
-            
+
             // Supprimer l'adresse associée si elle existe
             if ($site->adresse) {
                 $site->adresse->delete();
             }
-            
+
             $site->delete();
-            
+
             session()->flash('success', 'Site supprimé avec succès.');
             $this->cancelDelete();
         } catch (\Exception $e) {
@@ -139,7 +119,7 @@ class SitesList extends Component
         return Site::with('adresse')
             ->when($this->searchTerm, function ($query) {
                 $query->where('name', 'like', '%' . $this->searchTerm . '%')
-                      ->orWhere('description', 'like', '%' . $this->searchTerm . '%');
+                    ->orWhere('description', 'like', '%' . $this->searchTerm . '%');
             })
             ->orderBy('name')
             ->paginate(10);
@@ -156,9 +136,7 @@ class SitesList extends Component
     public function render()
     {
         return view('entreprise::livewire.sites-list', [
-            'sites' => $this->sites,
-            'detailSite' => $this->detailSite,
-            'searchError' => $this->searchError
+            'sites' => $this->sites
         ]);
     }
 }

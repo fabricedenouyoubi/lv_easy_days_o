@@ -9,7 +9,7 @@
             <input type="text" id="code" class="form-control @error('code') is-invalid @enderror" wire:model="code"
                 placeholder="Ex: VAC, CSN, CAISS..." style="text-transform: uppercase;">
             @error('code')
-                <div class="invalid-feedback">{{ $message }}</div>
+            <div class="invalid-feedback">{{ $message }}</div>
             @enderror
             <div class="form-text">
                 <i class="fas fa-info-circle me-1"></i>
@@ -25,8 +25,22 @@
             <input type="text" id="libelle" class="form-control @error('libelle') is-invalid @enderror"
                 wire:model="libelle" placeholder="Ex: Vacances, Heure CSN, Banque de temps...">
             @error('libelle')
-                <div class="invalid-feedback">{{ $message }}</div>
+            <div class="invalid-feedback">{{ $message }}</div>
             @enderror
+        </div>
+
+        {{-- Configurable pour calcul --}}
+        <div class="mb-4">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="estAjustable" wire:model="estAjustable">
+                <label class="form-check-label" for="estAjustable">
+                    <strong>Inclure dans le calcul du total des heures</strong>
+                </label>
+            </div>
+            <div class="form-text">
+                <i class="fas fa-info-circle me-1"></i>
+                Décochez cette option si ce code ne doit pas être pris en compte dans le calcul du total des heures travaillées
+            </div>
         </div>
 
         {{-- Catégorie d'appartenance --}}
@@ -38,16 +52,16 @@
                 wire:model="categorie_id">
                 <option value="">-- Sélectionner une catégorie --</option>
                 @foreach ($categories as $categorie)
-                    <option value="{{ $categorie->id }}">
-                        {{ $categorie->intitule }}
-                        @if ($categorie->configurable)
-                            ({{ $categorie->valeur_config }})
-                        @endif
-                    </option>
+                <option value="{{ $categorie->id }}">
+                    {{ $categorie->intitule }}
+                    @if ($categorie->configurable)
+                    ({{ $categorie->valeur_config }})
+                    @endif
+                </option>
                 @endforeach
             </select>
             @error('categorie_id')
-                <div class="invalid-feedback">{{ $message }}</div>
+            <div class="invalid-feedback">{{ $message }}</div>
             @enderror
             <div class="form-text">
                 <i class="fas fa-info-circle me-1"></i>
