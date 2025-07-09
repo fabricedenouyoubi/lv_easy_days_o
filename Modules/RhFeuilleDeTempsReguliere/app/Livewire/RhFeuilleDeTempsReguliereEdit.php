@@ -50,7 +50,17 @@ class RhFeuilleDeTempsReguliereEdit extends Component
         'total_heure_conge_mobile' => 0,
     ];
 
+    // Nouvelles propriétés pour les calculs d'heures supplémentaires
+    public $heuresDefiniesEmploye = 0; // Heures hebdomadaires de l'employé
+    public $heuresTravaillees = 0; // Total heures travaillées cette semaine
+    public $heuresSupNormales = 0; // Heures sup. normales (≤ 40h)
+    public $heuresSupMajorees = 0; // Heures sup. majorées (> 40h × 1.5)
+    public $totalHeuresSupAjustees = 0; // Total heures sup. ajustées (calculé)
+    public $versBanqueTemps = 0; // Heures qui vont en banque de temps
+    public $ajustementBanque = 0; // Ajustement final de la banque
 
+    // Données de debug
+    public $debugCalculs = [];
 
     protected $rules = [
         'lignesTravail.*.duree_0' => 'nullable|string|max:5',
@@ -60,7 +70,6 @@ class RhFeuilleDeTempsReguliereEdit extends Component
         'lignesTravail.*.duree_4' => 'nullable|string|max:5',
         'lignesTravail.*.duree_5' => 'nullable|string|max:5',
         'lignesTravail.*.duree_6' => 'nullable|string|max:5',
-        'heureSupplementaireAjuste' => 'nullable|string|max:5',
         'heureSupplementaireAPayer' => 'nullable|string|max:5',
     ];
 
@@ -76,6 +85,9 @@ class RhFeuilleDeTempsReguliereEdit extends Component
                 abort(403, 'Accès non autorisé');
             }
 
+            // Charger les heures définies pour l'employé
+            $this->chargerHeuresDefiniesEmploye();
+
             // Charger les codes de travail disponibles
             $this->chargerCodesTravauxDisponibles();
 
@@ -88,11 +100,11 @@ class RhFeuilleDeTempsReguliereEdit extends Component
             // Calculer les jours fériés
             $this->calculerJoursFeries();
 
-            // Calculer les totaux
-            $this->calculerRecapitulatif();
-
             // Calculer la heure supplémentaire ajusté et à payer
             $this->chargerHeuresSupplementaires();
+
+            // Calculer les totaux
+            $this->calculerRecapitulatif();
 
             // Calculer la banque de temps
             $this->calculerBanqueDeTemps();
@@ -100,6 +112,122 @@ class RhFeuilleDeTempsReguliereEdit extends Component
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors du chargement: ' . $th->getMessage());
         }
+    }
+
+    /**
+     * Charger les heures définies pour l'employé
+     */
+    private function chargerHeuresDefiniesEmploye()
+    {
+        $historiqueHeure = DB::table('historique_heures_semaines')
+            ->where('employe_id', $this->employe->id)
+            ->where('date_debut', '<=', now())
+            ->orderBy('date_debut', 'desc')
+            ->first();
+
+        $this->heuresDefiniesEmploye = $historiqueHeure ? $historiqueHeure->nombre_d_heure_semaine : 35;
+    }
+
+    /**
+     * Calculer les heures travaillées (seulement les codes ajustables)
+     */
+    private function calculerHeuresTravaillees()
+    {
+        $totalHeures = 0;
+        
+        foreach ($this->lignesTravail as $ligne) {
+            // Vérifier si le code de travail est ajustable
+            if ($ligne['code_travail']->est_ajustable) {
+                for ($jour = 0; $jour <= 6; $jour++) {
+                    $duree = $this->parseUserInputToDecimal($ligne["duree_{$jour}"] ?? '0');
+                    $totalHeures += $duree;
+                }
+            }
+        }
+        
+        $this->heuresTravaillees = $totalHeures;
+        return $totalHeures;
+    }
+
+    /**
+     * Calculer les heures supplémentaires selon la logique canadienne
+     */
+    private function calculerHeuresSupplementaires()
+    {
+        $heuresTravaillees = $this->calculerHeuresTravaillees();
+        $heuresDefinies = $this->heuresDefiniesEmploye;
+        
+        // Réinitialiser les valeurs
+        $this->heuresSupNormales = 0;
+        $this->heuresSupMajorees = 0;
+        $this->totalHeuresSupAjustees = 0;
+        
+        // Debug data
+        $this->debugCalculs = [
+            'heures_travaillees' => $heuresTravaillees,
+            'heures_definies' => $heuresDefinies,
+            'heures_sup_normales' => 0,
+            'heures_sup_majorees' => 0,
+            'total_heures_sup_ajustees' => 0,
+            'heures_sup_a_payer' => $this->parseUserInputToDecimal($this->heureSupplementaireAPayer),
+            'vers_banque_temps' => 0,
+            'ajustement_banque' => 0,
+        ];
+        
+        if ($heuresTravaillees <= $heuresDefinies) {
+            // Pas d'heures supplémentaires
+            $this->debugCalculs['message'] = "Aucune heure supplémentaire (≤ heures définies)";
+        } else if ($heuresTravaillees <= 40) {
+            // Heures sup. normales seulement
+            $this->heuresSupNormales = $heuresTravaillees - $heuresDefinies;
+            $this->totalHeuresSupAjustees = $this->heuresSupNormales;
+            
+            $this->debugCalculs['heures_sup_normales'] = $this->heuresSupNormales;
+            $this->debugCalculs['total_heures_sup_ajustees'] = $this->totalHeuresSupAjustees;
+            $this->debugCalculs['message'] = "Heures sup. normales: {$heuresTravaillees}h - {$heuresDefinies}h = {$this->heuresSupNormales}h";
+        } else {
+            // Heures sup. normales + majorées
+            $this->heuresSupNormales = 40 - $heuresDefinies;
+            $this->heuresSupMajorees = ($heuresTravaillees - 40) * 1.5;
+            $this->totalHeuresSupAjustees = $this->heuresSupNormales + $this->heuresSupMajorees;
+            
+            $this->debugCalculs['heures_sup_normales'] = $this->heuresSupNormales;
+            $this->debugCalculs['heures_sup_majorees'] = $this->heuresSupMajorees;
+            $this->debugCalculs['total_heures_sup_ajustees'] = $this->totalHeuresSupAjustees;
+            $this->debugCalculs['message'] = "Heures sup. normales: 40h - {$heuresDefinies}h = {$this->heuresSupNormales}h | Heures sup. majorées: ({$heuresTravaillees}h - 40h) × 1.5 = {$this->heuresSupMajorees}h";
+        }
+        
+        // Calculer l'ajustement de la banque de temps
+        $this->calculerAjustementBanqueTemps();
+    }
+
+    /**
+     * Calculer l'ajustement de la banque de temps
+     */
+    private function calculerAjustementBanqueTemps()
+    {
+        $heuresSupAPayer = $this->parseUserInputToDecimal($this->heureSupplementaireAPayer);
+        
+        // Vers banque de temps = heures sup. ajustées - heures sup. à payer
+        $this->versBanqueTemps = $this->totalHeuresSupAjustees - $heuresSupAPayer;
+        
+        // Ajustement final = différence hebdomadaire - heures sup. à payer
+        $differenceHebdomadaire = $this->heuresTravaillees - $this->heuresDefiniesEmploye;
+        $this->ajustementBanque = $differenceHebdomadaire - $heuresSupAPayer;
+        
+        // Mise à jour du debug
+        $this->debugCalculs['heures_sup_a_payer'] = $heuresSupAPayer;
+        $this->debugCalculs['vers_banque_temps'] = $this->versBanqueTemps;
+        $this->debugCalculs['difference_hebdomadaire'] = $differenceHebdomadaire;
+        $this->debugCalculs['ajustement_banque'] = $this->ajustementBanque;
+    }
+
+    /**
+     * Formater les heures supplémentaires ajustées (lecture seule)
+     */
+    private function formaterHeuresSupAjustees()
+    {
+        $this->heureSupplementaireAjuste = $this->formatDecimalToDisplay($this->totalHeuresSupAjustees);
     }
 
     /**
@@ -220,15 +348,18 @@ class RhFeuilleDeTempsReguliereEdit extends Component
                     'total_heures' => $totalLigne
                 ];
 
-                $totalGeneral += $totalLigne;
+                // Sommer seulement les codes ajustables pour le total général
+                if ($codeTravail->est_ajustable) {
+                    $totalGeneral += $totalLigne;
+                }
             }
         }
 
-        // Les heures supplémentaires au total
-        $heureSupAjuste = $this->parseUserInputToDecimal($this->heureSupplementaireAjuste);
-        $heureSupAPayer = $this->parseUserInputToDecimal($this->heureSupplementaireAPayer);
-
-        $totalGeneral += $heureSupAjuste + $heureSupAPayer;
+        // Calculer les heures supplémentaires
+        $this->calculerHeuresSupplementaires();
+        
+        // Formater les heures sup. ajustées (lecture seule)
+        $this->formaterHeuresSupAjustees();
 
         // Trier par libellé
         usort($recapitulatif, function ($a, $b) {
@@ -236,7 +367,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
         });
 
         $this->totauxrecapitulatif = $recapitulatif;
-        $this->totalGeneral = $totalGeneral;
+        $this->totalGeneral = $totalGeneral; // Maintenant seulement les codes ajustables
     }
 
     /**
@@ -298,7 +429,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
                 // Mettre à jour les totaux de l'opération
                 $this->operation->update([
                     'total_heure' => $this->totalGeneral,
-                    'total_heure_supp_ajuster' => $this->parseUserInputToDecimal($this->heureSupplementaireAjuste),
+                    'total_heure_supp_ajuster' => $this->totalHeuresSupAjustees,
                     'total_heure_sup_a_payer' => $this->parseUserInputToDecimal($this->heureSupplementaireAPayer)
                 ]);
             });
@@ -323,7 +454,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
                 // Mise a jour totaux
                 $this->operation->update([
                     'total_heure' => $this->totalGeneral,
-                    'total_heure_supp_ajuster' => $this->parseUserInputToDecimal($this->heureSupplementaireAjuste),
+                    'total_heure_supp_ajuster' => $this->totalHeuresSupAjustees,
                     'total_heure_sup_a_payer' => $this->parseUserInputToDecimal($this->heureSupplementaireAPayer)
                 ]);
 
@@ -402,17 +533,8 @@ class RhFeuilleDeTempsReguliereEdit extends Component
      */
     private function chargerHeuresSupplementaires()
     {
-        $this->heureSupplementaireAjuste = $this->formatDecimalToDisplay($this->operation->total_heure_supp_ajuster ?? 0);
+        // Heures sup. ajustées sont maintenant calculées automatiquement
         $this->heureSupplementaireAPayer = $this->formatDecimalToDisplay($this->operation->total_heure_sup_a_payer ?? 0);
-    }
-
-    /**
-     * Listener pour recalculer quand les heures supplémentaires changent
-     */
-    public function updatedHeureSupplementaireAjuste($value)
-    {
-        $this->heureSupplementaireAjuste = $this->formatDecimalToDisplay($this->parseUserInputToDecimal($value));
-        $this->calculerRecapitulatif();
     }
 
     /**
@@ -421,7 +543,9 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     public function updatedHeureSupplementaireAPayer($value)
     {
         $this->heureSupplementaireAPayer = $this->formatDecimalToDisplay($this->parseUserInputToDecimal($value));
-        $this->calculerRecapitulatif();
+        
+        // Recalculer seulement l'ajustement de la banque de temps
+        $this->calculerAjustementBanqueTemps();
     }
 
     /**
@@ -461,7 +585,6 @@ class RhFeuilleDeTempsReguliereEdit extends Component
 
         $this->banqueDeTemps = $banqueTemps;
     }
-
 
     /**
      * Version corrigée - reste collectif partagé

@@ -295,25 +295,15 @@
                         <hr class="my-3">
                         @endif
 
-                        <!-- Heures supplémentaires ajustées -->
+                        <!-- Heures supplémentaires ajustées (LECTURE SEULE) -->
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-muted small">Heure Supp. ajusté</span>
-                            @if($this->peutModifier())
-                            <input type="text"
-                                wire:model.lazy="heureSupplementaireAjuste"
-                                class="form-control form-control-sm text-center"
-                                placeholder="00.00"
-                                maxlength="5"
-                                style="width: 70px; font-family: 'Courier New', monospace;"
-                                title="Format: HH.MM ou HH,MM">
-                            @else
-                            <span class="badge bg-warning text-dark">
+                            <span class="text-muted small">Heure Supp. ajustées</span>
+                            <span class="badge bg-info text-dark">
                                 {{ $heureSupplementaireAjuste }}h
                             </span>
-                            @endif
                         </div>
 
-                        <!-- Heures supplémentaires à payer -->
+                        <!-- Heures supplémentaires à payer (MODIFIABLE) -->
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <span class="text-muted small">Heure Supp. à payer</span>
                             @if($this->peutModifier())
@@ -322,8 +312,9 @@
                                 class="form-control form-control-sm text-center"
                                 placeholder="00.00"
                                 maxlength="5"
+                                max="{{ $heureSupplementaireAjuste }}"
                                 style="width: 70px; font-family: 'Courier New', monospace;"
-                                title="Format: HH.MM ou HH,MM">
+                                title="Format: HH.MM ou HH,MM (Max: {{ $heureSupplementaireAjuste }}h)">
                             @else
                             <span class="badge bg-danger">
                                 {{ $heureSupplementaireAPayer }}h
@@ -338,6 +329,56 @@
                             <span class="badge bg-dark px-3 py-2">{{ number_format($totalGeneral, 2) }}h</span>
                         </div>
                     </x-table-card>
+
+                    <!-- Détails Heures Supplémentaires -->
+<x-table-card title="Détails Heures Sup." icon="mdi mdi-clock-plus-outline">
+    <div class="row g-2 mb-3">
+        <div class="col-6">
+            <small class="text-muted d-block">Heures définies</small>
+            <span class="badge bg-primary">{{ number_format($heuresDefiniesEmploye, 0) }}h</span>
+        </div>
+        <div class="col-6">
+            <small class="text-muted d-block">Heures travaillées</small>
+            <span class="badge bg-success">{{ number_format($heuresTravaillees, 2) }}h</span>
+        </div>
+    </div>
+
+    @if($heuresSupNormales > 0)
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="text-muted small">Heures sup. normales</span>
+        <span class="badge bg-warning text-dark">{{ number_format($heuresSupNormales, 2) }}h</span>
+    </div>
+    @endif
+
+    @if($heuresSupMajorees > 0)
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="text-muted small">Heures sup. majorées</span>
+        <span class="badge bg-danger">{{ number_format($heuresSupMajorees, 2) }}h</span>
+    </div>
+    @endif
+
+    @if($totalHeuresSupAjustees > 0)
+    <hr class="my-2">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="text-muted fw-bold small">Total ajustées</span>
+        <span class="badge bg-info">{{ number_format($totalHeuresSupAjustees, 2) }}h</span>
+    </div>
+    @endif
+
+    @if($versBanqueTemps > 0)
+    <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small">Vers banque temps</span>
+        <span class="badge bg-dark">{{ number_format($versBanqueTemps, 2) }}h</span>
+    </div>
+    @endif
+
+    @if($totalHeuresSupAjustees == 0)
+    <div class="text-center py-2">
+        <i class="mdi mdi-clock-check text-muted mb-1" style="font-size: 20px;"></i>
+        <p class="text-muted small mb-0">Aucune heure supplémentaire</p>
+    </div>
+    @endif
+</x-table-card>
 
                 </div>
             </div>
