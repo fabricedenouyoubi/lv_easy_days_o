@@ -71,7 +71,8 @@
             <x-action-button type="secondary" icon="fas fa-times me-2" size="md"
                 wireClick="{{ $demande_absence_id ? 'resetAll' : 'cancel' }}" text="Annuler" />
             <x-action-button type="success" icon="fas fa-save me-2" size="md"
-                text="{{ $demande_absence_id ? 'Modifier' : 'Enregistrer' }}" typeButton='submit' />
+                text="{{ $demande_absence_id ? 'Modifier' : 'Enregistrer' }}" typeButton='submit' loading="true"
+                loading-target="save" />
         </div>
     </form>
 </div>

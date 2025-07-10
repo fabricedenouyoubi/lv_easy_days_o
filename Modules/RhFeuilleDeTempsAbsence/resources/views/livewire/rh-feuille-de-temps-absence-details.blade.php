@@ -21,7 +21,8 @@
                         </div>
                         @if (
                             $demandeAbsence->statut == 'En cours' &&
-                                ($demandeAbsence->employe_id == auth()->user()->employe?->id || $demandeAbsence->admin_id == auth()->user()->id))
+                                ($demandeAbsence->employe_id == auth()->user()->employe?->id ||
+                                    $demandeAbsence->admin_id == auth()->user()->id))
                             {{-- Bounton Nodifier --}}
                             <div class="col-auto">
                                 <x-action-button type="primary" size="sm" icon="fas fa-edit" text="Modifier"
@@ -348,7 +349,8 @@
                             <x-action-button type="secondary" icon="fas fa-times me-2" size="md"
                                 wireClick="toogle_approve_modal" text="Annuler" />
                             <x-action-button type="success" icon="fas fa-check-circle me-2" size="md"
-                                text="confirmer la validation" wireClick="approuverDemandeAbsence" />
+                                text="confirmer la validation" wireClick="approuverDemandeAbsence" loading="true"
+                                loading-target="approuverDemandeAbsence"/>
                         </div>
                     </div>
                 </div>
@@ -371,7 +373,8 @@
                             <x-action-button type="secondary" icon="fas fa-times me-2" size="md"
                                 wireClick="toogle_soumission_modal" text="Annuler" />
                             <x-action-button type="success" icon="fas fa-paper-plane me-2" size="md"
-                                text="confirmer la soumission" wireClick="soumettreDemandeAbsence" />
+                                text="confirmer la soumission" wireClick="soumettreDemandeAbsence" loading="true"
+                                loading-target="soumettreDemandeAbsence"/>
                         </div>
                     </div>
                 </div>
@@ -407,7 +410,8 @@
                             <x-action-button type="secondary" icon="fas fa-times me-2" size="md"
                                 wireClick="toogle_rappeler_modal" text="Annuler" />
                             <x-action-button type="success" icon="fas fa-undo-alt me-2" size="md"
-                                text="Confirmer le rappel" wireClick="rapelleDemandeAbsence" />
+                                text="Confirmer le rappel" wireClick="rapelleDemandeAbsence" loading="true"
+                                loading-target="rapelleDemandeAbsence"/>
                         </div>
                     </div>
                 </div>
@@ -443,7 +447,8 @@
                             <x-action-button type="secondary" icon="fas fa-times me-2" size="md"
                                 wireClick="toogle_retrouner_modal" text="Annuler" />
                             <x-action-button type="success" icon="fas fa-reply me-2" size="md"
-                                text="Confirmer le retour" wireClick="retournerDemandeAbsence" />
+                                text="Confirmer le retour" wireClick="retournerDemandeAbsence" loading="true"
+                                loading-target="retournerDemandeAbsence"/>
                         </div>
                     </div>
                 </div>
@@ -480,7 +485,8 @@
                             <x-action-button type="secondary" icon="fas fa-times me-2" size="md"
                                 wireClick="toogle_rejeter_modal" text="Annuler" />
                             <x-action-button type="success" icon="fas fa-times-circle me-2" size="md"
-                                text="Confirmer le rejet" wireClick="rejeterDemandeAbsence" />
+                                text="Confirmer le rejet" wireClick="rejeterDemandeAbsence" loading="true"
+                                loading-target="rejeterDemandeAbsence" />
                         </div>
                     </div>
                 </div>

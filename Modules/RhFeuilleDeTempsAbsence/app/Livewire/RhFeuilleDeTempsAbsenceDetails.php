@@ -12,6 +12,8 @@ use Modules\Budget\Models\SemaineAnnee;
 use Modules\RhFeuilleDeTempsAbsence\Models\DemandeAbsence;
 use Modules\RhFeuilleDeTempsAbsence\Models\Operation;
 use Modules\RhFeuilleDeTempsAbsence\Traits\AbsenceResource;
+use Modules\RhFeuilleDeTempsAbsence\Workflows\DemandeAbsenceWorkflow;
+use Workflow\WorkflowStub;
 
 class RhFeuilleDeTempsAbsenceDetails extends Component
 {
@@ -120,19 +122,33 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
         try {
 
             $comment = 'La demande a été soumise par ' . Auth::user()->name;
-            $this->demandeAbsence->applyTransition('soumettre', ['comment' => $comment]);
-            $this->showSoumissionModal = false;
 
-            //--- Journalisation
-            Log::channel('daily')->info("La demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " vient d'être soumise par l' utilisateur " . $user_connect->name);
+            //--- Workflow ---
+            $workflow = WorkflowStub::make(DemandeAbsenceWorkflow::class);
+            $workflow->start($this->demandeAbsence, 'soumettre', ['comment' => $comment]);
 
-            session()->flash('success', 'Demande d\'absence  soumise avec succès.');
+            while ($workflow->running());
+
+            if ($workflow->failed()) {
+                //--- Journalisation
+                Log::channel('daily')->error(
+                    "Erreur lors du lancement du workflow de la soumission de la demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " par l' utilisateur " . $user_connect->name,
+                    ['demande' => $this->demandeAbsence->id]
+                );
+                session()->flash('error', 'Une erreur est survenue lors du lancement du workflow de la soumission de la demande d\'absence.');
+            } else {
+                //--- Journalisation
+                Log::channel('daily')->info("La demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " vient d'être soumise par l' utilisateur " . $user_connect->name, ['demande' => $this->demandeAbsence->id]);
+                session()->flash('success', 'Demande d\'absence  soumise avec succès.');
+                $this->showSoumissionModal = false;
+                $this->mount();
+            }
         } catch (\Throwable $th) {
 
             //--- Journalisation
             Log::channel('daily')->error(
                 "Erreur lors de la soumission de la demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " par l' utilisateur " . $user_connect->name,
-                ['message' => $th->getMessage()]
+                ['message' => $th->getMessage(), 'demande' => $this->demandeAbsence->id]
             );
 
             session()->flash('error', 'Une erreur est survenue lors de la soumission de la demande d\'absence.', $th->getMessage());
@@ -146,21 +162,33 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
         try {
             $comment = 'La demande a été rappelée par ' . Auth::user()->name;
 
-            $this->demandeAbsence->applyTransition('rappeler', ['comment' => $comment, 'motif' => $this->motif]);
+            //--- Workflow ---
+            $workflow = WorkflowStub::make(DemandeAbsenceWorkflow::class);
+            $workflow->start($this->demandeAbsence, 'rappeler', ['comment' => $comment, 'motif' => $this->motif]);
 
-            $this->showRappelerModal = false;
-            $this->reset('motif');
+            while ($workflow->running());
 
-            //--- Journalisation
-            Log::channel('daily')->info("La demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " vient d'être rappelée par l' utilisateur " . $user_connect->name);
-
-            session()->flash('success', 'Demande d\'absence rappelée avec succès.');
+            if ($workflow->failed()) {
+                //--- Journalisation
+                Log::channel('daily')->error(
+                    "Erreur lors du lancement du workflow du rappel de la demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " par l' utilisateur " . $user_connect->name,
+                    ['demande' => $this->demandeAbsence->id]
+                );
+                session()->flash('error', 'Une erreur est survenue lors du lancement du workflow du rappel de la demande d\'absence.');
+            } else {
+                //--- Journalisation
+                Log::channel('daily')->info("La demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " vient d'être rappelée par l' utilisateur " . $user_connect->name, ['demande' => $this->demandeAbsence->id]);
+                session()->flash('success', 'Demande d\'absence rappelée avec succès.');
+                $this->showRappelerModal = false;
+                $this->reset('motif');
+                $this->mount();
+            }
         } catch (\Throwable $th) {
 
             //--- Journalisation
             Log::channel('daily')->error(
                 "Erreur lors du rappel de la demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " par l' utilisateur " . $user_connect->name,
-                ['message' => $th->getMessage()]
+                ['message' => $th->getMessage(), 'demande' => $this->demandeAbsence->id]
             );
 
             session()->flush('error', 'Une erreur est survenue lors du rappel de la demande d\'absence.', $th->getMessage());
@@ -220,19 +248,31 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
 
             $comment = 'La demande est approuvée par ' . Auth::user()->name;
 
-            $this->demandeAbsence->applyTransition('valider', ['comment' => $comment]);
-            $this->showApprouverModal = false;
+            //--- Workflow ---
+            $workflow = WorkflowStub::make(DemandeAbsenceWorkflow::class);
+            $workflow->start($this->demandeAbsence, 'valider', ['comment' => $comment]);
 
-            //--- Journalisation
-            Log::channel('daily')->info("La demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " vient d'être validée par l' utilisateur " . $user_connect->name);
+            while ($workflow->running());
 
-            session()->flash('success', 'Demande d\'absence validée avec succès.');
+            if ($workflow->failed()) {
+                //--- Journalisation
+                Log::channel('daily')->error(
+                    "Erreur lors du lancement du workflow de la validation de la demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " par l' utilisateur " . $user_connect->name, ['demande' => $this->demandeAbsence->id]
+                );
+                session()->flash('error', 'Une erreur est survenue lors du lancement du workflow de la validation de la demande d\'absence.');
+            } else {
+                //--- Journalisation
+                Log::channel('daily')->info("La demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " vient d'être validée par l' utilisateur " . $user_connect->name, ['demande' => $this->demandeAbsence->id]);
+                session()->flash('success', 'Demande d\'absence validée avec succès.');
+                $this->showApprouverModal = false;
+                $this->mount();
+            }
         } catch (\Throwable $th) {
 
             //--- Journalisation
             Log::channel('daily')->error(
                 "Erreur lors de la validation de la demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " par l' utilisateur " . $user_connect->name,
-                ['message' => $th->getMessage()]
+                ['message' => $th->getMessage(), 'demande' => $this->demandeAbsence->id]
             );
 
             session()->flash('error', 'Une erreur est survenue lors de la validation de la demande d\'absence.' . $th->getMessage());
@@ -252,21 +292,34 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
             }
 
             $comment = 'La demande a été retournée par ' . Auth::user()->name;
-            $this->demandeAbsence->applyTransition('retourner', ['comment' => $comment, 'motif' => $this->motif]);
 
-            $this->showRetournerModal = false;
-            $this->reset('motif');
+            //--- Workflow ---
+            $workflow = WorkflowStub::make(DemandeAbsenceWorkflow::class);
+            $workflow->start($this->demandeAbsence, 'retourner', ['comment' => $comment, 'motif' => $this->motif]);
 
-            //--- Journalisation
-            Log::channel('daily')->info("La demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " vient d'être retournée par l' utilisateur " . $user_connect->name);
+            while ($workflow->running());
 
-            session()->flash('success', 'Demande d\'absence retournée avec succès.');
+            if ($workflow->failed()) {
+                //--- Journalisation
+                Log::channel('daily')->error(
+                    "Erreur lors du lancement du workflow du retour de la demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " par l' utilisateur " . $user_connect->name, ['demande' => $this->demandeAbsence->id]
+                );
+                session()->flash('error', 'Une erreur est survenue lors du lancement du workflow du retour de la demande d\'absence.');
+            } else {
+
+                //--- Journalisation
+                Log::channel('daily')->info("La demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " vient d'être retournée par l' utilisateur " . $user_connect->name, ['demande' => $this->demandeAbsence->id]);
+                session()->flash('success', 'Demande d\'absence retournée avec succès.');
+                $this->showRetournerModal = false;
+                $this->reset('motif');
+                $this->mount();
+            }
         } catch (\Throwable $th) {
 
             //--- Journalisation
             Log::channel('daily')->error(
                 "Erreur lors du retour de la demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " par l' utilisateur " . $user_connect->name,
-                ['message' => $th->getMessage()]
+                ['message' => $th->getMessage(), 'demande' => $this->demandeAbsence->id]
             );
 
             session()->flash('error', 'Une erreur est survenue lors du retour de la demande d\'absence.', $th->getMessage());
@@ -284,20 +337,34 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
             $this->demandeAbsence->operations()->delete();
 
             $comment = 'La demande a été rejetée par : ' . Auth::user()->name;
-            $this->demandeAbsence->applyTransition('rejeter', ['comment' => $comment, 'motif' => $this->motif]);
-            $this->showRejeterModal = false;
-            $this->reset('motif');
 
-            //--- Journalisation
-            Log::channel('daily')->info("La demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " vient d'être rejetée par l' utilisateur " . $user_connect->name);
+            //--- Workflow ---
+            $workflow = WorkflowStub::make(DemandeAbsenceWorkflow::class);
+            $workflow->start($this->demandeAbsence, 'rejeter', ['comment' => $comment, 'motif' => $this->motif]);
 
-            session()->flash('success', 'Demande d\'absence rejetée avec succès.');
+            while ($workflow->running());
+
+            if ($workflow->failed()) {
+                //--- Journalisation
+                Log::channel('daily')->error(
+                    "Erreur lors du lancement du workflow du retour de la demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " par l' utilisateur " . $user_connect->name, ['demande' => $this->demandeAbsence->id]
+                );
+                session()->flash('error', 'Une erreur est survenue lors du lancement du workflow du rejet de la demande d\'absence.');
+            } else {
+
+                //--- Journalisation
+                Log::channel('daily')->info("La demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " vient d'être rejetée par l' utilisateur " . $user_connect->name, ['demande' => $this->demandeAbsence->id]);
+                session()->flash('success', 'Demande d\'absence rejetée avec succès.');
+                $this->showRejeterModal = false;
+                $this->reset('motif');
+                $this->mount();
+            }
         } catch (\Throwable $th) {
 
             //--- Journalisation
             Log::channel('daily')->error(
                 "Erreur lors du rejet de la demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " par l' utilisateur " . $user_connect->name,
-                ['message' => $th->getMessage()]
+                ['message' => $th->getMessage(), 'demande' => $this->demandeAbsence->id]
             );
 
             session()->flash('error', 'Une erreur est survenue lors du rejet de la demande d\'absence.', $th->getMessage());

@@ -22,6 +22,7 @@ class RhFeuilleDeTempsAbsenceList extends Component
     protected $paginationTheme = 'bootstrap';
     protected $listeners = [
         'demandeAbsenceAjoute' => 'demandeAbsenceAjoute',
+        'demandeAbsenceAjouteWorkflowError' => 'demandeAbsenceAjouteWorkflowError'
     ];
 
 
@@ -59,6 +60,12 @@ class RhFeuilleDeTempsAbsenceList extends Component
     {
         $this->showAddAbsenceModal = false;
         session()->flash('success', 'Demande d\'absence enregistrée avec succès.');
+    }
+
+    public function demandeAbsenceAjouteWorkflowError()
+    {
+        $this->showAddAbsenceModal = false;
+        session()->flash('error', 'Erreur lors du lancement du workflow de creation de la  demande d\'absence');
     }
 
     //--- recuperation des demandes d'absence en cours
