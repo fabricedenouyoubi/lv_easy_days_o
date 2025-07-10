@@ -35,20 +35,46 @@
 
                 <div class="card-body">
                     <!-- Informations employé -->
-                    <div class="row align-items-center mb-4">
-                        <div class="col-auto">
-                            <div class="avatar-wrapper">
-                                <div class="avatar-placeholder d-flex align-items-center justify-content-center bg-light rounded-circle shadow-sm border border-3 border-white"
-                                    style="width: 100px; height: 100px;">
-                                    <i class="fa fa-user-circle text-primary" style="font-size: 3rem;"></i>
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-lg bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 80px; height: 80px;">
+                                            <span class="font-size-24 text-primary fw-bold">
+                                                {{ substr($employe->prenom, 0, 1) }}{{ substr($employe->nom, 0, 1) }}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <h4 class="mb-1">{{ $employe->prenom }} {{ $employe->nom }}</h4>
+                                            <p class="text-muted small mb-0">
+                                                <i class="mdi mdi-clock-outline me-1"></i>
+                                                35h par semaine
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-auto">
-                            <h4 class="mb-1">{{ $employe->nom }} {{ $employe->prenom }}</h4>
-                            <p class="text-muted mb-0">Semaine {{ $semaine->numero_semaine }} - Du {{ \Carbon\Carbon::parse($semaine->debut)->format('d/m/Y') }} au {{ \Carbon\Carbon::parse($semaine->fin)->format('d/m/Y') }}</p>
-                        </div>
-                    </div>
+
+                            <!-- Informations période -->
+                            <div class="row mb-4">
+                                <div class="col-12 mb-3">
+                                    <div class="card h-100 border-0 bg-primary-subtle">
+                                        <div class="card-body p-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-md bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 56px; height: 56px;">
+                                                    <i class="mdi mdi-calendar-week text-white" style="font-size: 24px;"></i>
+                                                </div>
+                                                <div>
+                                                    <h5 class="mb-1">Semaine {{ $semaine->numero_semaine }}</h5>
+                                                    <p class="mb-0 fw-bold small">
+                                                        Période Du {{ \Carbon\Carbon::parse($semaine->debut)->format('d/m/Y') }}
+                                                        au {{ \Carbon\Carbon::parse($semaine->fin)->format('d/m/Y') }}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
                     <!-- Détail des lignes de travail -->
                     <div class="card mt-3 border-0 shadow-sm">
@@ -162,7 +188,7 @@
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="{{ count($joursLabels) + 2 }}" class="text-center py-4">
+                                            <td colspan="{{ count($datesSemaine) + 2 }}" class="text-center py-4">
                                                 <i class="mdi mdi-clipboard-outline text-muted" style="font-size: 48px;"></i>
                                                 <p class="text-muted mb-0">Aucune ligne de travail enregistrée</p>
                                             </td>
@@ -295,6 +321,60 @@
                     <span class="badge bg-dark px-3 py-2">{{ number_format($totalGeneral, 2) }}h</span>
                 </div>
 
+            </x-table-card>
+
+
+            <!-- Détails Heures Supplémentaires -->
+            <x-table-card title="Détails Heures Sup." icon="mdi mdi-clock-plus-outline">
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <small class="text-muted d-block">Heures définies</small>
+                        <span class="badge bg-primary">{{ number_format($heuresDefiniesEmploye, 0) }}h</span>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">Heures travaillées</small>
+                        <span class="badge bg-success">{{ number_format($heuresTravaillees, 2) }}h</span>
+                    </div>
+                </div>
+
+                @if($heuresSupNormales > 0)
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small">Heures sup. normales</span>
+                    <span class="badge bg-warning text-dark">{{ number_format($heuresSupNormales, 2) }}h</span>
+                </div>
+                @endif
+
+                @if($heuresSupMajorees > 0)
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small">Heures sup. majorées</span>
+                    <span class="badge bg-danger">{{ number_format($heuresSupMajorees, 2) }}h</span>
+                </div>
+                @endif
+
+                @if($totalHeuresSupAjustees > 0)
+                <hr class="my-2">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted fw-bold small">Total ajustées</span>
+                    <span class="badge bg-info">{{ number_format($totalHeuresSupAjustees, 2) }}h</span>
+                </div>
+                @endif
+
+                @if($versBanqueTemps != 0)
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted small">Vers banque temps</span>
+                    <span class="badge {{ $versBanqueTemps > 0 ? 'bg-success' : 'bg-danger' }}">
+                        {{ $versBanqueTemps > 0 ? '+' : '' }}{{ number_format($versBanqueTemps, 2) }}h
+                    </span>
+                </div>
+                @endif
+
+                @if($totalHeuresSupAjustees == 0)
+                <div class="text-center py-2">
+                    <i class="mdi mdi-clock-check text-muted mb-1" style="font-size: 20px;"></i>
+                    <p class="text-muted small mb-0">Aucune heure supplémentaire</p>
+                </div>
+                @endif
+                
             </x-table-card>
         </div>
     </div>

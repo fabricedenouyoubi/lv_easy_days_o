@@ -108,7 +108,6 @@ class RhFeuilleDeTempsReguliereEdit extends Component
 
             // Calculer la banque de temps
             $this->calculerBanqueDeTemps();
-            
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors du chargement: ' . $th->getMessage());
         }
@@ -134,7 +133,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     private function calculerHeuresTravaillees()
     {
         $totalHeures = 0;
-        
+
         foreach ($this->lignesTravail as $ligne) {
             // Vérifier si le code de travail est ajustable
             if ($ligne['code_travail']->est_ajustable) {
@@ -144,7 +143,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
                 }
             }
         }
-        
+
         $this->heuresTravaillees = $totalHeures;
         return $totalHeures;
     }
@@ -156,12 +155,12 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     {
         $heuresTravaillees = $this->calculerHeuresTravaillees();
         $heuresDefinies = $this->heuresDefiniesEmploye;
-        
+
         // Réinitialiser les valeurs
         $this->heuresSupNormales = 0;
         $this->heuresSupMajorees = 0;
         $this->totalHeuresSupAjustees = 0;
-        
+
         // Debug data
         $this->debugCalculs = [
             'heures_travaillees' => $heuresTravaillees,
@@ -173,7 +172,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
             'vers_banque_temps' => 0,
             'ajustement_banque' => 0,
         ];
-        
+
         if ($heuresTravaillees <= $heuresDefinies) {
             // Pas d'heures supplémentaires
             $this->debugCalculs['message'] = "Aucune heure supplémentaire (≤ heures définies)";
@@ -181,7 +180,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
             // Heures sup. normales seulement
             $this->heuresSupNormales = $heuresTravaillees - $heuresDefinies;
             $this->totalHeuresSupAjustees = $this->heuresSupNormales;
-            
+
             $this->debugCalculs['heures_sup_normales'] = $this->heuresSupNormales;
             $this->debugCalculs['total_heures_sup_ajustees'] = $this->totalHeuresSupAjustees;
             $this->debugCalculs['message'] = "Heures sup. normales: {$heuresTravaillees}h - {$heuresDefinies}h = {$this->heuresSupNormales}h";
@@ -190,13 +189,13 @@ class RhFeuilleDeTempsReguliereEdit extends Component
             $this->heuresSupNormales = 40 - $heuresDefinies;
             $this->heuresSupMajorees = ($heuresTravaillees - 40) * 1.5;
             $this->totalHeuresSupAjustees = $this->heuresSupNormales + $this->heuresSupMajorees;
-            
+
             $this->debugCalculs['heures_sup_normales'] = $this->heuresSupNormales;
             $this->debugCalculs['heures_sup_majorees'] = $this->heuresSupMajorees;
             $this->debugCalculs['total_heures_sup_ajustees'] = $this->totalHeuresSupAjustees;
             $this->debugCalculs['message'] = "Heures sup. normales: 40h - {$heuresDefinies}h = {$this->heuresSupNormales}h | Heures sup. majorées: ({$heuresTravaillees}h - 40h) × 1.5 = {$this->heuresSupMajorees}h";
         }
-        
+
         // Calculer l'ajustement de la banque de temps
         $this->calculerAjustementBanqueTemps();
     }
@@ -207,14 +206,14 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     private function calculerAjustementBanqueTemps()
     {
         $heuresSupAPayer = $this->parseUserInputToDecimal($this->heureSupplementaireAPayer);
-        
+
         // Vers banque de temps = heures sup. ajustées - heures sup. à payer
         $this->versBanqueTemps = $this->totalHeuresSupAjustees - $heuresSupAPayer;
-        
+
         // Ajustement final = différence hebdomadaire - heures sup. à payer
         $differenceHebdomadaire = $this->heuresTravaillees - $this->heuresDefiniesEmploye;
         $this->ajustementBanque = $differenceHebdomadaire - $heuresSupAPayer;
-        
+
         // Mise à jour du debug
         $this->debugCalculs['heures_sup_a_payer'] = $heuresSupAPayer;
         $this->debugCalculs['vers_banque_temps'] = $this->versBanqueTemps;
@@ -357,7 +356,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
 
         // Calculer les heures supplémentaires
         $this->calculerHeuresSupplementaires();
-        
+
         // Formater les heures sup. ajustées (lecture seule)
         $this->formaterHeuresSupAjustees();
 
@@ -432,6 +431,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
                     'total_heure_supp_ajuster' => $this->totalHeuresSupAjustees,
                     'total_heure_sup_a_payer' => $this->parseUserInputToDecimal($this->heureSupplementaireAPayer)
                 ]);
+                
             });
 
             session()->flash('success', 'Feuille de temps enregistrée avec succès.');
@@ -451,6 +451,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
             DB::transaction(function () {
                 // Sauvegarder d'abord
                 $this->sauvegarderLignesTravail();
+
                 // Mise a jour totaux
                 $this->operation->update([
                     'total_heure' => $this->totalGeneral,
@@ -474,7 +475,6 @@ class RhFeuilleDeTempsReguliereEdit extends Component
             session()->flash('error', 'Erreur lors de la soumission: ' . $th->getMessage());
         }
     }
-
     /**
      * Sauvegarder les lignes de travail
      */
@@ -543,7 +543,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     public function updatedHeureSupplementaireAPayer($value)
     {
         $this->heureSupplementaireAPayer = $this->formatDecimalToDisplay($this->parseUserInputToDecimal($value));
-        
+
         // Recalculer seulement l'ajustement de la banque de temps
         $this->calculerAjustementBanqueTemps();
     }
@@ -633,6 +633,18 @@ class RhFeuilleDeTempsReguliereEdit extends Component
         }
 
         return null;
+    }
+
+    /**
+     * Calculer la nouvelle valeur de la banque de temps après ajustement (pour affichage seulement)
+     */
+    public function getNouveauSoldeBanqueTempsProperty()
+    {
+        // Récupérer la banque de temps actuelle pour l'affichage
+        $banqueActuelle = collect($this->banqueDeTemps)->firstWhere('type', 'banque_temps');
+        $soldeActuel = $banqueActuelle ? $banqueActuelle['valeur'] : 0;
+
+        return $soldeActuel + $this->ajustementBanque;
     }
 
     /**

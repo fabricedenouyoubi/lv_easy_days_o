@@ -19,7 +19,7 @@ class RhFeuilleDeTempsReguliereShow extends Component
     public $employe;
     public $lignesTravail = [];
     public $workflowHistory = [];
-    
+
     // Permissions utilisateur
     public $canEdit = false;
     public $canSubmit = false;
@@ -27,14 +27,14 @@ class RhFeuilleDeTempsReguliereShow extends Component
     public $canApprove = false;
     public $canReject = false;
     public $canReturn = false;
-    
+
     // Modal states
     public $showSubmitModal = false;
     public $showRecallModal = false;
     public $showApproveModal = false;
     public $showRejectModal = false;
     public $showReturnModal = false;
-    
+
     public $motifRejet = '';
     public $commentaire = '';
     // Banque de temps
@@ -52,21 +52,34 @@ class RhFeuilleDeTempsReguliereShow extends Component
         'commentaire' => 'nullable|string|max:500'
     ];
 
+
+    // Nouvelles propriétés pour les calculs d'heures supplémentaires
+    public $heuresDefiniesEmploye = 0; // Heures hebdomadaires de l'employé
+    public $heuresTravaillees = 0; // Total heures travaillées cette semaine
+    public $heuresSupNormales = 0; // Heures sup. normales (≤ 40h)
+    public $heuresSupMajorees = 0; // Heures sup. majorées (> 40h × 1.5)
+    public $totalHeuresSupAjustees = 0; // Total heures sup. ajustées (calculé)
+    public $versBanqueTemps = 0; // Heures qui vont en banque de temps
+    public $ajustementBanque = 0; // Ajustement final de la banque
+
+    // Données de debug
+    public $debugCalculs = [];
+
     public function mount()
     {
         try {
             $this->semaine = SemaineAnnee::findOrFail($this->semaineId);
             $this->operation = Operation::with(['lignesTravail.codeTravail', 'employe', 'anneeSemaine'])
-                                      ->findOrFail($this->operationId);
-            
+                ->findOrFail($this->operationId);
+
             $this->employe = $this->operation->employe;
-            
+
             // Vérifier les permissions d'accès
             $this->verifierPermissions();
-            
+
             // Charger les lignes de travail
             $this->chargerLignesTravail();
-            
+
             // Charger l'historique workflow
             $this->chargerWorkflowHistory();
 
@@ -78,7 +91,9 @@ class RhFeuilleDeTempsReguliereShow extends Component
 
             // Calculer semaines
             $this->calculerDatesSemaine();
-            
+
+            // Calculer les détails des heures supplémentaires
+            $this->calculerDetailsHeuresSupplementaires();
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors du chargement: ' . $th->getMessage());
         }
@@ -103,12 +118,12 @@ class RhFeuilleDeTempsReguliereShow extends Component
         $this->canEdit = $isOwner && $this->operation->canTransition('enregistrer');
         $this->canSubmit = $isOwner && $this->operation->canTransition('soumettre');
         $this->canRecall = $isOwner && $this->operation->canTransition('rappeler');
-        
+
         // NOUVELLE RÈGLE: Seul le gestionnaire direct peut valider/rejeter
         // L'admin ne peut plus valider/rejeter sauf s'il est le gestionnaire direct
         $this->canApprove = $isDirectManager && $this->operation->canTransition('valider');
         $this->canReject = $isDirectManager && $this->operation->canTransition('rejeter');
-        
+
         // NOUVELLE RÈGLE: Pour le rappel d'une feuille validée, seul l'admin peut le faire
         $currentState = $this->operation->getCurrentState();
         if ($currentState === 'valide') {
@@ -124,7 +139,7 @@ class RhFeuilleDeTempsReguliereShow extends Component
      */
     private function chargerLignesTravail()
     {
-        $this->lignesTravail = $this->operation->lignesTravail->map(function($ligne) {
+        $this->lignesTravail = $this->operation->lignesTravail->map(function ($ligne) {
             return [
                 'id' => $ligne->id,
                 'code_travail' => $ligne->codeTravail,
@@ -181,14 +196,13 @@ class RhFeuilleDeTempsReguliereShow extends Component
             $this->operation->applyTransition('soumettre', [
                 'comment' => $this->commentaire ?: 'Feuille de temps soumise'
             ]);
-            
+
             $this->showSubmitModal = false;
             $this->commentaire = '';
             session()->flash('success', 'Feuille de temps soumise avec succès.');
-            
+
             // Recharger pour mettre à jour les permissions
             $this->mount();
-            
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors de la soumission: ' . $th->getMessage());
         }
@@ -203,13 +217,12 @@ class RhFeuilleDeTempsReguliereShow extends Component
             $this->operation->applyTransition('rappeler', [
                 'comment' => $this->commentaire ?: 'Feuille de temps rappelée pour modification'
             ]);
-            
+
             $this->showRecallModal = false;
             $this->commentaire = '';
             session()->flash('success', 'Feuille de temps rappelée avec succès.');
-            
+
             $this->mount();
-            
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors du rappel: ' . $th->getMessage());
         }
@@ -224,13 +237,12 @@ class RhFeuilleDeTempsReguliereShow extends Component
             $this->operation->applyTransition('valider', [
                 'comment' => $this->commentaire ?: 'Feuille de temps validée par ' . Auth::user()->name
             ]);
-            
+
             $this->showApproveModal = false;
             $this->commentaire = '';
             session()->flash('success', 'Feuille de temps validée avec succès.');
-            
+
             $this->mount();
-            
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors de la validation: ' . $th->getMessage());
         }
@@ -242,19 +254,18 @@ class RhFeuilleDeTempsReguliereShow extends Component
     public function rejeter()
     {
         $this->validate(['motifRejet' => 'required|string|min:5']);
-        
+
         try {
             $this->operation->applyTransition('rejeter', [
                 'motif_rejet' => $this->motifRejet,
                 'comment' => 'Feuille de temps rejetée par ' . Auth::user()->name . '. Motif: ' . $this->motifRejet
             ]);
-            
+
             $this->showRejectModal = false;
             $this->motifRejet = '';
             session()->flash('success', 'Feuille de temps rejetée avec succès.');
-            
+
             $this->mount();
-            
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors du rejet: ' . $th->getMessage());
         }
@@ -266,19 +277,18 @@ class RhFeuilleDeTempsReguliereShow extends Component
     public function retourner()
     {
         $this->validate(['motifRejet' => 'required|string|min:5']);
-        
+
         try {
             $this->operation->applyTransition('retourner', [
                 'motif_rejet' => $this->motifRejet,
                 'comment' => 'Feuille de temps retournée par ' . Auth::user()->name . '. Motif: ' . $this->motifRejet
             ]);
-            
+
             $this->showReturnModal = false;
             $this->motifRejet = '';
             session()->flash('success', 'Feuille de temps retournée avec succès.');
-            
+
             $this->mount();
-            
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors du retour: ' . $th->getMessage());
         }
@@ -289,7 +299,7 @@ class RhFeuilleDeTempsReguliereShow extends Component
      */
     public function getStatutFormate()
     {
-        return match($this->operation->workflow_state) {
+        return match ($this->operation->workflow_state) {
             'brouillon' => [
                 'text' => 'Brouillon',
                 'class' => 'bg-warning text-dark',
@@ -323,7 +333,7 @@ class RhFeuilleDeTempsReguliereShow extends Component
         };
     }
 
-   
+
 
     /**
      * Calculer la banque de temps dynamique
@@ -435,59 +445,150 @@ class RhFeuilleDeTempsReguliereShow extends Component
     }
 
     /**
- * Calculer le récapitulatif dynamique basé sur les lignes saisies
- */
-private function calculerRecapitulatif()
-{
-    $recapitulatif = [];
-    $totalGeneral = 0;
+     * Calculer le récapitulatif dynamique basé sur les lignes saisies
+     */
+    private function calculerRecapitulatif()
+    {
+        $recapitulatif = [];
+        $totalGeneral = 0;
 
-    foreach ($this->lignesTravail as $ligne) {
-        $codeTravail = $ligne['code_travail'];
-        
-        if ($ligne['total'] > 0) {
-            $recapitulatif[] = [
-                'code_travail' => $codeTravail,
-                'total_heures' => $ligne['total']
+        foreach ($this->lignesTravail as $ligne) {
+            $codeTravail = $ligne['code_travail'];
+
+            if ($ligne['total'] > 0) {
+                $recapitulatif[] = [
+                    'code_travail' => $codeTravail,
+                    'total_heures' => $ligne['total']
+                ];
+
+                $totalGeneral += $ligne['total'];
+            }
+        }
+
+        // Charger les heures supplémentaires depuis l'opération
+        $this->heureSupplementaireAjuste = $this->operation->total_heure_supp_ajuster ?? 0;
+        $this->heureSupplementaireAPayer = $this->operation->total_heure_sup_a_payer ?? 0;
+
+        // Ajouter les heures supplémentaires au total
+        $totalGeneral += $this->heureSupplementaireAjuste + $this->heureSupplementaireAPayer;
+
+        // Trier par libellé
+        usort($recapitulatif, function ($a, $b) {
+            return strcmp($a['code_travail']->libelle, $b['code_travail']->libelle);
+        });
+
+        $this->totauxrecapitulatif = $recapitulatif;
+        $this->totalGeneral = $totalGeneral;
+    }
+    /**
+     * Calculer les dates de la semaine pour affichage
+     */
+    private function calculerDatesSemaine()
+    {
+        $dateDebut = \Carbon\Carbon::parse($this->semaine->debut);
+
+        for ($i = 0; $i <= 6; $i++) {
+            $date = $dateDebut->copy()->addDays($i);
+            $this->datesSemaine[] = [
+                'date' => $date,
+                'format' => $date->format('d') . ' ' . $date->locale('fr')->monthName . ' ' . $date->format('Y'),
+                'is_dimanche' => $date->isSunday(),
+                'jour_nom' => $date->locale('fr')->dayName,
+                'jour_court' => $date->locale('fr')->shortDayName
             ];
-            
-            $totalGeneral += $ligne['total'];
         }
     }
 
-    // Charger les heures supplémentaires depuis l'opération
-    $this->heureSupplementaireAjuste = $this->operation->total_heure_supp_ajuster ?? 0;
-    $this->heureSupplementaireAPayer = $this->operation->total_heure_sup_a_payer ?? 0;
-    
-    // Ajouter les heures supplémentaires au total
-    $totalGeneral += $this->heureSupplementaireAjuste + $this->heureSupplementaireAPayer;
+    /**
+     * Charger les heures définies pour l'employé
+     */
+    private function chargerHeuresDefiniesEmploye()
+    {
+        $historiqueHeure = DB::table('historique_heures_semaines')
+            ->where('employe_id', $this->employe->id)
+            ->where('date_debut', '<=', now())
+            ->orderBy('date_debut', 'desc')
+            ->first();
 
-    // Trier par libellé
-    usort($recapitulatif, function($a, $b) {
-        return strcmp($a['code_travail']->libelle, $b['code_travail']->libelle);
-    });
+        $this->heuresDefiniesEmploye = $historiqueHeure ? $historiqueHeure->nombre_d_heure_semaine : 35;
+    }
 
-    $this->totauxrecapitulatif = $recapitulatif;
-    $this->totalGeneral = $totalGeneral;
-}
-/**
- * Calculer les dates de la semaine pour affichage
- */
-private function calculerDatesSemaine()
-{
-    $dateDebut = \Carbon\Carbon::parse($this->semaine->debut);
+    /**
+     * Calculer les détails des heures supplémentaires à partir de l'opération
+     */
+    private function calculerDetailsHeuresSupplementaires()
+    {
+        // Récupérer les données depuis l'opération
+        $this->heuresTravaillees = $this->operation->total_heure ?? 0;
+        $this->totalHeuresSupAjustees = $this->operation->total_heure_supp_ajuster ?? 0;
+        $heuresSupAPayer = $this->operation->total_heure_sup_a_payer ?? 0;
 
-    for ($i = 0; $i <= 6; $i++) {
-        $date = $dateDebut->copy()->addDays($i);
-        $this->datesSemaine[] = [
-            'date' => $date,
-            'format' => $date->format('d') . ' ' . $date->locale('fr')->monthName . ' ' . $date->format('Y'),
-            'is_dimanche' => $date->isSunday(),
-            'jour_nom' => $date->locale('fr')->dayName,
-            'jour_court' => $date->locale('fr')->shortDayName
+        $heuresDefinies = $this->heuresDefiniesEmploye;
+
+        // Réinitialiser les valeurs
+        $this->heuresSupNormales = 0;
+        $this->heuresSupMajorees = 0;
+
+        // Calculer les détails selon la logique canadienne
+        if ($this->heuresTravaillees <= $heuresDefinies) {
+            // Pas d'heures supplémentaires
+            $message = "Aucune heure supplémentaire (≤ heures définies)";
+        } else if ($this->heuresTravaillees <= 40) {
+            // Heures sup. normales seulement
+            $this->heuresSupNormales = $this->heuresTravaillees - $heuresDefinies;
+            $message = "Heures sup. normales: {$this->heuresTravaillees}h - {$heuresDefinies}h = {$this->heuresSupNormales}h";
+        } else {
+            // Heures sup. normales + majorées
+            $this->heuresSupNormales = 40 - $heuresDefinies;
+            $this->heuresSupMajorees = ($this->heuresTravaillees - 40) * 1.5;
+            $message = "Heures sup. normales: 40h - {$heuresDefinies}h = {$this->heuresSupNormales}h | Heures sup. majorées: ({$this->heuresTravaillees}h - 40h) × 1.5 = {$this->heuresSupMajorees}h";
+        }
+
+        // Calculer l'ajustement de la banque de temps
+        $this->versBanqueTemps = $this->totalHeuresSupAjustees - $heuresSupAPayer;
+        $differenceHebdomadaire = $this->heuresTravaillees - $heuresDefinies;
+        $this->ajustementBanque = $differenceHebdomadaire - $heuresSupAPayer;
+
+        // Debug data
+        $this->debugCalculs = [
+            'heures_travaillees' => $this->heuresTravaillees,
+            'heures_definies' => $heuresDefinies,
+            'heures_sup_normales' => $this->heuresSupNormales,
+            'heures_sup_majorees' => $this->heuresSupMajorees,
+            'total_heures_sup_ajustees' => $this->totalHeuresSupAjustees,
+            'heures_sup_a_payer' => $heuresSupAPayer,
+            'vers_banque_temps' => $this->versBanqueTemps,
+            'difference_hebdomadaire' => $differenceHebdomadaire,
+            'ajustement_banque' => $this->ajustementBanque,
+            'message' => $message
         ];
     }
-}
+
+    /**
+     * Convertir une valeur décimale en format d'affichage (00.00)
+     */
+    private function formatDecimalToDisplay($value)
+    {
+        if (empty($value) || $value == 0) {
+            return '00.00';
+        }
+
+        $floatValue = floatval($value);
+        return sprintf('%05.2f', $floatValue);
+    }
+
+    /**
+     * Calculer la nouvelle valeur de la banque de temps après ajustement (pour affichage)
+     */
+    public function getNouveauSoldeBanqueTempsProperty()
+    {
+        // Récupérer la banque de temps actuelle pour l'affichage
+        $banqueActuelle = collect($this->banqueDeTemps)->firstWhere('type', 'banque_temps');
+        $soldeActuel = $banqueActuelle ? $banqueActuelle['valeur'] : 0;
+
+        return $soldeActuel + $this->ajustementBanque;
+    }
+
     public function render()
     {
         return view('rhfeuilledetempsreguliere::livewire.rh-feuille-de-temps-reguliere-show');

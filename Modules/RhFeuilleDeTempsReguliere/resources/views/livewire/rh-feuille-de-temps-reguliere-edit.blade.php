@@ -331,54 +331,56 @@
                     </x-table-card>
 
                     <!-- Détails Heures Supplémentaires -->
-<x-table-card title="Détails Heures Sup." icon="mdi mdi-clock-plus-outline">
-    <div class="row g-2 mb-3">
-        <div class="col-6">
-            <small class="text-muted d-block">Heures définies</small>
-            <span class="badge bg-primary">{{ number_format($heuresDefiniesEmploye, 0) }}h</span>
-        </div>
-        <div class="col-6">
-            <small class="text-muted d-block">Heures travaillées</small>
-            <span class="badge bg-success">{{ number_format($heuresTravaillees, 2) }}h</span>
-        </div>
-    </div>
+                    <x-table-card title="Détails Heures Sup." icon="mdi mdi-clock-plus-outline">
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <small class="text-muted d-block">Heures définies</small>
+                                <span class="badge bg-primary">{{ number_format($heuresDefiniesEmploye, 0) }}h</span>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted d-block">Heures travaillées</small>
+                                <span class="badge bg-success">{{ number_format($heuresTravaillees, 2) }}h</span>
+                            </div>
+                        </div>
 
-    @if($heuresSupNormales > 0)
-    <div class="d-flex justify-content-between align-items-center mb-2">
-        <span class="text-muted small">Heures sup. normales</span>
-        <span class="badge bg-warning text-dark">{{ number_format($heuresSupNormales, 2) }}h</span>
-    </div>
-    @endif
+                        @if($heuresSupNormales > 0)
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted small">Heures sup. normales</span>
+                            <span class="badge bg-warning text-dark">{{ number_format($heuresSupNormales, 2) }}h</span>
+                        </div>
+                        @endif
 
-    @if($heuresSupMajorees > 0)
-    <div class="d-flex justify-content-between align-items-center mb-2">
-        <span class="text-muted small">Heures sup. majorées</span>
-        <span class="badge bg-danger">{{ number_format($heuresSupMajorees, 2) }}h</span>
-    </div>
-    @endif
+                        @if($heuresSupMajorees > 0)
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted small">Heures sup. majorées</span>
+                            <span class="badge bg-danger">{{ number_format($heuresSupMajorees, 2) }}h</span>
+                        </div>
+                        @endif
 
-    @if($totalHeuresSupAjustees > 0)
-    <hr class="my-2">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-        <span class="text-muted fw-bold small">Total ajustées</span>
-        <span class="badge bg-info">{{ number_format($totalHeuresSupAjustees, 2) }}h</span>
-    </div>
-    @endif
+                        @if($totalHeuresSupAjustees > 0)
+                        <hr class="my-2">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted fw-bold small">Total ajustées</span>
+                            <span class="badge bg-info">{{ number_format($totalHeuresSupAjustees, 2) }}h</span>
+                        </div>
+                        @endif
 
-    @if($versBanqueTemps > 0)
-    <div class="d-flex justify-content-between align-items-center">
-        <span class="text-muted small">Vers banque temps</span>
-        <span class="badge bg-dark">{{ number_format($versBanqueTemps, 2) }}h</span>
-    </div>
-    @endif
+                        @if($versBanqueTemps != 0)
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Vers banque temps</span>
+                            <span class="badge {{ $versBanqueTemps > 0 ? 'bg-success' : 'bg-danger' }}">
+                                {{ $versBanqueTemps > 0 ? '+' : '' }}{{ number_format($versBanqueTemps, 2) }}h
+                            </span>
+                        </div>
+                        @endif
 
-    @if($totalHeuresSupAjustees == 0)
-    <div class="text-center py-2">
-        <i class="mdi mdi-clock-check text-muted mb-1" style="font-size: 20px;"></i>
-        <p class="text-muted small mb-0">Aucune heure supplémentaire</p>
-    </div>
-    @endif
-</x-table-card>
+                        @if($totalHeuresSupAjustees == 0)
+                        <div class="text-center py-2">
+                            <i class="mdi mdi-clock-check text-muted mb-1" style="font-size: 20px;"></i>
+                            <p class="text-muted small mb-0">Aucune heure supplémentaire</p>
+                        </div>
+                        @endif
+                    </x-table-card>
 
                 </div>
             </div>
