@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('matricule');
             $table->string('nom');
             $table->string('prenom');
-            $table->date('date_de_naissance');
+            $table->date('date_de_naissance')->nullable();
             $table->date('date_embauche');
             $table->boolean('est_gestionnaire')->default(false);
             $table->timestamps();
