@@ -30,22 +30,8 @@
     </div>
 
     <div class="row">
-        <div class="col-md-6">
-            <div class="mb-3">
-                <label for="statut" class="form-label">Statut <span class="text-danger">*</span></label>
-                <select id="statut"
-                        class="form-select @error('statut') is-invalid @enderror"
-                        wire:model="statut">
-                    <option value="ACTIF">Actif</option>
-                    <option value="INACTIF">Inactif</option>
-                </select>
-                @error('statut')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-        </div>
 
-        <div class="col-md-6">
+        <div class="col-md-12">
             <div class="mb-3">
                 <div class="form-check form-switch mt-4">
                     <input class="form-check-input"
