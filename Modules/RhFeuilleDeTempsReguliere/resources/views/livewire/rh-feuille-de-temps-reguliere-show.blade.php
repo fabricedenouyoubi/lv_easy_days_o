@@ -35,46 +35,46 @@
 
                 <div class="card-body">
                     <!-- Informations employé -->
-                            <div class="row mb-4">
-                                <div class="col-12">
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-lg bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 80px; height: 80px;">
+                                    <span class="font-size-24 text-primary fw-bold">
+                                        {{ substr($employe->prenom, 0, 1) }}{{ substr($employe->nom, 0, 1) }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <h4 class="mb-1">{{ $employe->prenom }} {{ $employe->nom }}</h4>
+                                    <p class="text-muted small mb-0">
+                                        <i class="mdi mdi-clock-outline me-1"></i>
+                                        35h par semaine
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informations période -->
+                    <div class="row mb-4">
+                        <div class="col-12 mb-3">
+                            <div class="card h-100 border-0 bg-primary-subtle">
+                                <div class="card-body p-3">
                                     <div class="d-flex align-items-center">
-                                        <div class="avatar-lg bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 80px; height: 80px;">
-                                            <span class="font-size-24 text-primary fw-bold">
-                                                {{ substr($employe->prenom, 0, 1) }}{{ substr($employe->nom, 0, 1) }}
-                                            </span>
+                                        <div class="avatar-md bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 56px; height: 56px;">
+                                            <i class="mdi mdi-calendar-week text-white" style="font-size: 24px;"></i>
                                         </div>
                                         <div>
-                                            <h4 class="mb-1">{{ $employe->prenom }} {{ $employe->nom }}</h4>
-                                            <p class="text-muted small mb-0">
-                                                <i class="mdi mdi-clock-outline me-1"></i>
-                                                35h par semaine
+                                            <h5 class="mb-1">Semaine {{ $semaine->numero_semaine }}</h5>
+                                            <p class="mb-0 fw-bold small">
+                                                Période Du {{ \Carbon\Carbon::parse($semaine->debut)->format('d/m/Y') }}
+                                                au {{ \Carbon\Carbon::parse($semaine->fin)->format('d/m/Y') }}
                                             </p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Informations période -->
-                            <div class="row mb-4">
-                                <div class="col-12 mb-3">
-                                    <div class="card h-100 border-0 bg-primary-subtle">
-                                        <div class="card-body p-3">
-                                            <div class="d-flex align-items-center">
-                                                <div class="avatar-md bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 56px; height: 56px;">
-                                                    <i class="mdi mdi-calendar-week text-white" style="font-size: 24px;"></i>
-                                                </div>
-                                                <div>
-                                                    <h5 class="mb-1">Semaine {{ $semaine->numero_semaine }}</h5>
-                                                    <p class="mb-0 fw-bold small">
-                                                        Période Du {{ \Carbon\Carbon::parse($semaine->debut)->format('d/m/Y') }}
-                                                        au {{ \Carbon\Carbon::parse($semaine->fin)->format('d/m/Y') }}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        </div>
+                    </div>
 
                     <!-- Détail des lignes de travail -->
                     <div class="card mt-3 border-0 shadow-sm">
@@ -324,7 +324,8 @@
             </x-table-card>
 
 
-            <!-- Détails Heures Supplémentaires -->
+            <!-- MODIFIER la section "Détails Heures Sup." pour inclure les heures manquantes -->
+
             <x-table-card title="Détails Heures Sup." icon="mdi mdi-clock-plus-outline">
                 <div class="row g-2 mb-3">
                     <div class="col-6">
@@ -337,6 +338,22 @@
                     </div>
                 </div>
 
+                @php
+                $heuresManquantes = $debugCalculs['heures_manquantes'] ?? 0;
+                $differenceHebdomadaire = $debugCalculs['difference_hebdomadaire'] ?? 0;
+                @endphp
+
+                <!-- CAS 1: Heures manquantes -->
+                @if($heuresManquantes > 0)
+                <div class="alert alert-warning alert-sm p-2 mb-3">
+                    <i class="mdi mdi-alert-circle-outline me-1"></i>
+                    <small>
+                        <strong>Heures manquantes :</strong> {{ number_format($heuresManquantes, 2) }}h
+                    </small>
+                </div>
+                @endif
+
+                <!-- CAS 2: Heures supplémentaires -->
                 @if($heuresSupNormales > 0)
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span class="text-muted small">Heures sup. normales</span>
@@ -359,6 +376,7 @@
                 </div>
                 @endif
 
+                <!-- Vers banque temps (peut être positif ou négatif) -->
                 @if($versBanqueTemps != 0)
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="text-muted small">Vers banque temps</span>
@@ -368,14 +386,20 @@
                 </div>
                 @endif
 
-                @if($totalHeuresSupAjustees == 0)
+                <!-- Affichage différencié selon le cas -->
+                @if($totalHeuresSupAjustees == 0 && $heuresManquantes == 0)
+                <div class="text-center py-2">
+                    <i class="mdi mdi-clock-check text-success mb-1" style="font-size: 20px;"></i>
+                    <p class="text-muted small mb-0">Heures exactes (= heures définies)</p>
+                </div>
+                @elseif($totalHeuresSupAjustees == 0)
                 <div class="text-center py-2">
                     <i class="mdi mdi-clock-check text-muted mb-1" style="font-size: 20px;"></i>
                     <p class="text-muted small mb-0">Aucune heure supplémentaire</p>
                 </div>
                 @endif
-                
             </x-table-card>
+
         </div>
     </div>
 

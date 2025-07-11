@@ -330,7 +330,8 @@
                         </div>
                     </x-table-card>
 
-                    <!-- Détails Heures Supplémentaires -->
+                    <!-- MODIFIER la section "Détails Heures Sup." pour inclure les heures manquantes -->
+
                     <x-table-card title="Détails Heures Sup." icon="mdi mdi-clock-plus-outline">
                         <div class="row g-2 mb-3">
                             <div class="col-6">
@@ -343,6 +344,22 @@
                             </div>
                         </div>
 
+                        @php
+                        $heuresManquantes = $debugCalculs['heures_manquantes'] ?? 0;
+                        $differenceHebdomadaire = $debugCalculs['difference_hebdomadaire'] ?? 0;
+                        @endphp
+
+                        <!-- CAS 1: Heures manquantes -->
+                        @if($heuresManquantes > 0)
+                        <div class="alert alert-warning alert-sm p-2 mb-3">
+                            <i class="mdi mdi-alert-circle-outline me-1"></i>
+                            <small>
+                                <strong>Heures manquantes :</strong> {{ number_format($heuresManquantes, 2) }}h
+                            </small>
+                        </div>
+                        @endif
+
+                        <!-- CAS 2: Heures supplémentaires -->
                         @if($heuresSupNormales > 0)
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="text-muted small">Heures sup. normales</span>
@@ -365,6 +382,7 @@
                         </div>
                         @endif
 
+                        <!-- Vers banque temps (peut être positif ou négatif) -->
                         @if($versBanqueTemps != 0)
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="text-muted small">Vers banque temps</span>
@@ -374,13 +392,20 @@
                         </div>
                         @endif
 
-                        @if($totalHeuresSupAjustees == 0)
+                        <!-- Affichage différencié selon le cas -->
+                        @if($totalHeuresSupAjustees == 0 && $heuresManquantes == 0)
+                        <div class="text-center py-2">
+                            <i class="mdi mdi-clock-check text-success mb-1" style="font-size: 20px;"></i>
+                            <p class="text-muted small mb-0">Heures exactes (= heures définies)</p>
+                        </div>
+                        @elseif($totalHeuresSupAjustees == 0)
                         <div class="text-center py-2">
                             <i class="mdi mdi-clock-check text-muted mb-1" style="font-size: 20px;"></i>
                             <p class="text-muted small mb-0">Aucune heure supplémentaire</p>
                         </div>
                         @endif
                     </x-table-card>
+
 
                 </div>
             </div>
