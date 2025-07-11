@@ -4,13 +4,14 @@ namespace Modules\RhFeuilleDeTempsAbsence\Livewire;
 
 
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Modules\Budget\Models\AnneeFinanciere;
 use Modules\RhFeuilleDeTempsAbsence\Models\DemandeAbsence;
 use Modules\RhFeuilleDeTempsAbsence\Traits\AbsenceResource;
+use Modules\RhFeuilleDeTempsAbsence\Workflows\DemandeAbsenceWorkflow;
 use Modules\RhFeuilleDeTempsConfig\Models\CodeTravail;
+use Workflow\WorkflowStub;
 
 class RhFeuilleDeTempsAbsenceForm extends Component
 {
@@ -99,9 +100,10 @@ class RhFeuilleDeTempsAbsenceForm extends Component
         $user_connect = Auth::user();
 
         try {
-            $comment = $this->employeId ? 'La demande est en cours de redaction par ' . Auth::user()->name : 'La demande est en cours de redaction';
+            $comment = $this->employeId ? 'La demande est en cours de redaction par ' . $user_connect?->name : 'La demande est en cours de redaction';
             if (!$this->demande_absence_id) {
-                $demandeAbsence = DemandeAbsence::create(
+
+                $insertData =
                     [
                         'annee_financiere_id' => $this->annee_financiere_id,
                         'employe_id' => $this->employeId ?? Auth::user()->employe?->id,
@@ -111,18 +113,31 @@ class RhFeuilleDeTempsAbsenceForm extends Component
                         'heure_par_jour' => $this->heure_par_jour,
                         'total_heure' => $this->calculateTotalHeures($this->date_debut, $this->date_fin, $this->heure_par_jour, $this->annee_financiere_id),
                         'description' => $this->description,
-                        'admin_id' => Auth::user()->id ?? null
-                    ]
-                );
+                        'admin_id' => $this->employeId != null ? Auth::user()->id : null
+                    ];
 
                 //--- Workflow ---
-                $demandeAbsence->applyTransition('enregistrer', ['comment' => $comment]);
+                try {
 
-                //--- Journalisation
-                Log::channel('daily')->info("La demande d'absence de l'employé " . $demandeAbsence->employe?->nom . " " . $demandeAbsence->employe?->prenom . " vient d'être ajoutée par l' utilisateur " . $user_connect->name);
+                    $workflow = WorkflowStub::make(DemandeAbsenceWorkflow::class);
+                    $demande = null;
+                    $workflow->start($demande, 'enregistrer', ['comment' => $comment], $insertData);
 
+                    while ($workflow->running());
 
-                $this->dispatch('demandeAbsenceAjoute');
+                    //--- Journalisation
+                    Log::channel('daily')->info("La demande d'absence de l'employé ID :  " . $this->employeId . " vient d'être ajoutée par l' utilisateur " . $user_connect->name);
+
+                    if ($workflow->failed()) {
+                        $this->dispatch('demandeAbsenceAjouteWorkflowError');
+                    } else {
+                        $this->dispatch('demandeAbsenceAjoute');
+                    }
+                } catch (\Throwable $th) {
+
+                    Log::channel('daily')->error("Erreur lors du lancement du workflow de creation d'une demande d'absence", ['data' => $insertData]);
+                    $this->dispatch('demandeAbsenceAjouteWorkflowError');
+                }
             } else {
                 $demandeAbsence = DemandeAbsence::findOrFail($this->demande_absence_id);
                 $demandeAbsence->update([

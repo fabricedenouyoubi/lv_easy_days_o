@@ -52,6 +52,7 @@ class GestionUtilisateur extends Component
     public function get_utilisateurs()
     {
         return User::query()
+            ->with('roles')
             ->when(
                 $this->email_searched,
                 fn($query) =>

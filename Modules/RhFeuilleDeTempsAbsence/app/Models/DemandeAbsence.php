@@ -11,6 +11,7 @@ use Modules\RhFeuilleDeTempsConfig\Models\CodeTravail;
 use Modules\RhFeuilleDeTempsReguliere\Models\LigneTravail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Modules\RhFeuilleDeTempsAbsence\Traits\HasWorkflow;
 
 class DemandeAbsence extends Model
@@ -309,7 +310,7 @@ class DemandeAbsence extends Model
             'to_state' => $to,
             'comment' => $comment ?? '',
             'title' => "{$from} → {$to}",
-            'user' => Auth::user()->name,
+            'user' => Auth::user()?->name,
             'motif' => $motif
         ];
 
@@ -325,7 +326,7 @@ class DemandeAbsence extends Model
      */
     public function get_workflow_log()
     {
-       // $logs = json_decode($this->workflow_log, true);
+        // $logs = json_decode($this->workflow_log, true);
         $logsArray = collect(explode("\n", $this->workflow_log))
             ->filter() // élimine les lignes vides
             ->map(fn($line) => json_decode(trim($line), true))
@@ -368,7 +369,7 @@ class DemandeAbsence extends Model
     /**
      * Appliquer une transition de workflow
      */
-    public function applyTransition(string $transition, array $options = []): bool
+    public function applyTransition($transition, $options = []): bool
     {
         $currentState = $this->getCurrentState();
 
