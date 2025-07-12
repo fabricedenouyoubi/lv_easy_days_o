@@ -41,7 +41,7 @@ class RhFeuilleDeTempsReguliereShow extends Component
     // Banque de temps
     public $banqueDeTemps = [];
     // Heures que l'employé doit à l'entreprise
-    public $heuresManquantes = 0; 
+    public $heuresManquantes = 0;
 
     public $datesSemaine = [];
 
@@ -243,6 +243,9 @@ class RhFeuilleDeTempsReguliereShow extends Component
             $this->operation->applyTransition('valider', [
                 'comment' => $this->commentaire ?: 'Feuille de temps validée par ' . Auth::user()->name
             ]);
+
+            // Mettre à jour la banque de temps avec "vers banque de temps"
+            $this->mettreAJourBanqueTemps();
 
             $this->showApproveModal = false;
             $this->commentaire = '';
@@ -520,67 +523,64 @@ class RhFeuilleDeTempsReguliereShow extends Component
     }
 
     /**
- * Calculer les détails des heures supplémentaires à partir de l'opération
- */
-private function calculerDetailsHeuresSupplementaires()
-{
-    // Récupérer les données depuis l'opération
-    $this->heuresTravaillees = $this->operation->total_heure ?? 0;
-    $this->totalHeuresSupAjustees = $this->operation->total_heure_supp_ajuster ?? 0;
-    $heuresSupAPayer = $this->operation->total_heure_sup_a_payer ?? 0;
+     * Calculer les détails des heures supplémentaires à partir de l'opération
+     */
+    private function calculerDetailsHeuresSupplementaires()
+    {
+        // Récupérer les données depuis l'opération
+        $this->heuresTravaillees = $this->operation->total_heure ?? 0;
+        $this->totalHeuresSupAjustees = $this->operation->total_heure_supp_ajuster ?? 0;
+        $heuresSupAPayer = $this->operation->total_heure_sup_a_payer ?? 0;
 
-    $heuresDefinies = $this->heuresDefiniesEmploye;
+        $heuresDefinies = $this->heuresDefiniesEmploye;
 
-    // Réinitialiser les valeurs
-    $this->heuresSupNormales = 0;
-    $this->heuresSupMajorees = 0;
+        // Réinitialiser les valeurs
+        $this->heuresSupNormales = 0;
+        $this->heuresSupMajorees = 0;
 
-    // Calculer les détails selon la logique canadienne
-    if ($this->heuresTravaillees < $heuresDefinies) {
-        // CAS 1: Heures manquantes
-        $heuresManquantes = $heuresDefinies - $this->heuresTravaillees;
-        $message = "Heures manquantes: {$heuresDefinies}h - {$this->heuresTravaillees}h = {$heuresManquantes}h (employé doit à l'entreprise)";
-        $heuresManquantes = $heuresManquantes;
-        
-    } else if ($this->heuresTravaillees == $heuresDefinies) {
-        // CAS 2: Heures exactes
-        $message = "Heures exactes (= heures définies)";
-        $heuresManquantes = 0;
-        
-    } else if ($this->heuresTravaillees <= 40) {
-        // CAS 3: Heures sup. normales seulement
-        $this->heuresSupNormales = $this->heuresTravaillees - $heuresDefinies;
-        $message = "Heures sup. normales: {$this->heuresTravaillees}h - {$heuresDefinies}h = {$this->heuresSupNormales}h";
-        $heuresManquantes = 0;
-        
-    } else {
-        // CAS 4: Heures sup. normales + majorées
-        $this->heuresSupNormales = 40 - $heuresDefinies;
-        $this->heuresSupMajorees = ($this->heuresTravaillees - 40) * 1.5;
-        $message = "Heures sup. normales: 40h - {$heuresDefinies}h = {$this->heuresSupNormales}h | Heures sup. majorées: ({$this->heuresTravaillees}h - 40h) × 1.5 = {$this->heuresSupMajorees}h";
-        $heuresManquantes = 0;
+        // Calculer les détails selon la logique canadienne
+        if ($this->heuresTravaillees < $heuresDefinies) {
+            // CAS 1: Heures manquantes
+            $heuresManquantes = $heuresDefinies - $this->heuresTravaillees;
+            $message = "Heures manquantes: {$heuresDefinies}h - {$this->heuresTravaillees}h = {$heuresManquantes}h (employé doit à l'entreprise)";
+            $heuresManquantes = $heuresManquantes;
+        } else if ($this->heuresTravaillees == $heuresDefinies) {
+            // CAS 2: Heures exactes
+            $message = "Heures exactes (= heures définies)";
+            $heuresManquantes = 0;
+        } else if ($this->heuresTravaillees <= 40) {
+            // CAS 3: Heures sup. normales seulement
+            $this->heuresSupNormales = $this->heuresTravaillees - $heuresDefinies;
+            $message = "Heures sup. normales: {$this->heuresTravaillees}h - {$heuresDefinies}h = {$this->heuresSupNormales}h";
+            $heuresManquantes = 0;
+        } else {
+            // CAS 4: Heures sup. normales + majorées
+            $this->heuresSupNormales = 40 - $heuresDefinies;
+            $this->heuresSupMajorees = ($this->heuresTravaillees - 40) * 1.5;
+            $message = "Heures sup. normales: 40h - {$heuresDefinies}h = {$this->heuresSupNormales}h | Heures sup. majorées: ({$this->heuresTravaillees}h - 40h) × 1.5 = {$this->heuresSupMajorees}h";
+            $heuresManquantes = 0;
+        }
+
+        // Calculer l'ajustement de la banque de temps
+        $this->versBanqueTemps = $this->totalHeuresSupAjustees - $heuresSupAPayer;
+        $differenceHebdomadaire = $this->heuresTravaillees - $heuresDefinies;
+        $this->ajustementBanque = $differenceHebdomadaire - $heuresSupAPayer;
+
+        // Debug data
+        $this->debugCalculs = [
+            'heures_travaillees' => $this->heuresTravaillees,
+            'heures_definies' => $heuresDefinies,
+            'heures_sup_normales' => $this->heuresSupNormales,
+            'heures_sup_majorees' => $this->heuresSupMajorees,
+            'total_heures_sup_ajustees' => $this->totalHeuresSupAjustees,
+            'heures_sup_a_payer' => $heuresSupAPayer,
+            'vers_banque_temps' => $this->versBanqueTemps,
+            'difference_hebdomadaire' => $differenceHebdomadaire,
+            'ajustement_banque' => $this->ajustementBanque,
+            'heures_manquantes' => $heuresManquantes ?? 0,
+            'message' => $message
+        ];
     }
-
-    // Calculer l'ajustement de la banque de temps
-    $this->versBanqueTemps = $this->totalHeuresSupAjustees - $heuresSupAPayer;
-    $differenceHebdomadaire = $this->heuresTravaillees - $heuresDefinies;
-    $this->ajustementBanque = $differenceHebdomadaire - $heuresSupAPayer;
-
-    // Debug data
-    $this->debugCalculs = [
-        'heures_travaillees' => $this->heuresTravaillees,
-        'heures_definies' => $heuresDefinies,
-        'heures_sup_normales' => $this->heuresSupNormales,
-        'heures_sup_majorees' => $this->heuresSupMajorees,
-        'total_heures_sup_ajustees' => $this->totalHeuresSupAjustees,
-        'heures_sup_a_payer' => $heuresSupAPayer,
-        'vers_banque_temps' => $this->versBanqueTemps,
-        'difference_hebdomadaire' => $differenceHebdomadaire,
-        'ajustement_banque' => $this->ajustementBanque,
-        'heures_manquantes' => $heuresManquantes ?? 0,
-        'message' => $message
-    ];
-}
 
     /**
      * Convertir une valeur décimale en format d'affichage (00.00)
@@ -607,6 +607,78 @@ private function calculerDetailsHeuresSupplementaires()
         return $soldeActuel + $this->ajustementBanque;
     }
 
+    /**
+     * Mettre à jour la banque de temps lors de la validation
+     */
+    private function mettreAJourBanqueTemps()
+    {
+        // Calculer "vers banque de temps" à partir de l'opération
+        $totalHeuresSupAjustees = $this->operation->total_heure_supp_ajuster ?? 0;
+        $heuresSupAPayer = $this->operation->total_heure_sup_a_payer ?? 0;
+        $versBanqueTemps = $totalHeuresSupAjustees - $heuresSupAPayer;
+
+        if ($versBanqueTemps == 0) {
+            return; // Pas d'ajustement, rien à faire
+        }
+
+        $config = $this->getConfigurationBanqueTemps();
+
+        if (!$config) {
+            // Créer une nouvelle configuration si elle n'existe pas
+            $codeCaiss = CodeTravail::where('code', 'CAISS')
+                ->orWhere('code', 'LIKE', '%CAISS%')
+                ->first();
+
+            if ($codeCaiss) {
+                $anneeFinanciere = AnneeFinanciere::where('actif', true)->first();
+
+                Configuration::create([
+                    'libelle' => 'Banque de temps',
+                    'quota' => $versBanqueTemps, 
+                    'consomme' => 0,
+                    'reste' => $versBanqueTemps,
+                    'employe_id' => $this->employe->id,
+                    'annee_budgetaire_id' => $anneeFinanciere->id,
+                    'code_travail_id' => $codeCaiss->id,
+                    'commentaire' => "Ajustement semaine {$this->semaine->numero_semaine} - Vers banque: " .
+                        ($versBanqueTemps > 0 ? '+' : '') . $versBanqueTemps . 'h - ' . now()->format('d/m/Y')
+                ]);
+            }
+        } else {
+            // Mettre à jour la configuration existante
+            $nouveauQuota = $config->quota + $versBanqueTemps;
+
+            $config->update([
+                'quota' => $nouveauQuota,
+                'reste' => $nouveauQuota - $config->consomme,
+                'commentaire' => $config->commentaire . "\nAjustement semaine {$this->semaine->numero_semaine}: " .
+                    "Vers banque " . ($versBanqueTemps > 0 ? '+' : '') . $versBanqueTemps . 'h - ' . now()->format('d/m/Y')
+            ]);
+        }
+    }
+
+    /**
+ * Obtenir la configuration de la banque de temps (code CAISS)
+ */
+private function getConfigurationBanqueTemps()
+{
+    $anneeFinanciere = AnneeFinanciere::where('actif', true)->first();
+    
+    if (!$anneeFinanciere) {
+        return null;
+    }
+
+    // Rechercher la configuration pour le code CAISS de cet employé
+    $config = Configuration::with('codeTravail')
+        ->where('employe_id', $this->employe->id)
+        ->where('annee_budgetaire_id', $anneeFinanciere->id)
+        ->whereHas('codeTravail', function ($query) {
+            $query->where('code', 'CAISS');
+        })
+        ->first();
+
+    return $config;
+}
 
     public function render()
     {
