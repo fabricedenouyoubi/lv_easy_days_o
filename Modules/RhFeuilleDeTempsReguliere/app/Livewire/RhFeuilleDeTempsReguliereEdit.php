@@ -413,13 +413,44 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     }
 
     /**
-     * Calculer les jours fériés pour la semaine
-     */
-    private function calculerJoursFeries()
-    {
-        // Logique simple - à enrichir selon vos besoins
-        $this->joursFeries = []; // Pas de jours fériés pour l'instant
+ * Calculer les jours fériés pour la semaine
+ */
+private function calculerJoursFeries()
+{
+    // Récupérer l'année financière active
+    $anneeFinanciere = AnneeFinanciere::where('actif', true)->first();
+    
+    if (!$anneeFinanciere) {
+        $this->joursFeries = [];
+        return;
     }
+
+    // Récupérer les dates de jours fériés depuis les configurations
+    $datesFeries = Configuration::where('annee_budgetaire_id', $anneeFinanciere->id)
+        ->whereNotNull('date')
+        ->pluck('date')
+        ->map(function($date) {
+            return \Carbon\Carbon::parse($date)->format('Y-m-d');
+        })
+        ->toArray();
+
+    // Vérifier quelles dates de la semaine sont des jours fériés
+    $this->joursFeries = [];
+    foreach ($this->datesSemaine as $index => $dateInfo) {
+        $dateFormatee = $dateInfo['date']->format('Y-m-d');
+        if (in_array($dateFormatee, $datesFeries)) {
+            $this->joursFeries[] = $index; // Stocker l'index du jour férié
+        }
+    }
+}
+
+/**
+ * Vérifier si un jour est férié
+ */
+public function estJourFerie($jourIndex)
+{
+    return in_array($jourIndex, $this->joursFeries);
+}
 
     /**
      * Enregistrer les modifications (transition workflow: enregistrer)

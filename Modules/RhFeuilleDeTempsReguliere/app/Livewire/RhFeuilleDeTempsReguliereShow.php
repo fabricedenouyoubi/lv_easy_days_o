@@ -50,6 +50,9 @@ class RhFeuilleDeTempsReguliereShow extends Component
     public $heureSupplementaireAjuste = 0;
     public $heureSupplementaireAPayer = 0;
 
+    // Jours de la semaine avec dates complètes
+    public $joursFeries = [];
+
     protected $rules = [
         'motifRejet' => 'required|string|min:5',
         'commentaire' => 'nullable|string|max:500'
@@ -97,6 +100,9 @@ class RhFeuilleDeTempsReguliereShow extends Component
 
             // Calculer semaines
             $this->calculerDatesSemaine();
+
+            // Calculer les jours fériés
+            $this->calculerJoursFeries();
 
             // Calculer les détails des heures supplémentaires
             $this->calculerDetailsHeuresSupplementaires();
@@ -494,6 +500,9 @@ class RhFeuilleDeTempsReguliereShow extends Component
      */
     private function calculerDatesSemaine()
     {
+        // Vider le tableau avant de le remplir pour éviter les doublons
+        $this->datesSemaine = [];
+
         $dateDebut = \Carbon\Carbon::parse($this->semaine->debut);
 
         for ($i = 0; $i <= 6; $i++) {
@@ -634,7 +643,7 @@ class RhFeuilleDeTempsReguliereShow extends Component
 
                 Configuration::create([
                     'libelle' => 'Banque de temps',
-                    'quota' => $versBanqueTemps, 
+                    'quota' => $versBanqueTemps,
                     'consomme' => 0,
                     'reste' => $versBanqueTemps,
                     'employe_id' => $this->employe->id,
@@ -658,27 +667,67 @@ class RhFeuilleDeTempsReguliereShow extends Component
     }
 
     /**
- * Obtenir la configuration de la banque de temps (code CAISS)
- */
-private function getConfigurationBanqueTemps()
-{
-    $anneeFinanciere = AnneeFinanciere::where('actif', true)->first();
-    
-    if (!$anneeFinanciere) {
-        return null;
+     * Obtenir la configuration de la banque de temps (code CAISS)
+     */
+    private function getConfigurationBanqueTemps()
+    {
+        $anneeFinanciere = AnneeFinanciere::where('actif', true)->first();
+
+        if (!$anneeFinanciere) {
+            return null;
+        }
+
+        // Rechercher la configuration pour le code CAISS de cet employé
+        $config = Configuration::with('codeTravail')
+            ->where('employe_id', $this->employe->id)
+            ->where('annee_budgetaire_id', $anneeFinanciere->id)
+            ->whereHas('codeTravail', function ($query) {
+                $query->where('code', 'CAISS');
+            })
+            ->first();
+
+        return $config;
     }
 
-    // Rechercher la configuration pour le code CAISS de cet employé
-    $config = Configuration::with('codeTravail')
-        ->where('employe_id', $this->employe->id)
-        ->where('annee_budgetaire_id', $anneeFinanciere->id)
-        ->whereHas('codeTravail', function ($query) {
-            $query->where('code', 'CAISS');
-        })
-        ->first();
+    /**
+     * Calculer les jours fériés pour la semaine
+     */
+    private function calculerJoursFeries()
+    {
+        // Récupérer l'année financière active
+        $anneeFinanciere = AnneeFinanciere::where('actif', true)->first();
 
-    return $config;
-}
+        if (!$anneeFinanciere) {
+            $this->joursFeries = [];
+            return;
+        }
+
+        // Récupérer les dates de jours fériés depuis les configurations
+        $datesFeries = Configuration::where('annee_budgetaire_id', $anneeFinanciere->id)
+            ->whereNotNull('date')
+            ->pluck('date')
+            ->map(function ($date) {
+                return \Carbon\Carbon::parse($date)->format('Y-m-d');
+            })
+            ->toArray();
+
+        // Vérifier quelles dates de la semaine sont des jours fériés
+        $this->joursFeries = [];
+        foreach ($this->datesSemaine as $index => $dateInfo) {
+            $dateFormatee = $dateInfo['date']->format('Y-m-d');
+            if (in_array($dateFormatee, $datesFeries)) {
+                $this->joursFeries[] = $index; // Stocker l'index du jour férié
+            }
+        }
+    }
+
+    /**
+     * Vérifier si un jour est férié
+     */
+    public function estJourFerie($jourIndex)
+    {
+        return in_array($jourIndex, $this->joursFeries);
+    }
 
     public function render()
     {
