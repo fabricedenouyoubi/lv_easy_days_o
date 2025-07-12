@@ -127,7 +127,7 @@ private function getColorMapping()
 {
     return [
         'bg-warning' => 'warning',
-        'bg-info' => 'info', 
+        'bg-info' => 'info',
         'bg-primary' => 'primary',
         'bg-success' => 'success',
         'bg-danger' => 'danger',
@@ -141,10 +141,10 @@ private function getColorMapping()
 private function getTypeFromClass($class)
 {
     $mapping = $this->getColorMapping();
-    
+
     // Extraire la classe principale (bg-warning, bg-info, etc.)
     $mainClass = explode(' ', $class)[0];
-    
+
     return $mapping[$mainClass] ?? 'secondary';
 }
 
@@ -218,14 +218,14 @@ public function getActionsDisponibles($semaine)
         // Récupérer le statut formaté pour obtenir la couleur cohérente
         $statutInfo = $this->getStatutFormate($semaine);
         $colorType = $this->getTypeFromClass($statutInfo['class']);
-        
+
         // Opération existe = actions selon l'état
         switch ($operation['workflow_state']) {
             case 'brouillon':
             case 'en_cours':
-            case 'rejete':  
+            case 'rejete':
                 $actions[] = [
-                    'type' => $colorType, 
+                    'type' => $colorType,
                     'text' => 'Consulter',
                     'icon' => 'fas fa-edit',
                     'route' => 'feuille-temps.show',
@@ -235,7 +235,7 @@ public function getActionsDisponibles($semaine)
 
             default:
                 $actions[] = [
-                    'type' => $colorType, 
+                    'type' => $colorType,
                     'text' => 'Consulter',
                     'icon' => 'fas fa-eye',
                     'route' => 'feuille-temps.show',

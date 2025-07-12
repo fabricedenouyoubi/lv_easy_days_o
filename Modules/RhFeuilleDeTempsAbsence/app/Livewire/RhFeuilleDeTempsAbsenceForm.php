@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Modules\Budget\Models\AnneeFinanciere;
+use Modules\Budget\Models\SemaineAnnee;
 use Modules\RhFeuilleDeTempsAbsence\Models\DemandeAbsence;
 use Modules\RhFeuilleDeTempsAbsence\Traits\AbsenceResource;
 use Modules\RhFeuilleDeTempsAbsence\Workflows\DemandeAbsenceWorkflow;
@@ -100,6 +101,16 @@ class RhFeuilleDeTempsAbsenceForm extends Component
         $user_connect = Auth::user();
 
         try {
+
+            //--- Vérification de l'existances des semaines de l'annee avec validation de la demande
+            $nbrSemaine = SemaineAnnee::where('annee_financiere_id', $this->annee_financiere_id)
+                ->count();
+
+            if ($nbrSemaine == 0) {
+                session()->flash('error', "Aucune semaine trouvée pour l'année en cours");
+                return ;
+            }
+
             $comment = $this->employeId ? 'La demande est en cours de redaction par ' . $user_connect?->name : 'La demande est en cours de redaction';
             if (!$this->demande_absence_id) {
 

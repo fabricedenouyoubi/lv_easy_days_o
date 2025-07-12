@@ -153,10 +153,17 @@
                                         <strong>{{ $operation->total_heure }}</strong>
                                     </td>
                                     <td>
-                                        <strong>Semaine du
-                                            <code>{{ \Carbon\Carbon::parse($operation->anneeSemaine?->debut)->format('d/m/Y') }}</code>
-                                            au
-                                            <code>{{ \Carbon\Carbon::parse($operation->anneeSemaine?->fin)->format('d/m/Y') }}</code></strong>
+                                        @if ($operation->anneeSemaine?->debut && $operation->anneeSemaine?->debut)
+                                            <strong>Semaine du
+                                                <code>{{ \Carbon\Carbon::parse($operation->anneeSemaine?->debut)->format('d/m/Y') }}</code>
+                                                au
+                                                <code>{{ \Carbon\Carbon::parse($operation->anneeSemaine?->fin)->format('d/m/Y') }}</code></strong>
+                                        @else
+                                            <strong>Semaine du
+                                                <code>{{ \Carbon\Carbon::parse($demandeAbsence->date_debut)->format('d/m/Y') }}</code>
+                                                au
+                                                <code>{{ \Carbon\Carbon::parse($demandeAbsence->date_fin)->format('d/m/Y') }}</code></strong>
+                                        @endif
                                     </td>
                                     <td></td>
                                 </tr>
@@ -350,7 +357,7 @@
                                 wireClick="toogle_approve_modal" text="Annuler" />
                             <x-action-button type="success" icon="fas fa-check-circle me-2" size="md"
                                 text="confirmer la validation" wireClick="approuverDemandeAbsence" loading="true"
-                                loading-target="approuverDemandeAbsence"/>
+                                loading-target="approuverDemandeAbsence" />
                         </div>
                     </div>
                 </div>
@@ -374,7 +381,7 @@
                                 wireClick="toogle_soumission_modal" text="Annuler" />
                             <x-action-button type="success" icon="fas fa-paper-plane me-2" size="md"
                                 text="confirmer la soumission" wireClick="soumettreDemandeAbsence" loading="true"
-                                loading-target="soumettreDemandeAbsence"/>
+                                loading-target="soumettreDemandeAbsence" />
                         </div>
                     </div>
                 </div>
@@ -411,7 +418,7 @@
                                 wireClick="toogle_rappeler_modal" text="Annuler" />
                             <x-action-button type="success" icon="fas fa-undo-alt me-2" size="md"
                                 text="Confirmer le rappel" wireClick="rapelleDemandeAbsence" loading="true"
-                                loading-target="rapelleDemandeAbsence"/>
+                                loading-target="rapelleDemandeAbsence" />
                         </div>
                     </div>
                 </div>
@@ -448,7 +455,7 @@
                                 wireClick="toogle_retrouner_modal" text="Annuler" />
                             <x-action-button type="success" icon="fas fa-reply me-2" size="md"
                                 text="Confirmer le retour" wireClick="retournerDemandeAbsence" loading="true"
-                                loading-target="retournerDemandeAbsence"/>
+                                loading-target="retournerDemandeAbsence" />
                         </div>
                     </div>
                 </div>

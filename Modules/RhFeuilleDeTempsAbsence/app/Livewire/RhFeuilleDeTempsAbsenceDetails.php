@@ -59,7 +59,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
 
     public function mount()
     {
-        $this->demandeAbsence = DemandeAbsence::with('employe', 'codeTravail', 'operations.anneeSemaine')->findOrFail($this->demandeAbsenceId);
+        $this->demandeAbsence = DemandeAbsence::with('employe', 'codeTravail','operations','operations.anneeSemaine', 'anneeFinanciere')->findOrFail($this->demandeAbsenceId);
         $this->workflow_log = $this->demandeAbsence->workflow_log;
         $this->nombreJourAbsence = $this->nombreDeJoursEntre($this->demandeAbsence->date_debut, $this->demandeAbsence->date_fin, $this->demandeAbsence->annee_financiere_id);
     }
@@ -200,6 +200,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     {
         $user_connect = Auth::user();
         try {
+
             //--- Selection des semaines de l'année ---
             $semaines = SemaineAnnee::where('annee_financiere_id', $this->demandeAbsence->annee_financiere_id)
                 ->where('fin', '>=', $this->demandeAbsence->date_debut)
@@ -238,7 +239,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
                 // Création d'une opération (enregistrement dans la base) représentant l'absence sur cette semaine
                 $operation = Operation::create([
                     'demande_absence_id' => $this->demandeAbsence->id,
-                    'annee_semaine_id' => $semaine->id,
+                    //'annee_semaine_id' => $semaine->id,
                     'employe_id' => $this->demandeAbsence->employe_id,
                     'total_heure' => $jours_absence * $this->demandeAbsence->heure_par_jour,
                     'workflow_state' => 'valide',
@@ -257,7 +258,8 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
             if ($workflow->failed()) {
                 //--- Journalisation
                 Log::channel('daily')->error(
-                    "Erreur lors du lancement du workflow de la validation de la demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " par l' utilisateur " . $user_connect->name, ['demande' => $this->demandeAbsence->id]
+                    "Erreur lors du lancement du workflow de la validation de la demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " par l' utilisateur " . $user_connect->name,
+                    ['demande' => $this->demandeAbsence->id]
                 );
                 session()->flash('error', 'Une erreur est survenue lors du lancement du workflow de la validation de la demande d\'absence.');
             } else {
@@ -302,7 +304,8 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
             if ($workflow->failed()) {
                 //--- Journalisation
                 Log::channel('daily')->error(
-                    "Erreur lors du lancement du workflow du retour de la demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " par l' utilisateur " . $user_connect->name, ['demande' => $this->demandeAbsence->id]
+                    "Erreur lors du lancement du workflow du retour de la demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " par l' utilisateur " . $user_connect->name,
+                    ['demande' => $this->demandeAbsence->id]
                 );
                 session()->flash('error', 'Une erreur est survenue lors du lancement du workflow du retour de la demande d\'absence.');
             } else {
@@ -347,7 +350,8 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
             if ($workflow->failed()) {
                 //--- Journalisation
                 Log::channel('daily')->error(
-                    "Erreur lors du lancement du workflow du retour de la demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " par l' utilisateur " . $user_connect->name, ['demande' => $this->demandeAbsence->id]
+                    "Erreur lors du lancement du workflow du retour de la demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " par l' utilisateur " . $user_connect->name,
+                    ['demande' => $this->demandeAbsence->id]
                 );
                 session()->flash('error', 'Une erreur est survenue lors du lancement du workflow du rejet de la demande d\'absence.');
             } else {
