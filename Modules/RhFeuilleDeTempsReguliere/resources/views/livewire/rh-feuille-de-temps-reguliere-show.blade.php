@@ -419,11 +419,6 @@
                 </div>
                 <div class="modal-body">
                     <p>Êtes-vous sûr de vouloir soumettre cette feuille de temps ?</p>
-                    <div class="mb-3">
-                        <label class="form-label">Commentaire (optionnel)</label>
-                        <textarea wire:model="commentaire" class="form-control" rows="3"
-                            placeholder="Ajouter un commentaire..."></textarea>
-                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" wire:click="toggleSubmitModal" class="btn btn-secondary">Annuler</button>
@@ -445,11 +440,6 @@
                 </div>
                 <div class="modal-body">
                     <p>Êtes-vous sûr de vouloir rappeler cette feuille de temps pour modification ?</p>
-                    <div class="mb-3">
-                        <label class="form-label">Motif (optionnel)</label>
-                        <textarea wire:model="commentaire" class="form-control" rows="3"
-                            placeholder="Raison du rappel..."></textarea>
-                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" wire:click="toggleRecallModal" class="btn btn-secondary">Annuler</button>
@@ -471,11 +461,11 @@
                 </div>
                 <div class="modal-body">
                     <p>Êtes-vous sûr de vouloir valider cette feuille de temps ?</p>
-                    <div class="mb-3">
+                    <!--<div class="mb-3">
                         <label class="form-label">Commentaire (optionnel)</label>
                         <textarea wire:model="commentaire" class="form-control" rows="3"
                             placeholder="Commentaire de validation..."></textarea>
-                    </div>
+                    </div>-->
                 </div>
                 <div class="modal-footer">
                     <button type="button" wire:click="toggleApproveModal" class="btn btn-secondary">Annuler</button>
