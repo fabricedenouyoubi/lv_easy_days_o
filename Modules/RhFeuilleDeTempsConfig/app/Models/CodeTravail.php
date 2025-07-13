@@ -19,6 +19,8 @@ class CodeTravail extends Model
         'libelle',
         'categorie_id',
         'est_ajustable',
+        'est_banque',
+        'cumule_banque',
     ];
 
     /**
@@ -94,6 +96,21 @@ class CodeTravail extends Model
         return $query->where('libelle', 'like', '%' . $libelle . '%');
     }
 
+    /**
+     * Scope pour filtrer les codes qui entrent dans la banque de temps
+     */
+    public function scopeEstBanque($query, $estBanque = true)
+    {
+        return $query->where('est_banque', $estBanque);
+    }
+
+    /**
+     * Scope pour filtrer les codes qui cumulent la banque
+     */
+    public function scopeCumuleBanque($query, $cumuleBanque = true)
+    {
+        return $query->where('cumule_banque', $cumuleBanque);
+    }
     /**
      * Relation avec Configuration
      */

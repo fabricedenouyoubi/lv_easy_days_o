@@ -9,4 +9,7 @@ Route::prefix('budget')->name('budget.')->middleware(['web', 'auth'])->group(fun
     //Route::get('/annee/{annee}/details', [BudgetController::class, 'detailsAnnee'])->name('annee-details');
     //Route pour la liste des semaines d'une année financière
     Route::get('/annee/{annee}/details', [SemaineController::class, 'detailsAnnee'])->name('details-annee')->middleware('permission:Générer les semaines d\'une année');
+
+    // Route la liste des semaines (annee courante)
+    Route::get('/annee-courante/details', [SemaineController::class, 'detailsAnneeCourante'])->name('details-annee-courante')->middleware('permission:Générer les semaines d\'une année');
 });

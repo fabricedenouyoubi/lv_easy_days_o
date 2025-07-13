@@ -23,18 +23,24 @@ class CodeTravailSeeder extends Seeder
                 'libelle' => 'Heure régulière',
                 'categorie_id' => $categories['Heure régulière']->id,
                 'est_ajustable' => true,
+                'est_banque' => false,     
+                'cumule_banque' => false,
             ],
             [
                 'code' => 'HESUP',
                 'libelle' => 'Heure supplémentaire',
                 'categorie_id' => $categories['Heure régulière']->id,
                 'est_ajustable' => true,
+                'est_banque' => false,     
+                'cumule_banque' => false,
             ],
             [
                 'code' => 'TDD',
                 'libelle' => 'Temps de déplacement',
                 'categorie_id' => $categories['Heure régulière']->id,
                 'est_ajustable' => false,
+                'est_banque' => false,     
+                'cumule_banque' => false,
             ],
 
             // Codes pour "Rapport"
@@ -43,12 +49,16 @@ class CodeTravailSeeder extends Seeder
                 'libelle' => 'Formation',
                 'categorie_id' => $categories['Rapport']->id,
                 'est_ajustable' => true,
+                'est_banque' => false,     
+                'cumule_banque' => false,
             ],
             [
                 'code' => 'CATDF',
                 'libelle' => 'Banque de temps de formation',
                 'categorie_id' => $categories['Rapport']->id,
                 'est_ajustable' => true,
+                'est_banque' => false,     
+                'cumule_banque' => false,
             ],
 
             // Codes pour "Absence"
@@ -57,6 +67,8 @@ class CodeTravailSeeder extends Seeder
                 'libelle' => 'Vacances',
                 'categorie_id' => $categories['Absence']->id,
                 'est_ajustable' => true,
+                'est_banque' => true,     
+                'cumule_banque' => false,
             ],
 
             // Codes pour "Caisse"
@@ -65,6 +77,8 @@ class CodeTravailSeeder extends Seeder
                 'libelle' => 'Banque de temps',
                 'categorie_id' => $categories['Caisse']->id,
                 'est_ajustable' => true,
+                'est_banque' => true,     
+                'cumule_banque' => true,
             ],
 
             // Codes pour "Congé"
@@ -73,6 +87,8 @@ class CodeTravailSeeder extends Seeder
                 'libelle' => 'Congés Mobiles',
                 'categorie_id' => $categories['Congé']->id,
                 'est_ajustable' => true,
+                'est_banque' => false,     
+                'cumule_banque' => false,
             ],
 
             // Codes pour "Activité"
@@ -81,6 +97,8 @@ class CodeTravailSeeder extends Seeder
                 'libelle' => 'Heure CSN',
                 'categorie_id' => $categories['Activité']->id,
                 'est_ajustable' => true,
+                'est_banque' => true,     
+                'cumule_banque' => false,
             ],
 
             // Codes pour "Fermé"
@@ -89,12 +107,16 @@ class CodeTravailSeeder extends Seeder
                 'libelle' => 'Journée fériée',
                 'categorie_id' => $categories['Fermé']->id,
                 'est_ajustable' => true,
+                'est_banque' => false,     
+                'cumule_banque' => false,
             ],
             [
                 'code' => 'HEDIV',
                 'libelle' => 'Heures diverses',
                 'categorie_id' => $categories['Fermé']->id,
                 'est_ajustable' => true,
+                'est_banque' => false,     
+                'cumule_banque' => false,
             ],
         ];
 

@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('libelle', 150);
             $table->foreignId('categorie_id')->constrained('categories')->onDelete('cascade');
             $table->boolean('est_ajustable')->default(true)->comment('Indique si ce code doit être inclus dans le calcul du total des heures');
+            $table->boolean('est_banque')->default(false)->comment('Indique si ce code entre dans la banque de temps d\'un employé');
+            $table->boolean('cumule_banque')->default(false)->comment('Indique si ce code marque un solde d\'employé');
             $table->timestamps();           
             // Index pour améliorer les performances
             $table->index(['categorie_id']);

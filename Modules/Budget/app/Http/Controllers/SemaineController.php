@@ -32,7 +32,7 @@ class SemaineController extends Controller
     {
         try {
             $anneeFinanciere = AnneeFinanciere::findOrFail($anneeId);
-            
+
             // Mettre à jour la session si c'est l'année active
             if ($anneeFinanciere->actif) {
                 $this->anneeFinanciereService->updateAnneeFinanciereSessionData($anneeFinanciere);
@@ -43,7 +43,7 @@ class SemaineController extends Controller
             ]);
         } catch (\Exception $e) {
             return redirect()->route('budget.annees-financieres')
-                           ->with('error', 'Année financière introuvable.');
+                ->with('error', 'Année financière introuvable.');
         }
     }
 
@@ -54,10 +54,10 @@ class SemaineController extends Controller
     {
         try {
             $anneeFinanciere = AnneeFinanciere::findOrFail($anneeId);
-            
+
             // Vérifier si les feuilles existent déjà
             $feuilleGenerator = app('Modules\Budget\Services\SemaineGeneratorService');
-            
+
             if ($feuilleGenerator->areFeuillesGenerated($anneeFinanciere)) {
                 return response()->json([
                     'success' => false,
@@ -87,7 +87,7 @@ class SemaineController extends Controller
     {
         try {
             $anneeFinanciere = AnneeFinanciere::findOrFail($anneeId);
-            
+
             // Régénérer les feuilles de temps
             $feuilleGenerator = app('Modules\Budget\Services\SemaineGeneratorService');
             $feuilleGenerator->regenerateFeuillesDeTemps($anneeFinanciere);
@@ -123,6 +123,29 @@ class SemaineController extends Controller
                 'success' => false,
                 'message' => 'Erreur lors de la récupération des statistiques : ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Afficher les détails de l'année financière courante
+     */
+    public function detailsAnneeCourante()
+    {
+        try {
+            // Récupérer l'année financière courante depuis le service
+            $anneeFinanciere = app('Modules\Budget\Services\AnneeFinanciereSessionService')::getAnneeCourante();
+
+            if (!$anneeFinanciere) {
+                return redirect()->route('budget.annees-financieres')
+                    ->with('error', 'Aucune année financière active trouvée.');
+            }
+
+            return view('budget::details-annee', [
+                'anneeFinanciere' => $anneeFinanciere
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->route('budget.annees-financieres')
+                ->with('error', 'Erreur lors de l\'accès à l\'année financière courante : ' . $e->getMessage());
         }
     }
 }
