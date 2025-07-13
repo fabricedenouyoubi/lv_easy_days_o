@@ -480,6 +480,7 @@ public function estJourFerie($jourIndex)
             });
 
             session()->flash('success', 'Feuille de temps enregistrée avec succès.');
+            return redirect()->route('feuille-temps.list');
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors de l\'enregistrement: ' . $th->getMessage());
         }
