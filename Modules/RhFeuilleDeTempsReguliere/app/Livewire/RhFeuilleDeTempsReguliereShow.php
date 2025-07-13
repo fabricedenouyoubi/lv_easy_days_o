@@ -351,7 +351,7 @@ class RhFeuilleDeTempsReguliereShow extends Component
 
 
     /**
-     * Calculer la banque de temps dynamique
+     * Calculer la banque de temps dynamique (version complète avec collectif)
      */
     private function calculerBanqueDeTemps()
     {
@@ -365,90 +365,80 @@ class RhFeuilleDeTempsReguliereShow extends Component
             return;
         }
 
-        // Définir les codes à rechercher pour la banque de temps
-        $codesRecherches = [
-            'vacances' => ['VAC', 'VACATION', 'VACANCE', 'CONGE'],
-            'banque_temps' => ['CAISS', 'BANQUE', 'BANK', 'BT'],
-            'heure_csn' => ['CSN', 'HCSN', 'CSN_H']
-        ];
-
-        foreach ($codesRecherches as $type => $patterns) {
-            $configuration = $this->rechercherConfigurationParCode($patterns, $anneeFinanciere->id);
-
-            if ($configuration) {
-                $banqueTemps[] = [
-                    'type' => $type,
-                    'libelle' => $this->getLibelleBanqueTemps($type, $configuration->codeTravail->libelle),
-                    'valeur' => $configuration->reste ?? 0,
-                    'code_travail' => $configuration->codeTravail
-                ];
-            }
-        }
-
-        $this->banqueDeTemps = $banqueTemps;
-    }
-
-
-    /**
-     * Version corrigée - reste collectif partagé
-     */
-    private function rechercherConfigurationParCode($patterns, $anneeBudgetaireId)
-    {
-        // Recherche individuelle
-        $configIndividuelle = Configuration::with('codeTravail')
+        // 1. RECHERCHE INDIVIDUELLE : Configurations spécifiques à cet employé
+        $configurationsIndividuelles = Configuration::with('codeTravail')
             ->where('employe_id', $this->employe->id)
-            ->where('annee_budgetaire_id', $anneeBudgetaireId)
-            ->whereHas('codeTravail', function ($query) use ($patterns) {
-                $query->where(function ($subQuery) use ($patterns) {
-                    foreach ($patterns as $pattern) {
-                        $subQuery->orWhere('code', 'LIKE', "%{$pattern}%")
-                            ->orWhere('libelle', 'LIKE', "%{$pattern}%");
-                    }
-                });
+            ->where('annee_budgetaire_id', $anneeFinanciere->id)
+            ->whereHas('codeTravail', function ($query) {
+                $query->where('est_banque', true);
             })
-            ->first();
+            ->get();
 
-        if ($configIndividuelle) {
-            return $configIndividuelle;
-        }
+        // Créer un tableau des codes déjà trouvés en individuel
+        $codesIndividuels = $configurationsIndividuelles->pluck('code_travail_id')->toArray();
 
-        // Recherche collective avec reste partagé
-        $configCollective = Configuration::with(['codeTravail', 'employes'])
+        // 2. RECHERCHE COLLECTIVE : Configurations collectives (employe_id = NULL)
+        $configurationsCollectives = Configuration::with(['codeTravail', 'employes'])
             ->whereNull('employe_id')
             ->whereNull('date')
-            ->where('annee_budgetaire_id', $anneeBudgetaireId)
-            ->whereHas('codeTravail', function ($query) use ($patterns) {
-                $query->where(function ($subQuery) use ($patterns) {
-                    foreach ($patterns as $pattern) {
-                        $subQuery->orWhere('code', 'LIKE', "%{$pattern}%")
-                            ->orWhere('libelle', 'LIKE', "%{$pattern}%");
-                    }
-                });
+            ->where('annee_budgetaire_id', $anneeFinanciere->id)
+            ->whereHas('codeTravail', function ($query) {
+                $query->where('est_banque', true);
             })
             ->whereHas('employes', function ($query) {
                 $query->where('employe_id', $this->employe->id);
             })
-            ->first();
+            ->whereNotIn('code_travail_id', $codesIndividuels) // Exclure ceux déjà trouvés en individuel
+            ->get();
 
-        if ($configCollective) {
-            // Retourner la configuration avec son reste
-            return $configCollective;
+        // 3. TRAITEMENT DES CONFIGURATIONS INDIVIDUELLES
+        foreach ($configurationsIndividuelles as $config) {
+            $codeTravail = $config->codeTravail;
+
+            if ($codeTravail->cumule_banque) {
+                $valeur = $config->quota ?? 0;
+            } else {
+                $valeur = $config->reste ?? 0;
+            }
+
+            $banqueTemps[] = [
+                'type' => $codeTravail->code,
+                'libelle' => $codeTravail->libelle,
+                'valeur' => $valeur,
+                'code_travail' => $codeTravail,
+                'configuration' => $config,
+                'utilise_quota' => $codeTravail->cumule_banque,
+                'est_collectif' => false // Pour debug
+            ];
         }
 
-        return null;
-    }
+        // 4. TRAITEMENT DES CONFIGURATIONS COLLECTIVES
+        foreach ($configurationsCollectives as $config) {
+            $codeTravail = $config->codeTravail;
 
-    /**
-     * Obtenir le libellé formaté pour la banque de temps
-     */
-    private function getLibelleBanqueTemps($type, $libelleBrut)
-    {
-        return match ($type) {
-            'vacances' => 'Vacances',
-            'banque_temps' => 'Banque de temps',
-            'heure_csn' => 'Heure CSN',
-            default => $libelleBrut
-        };
+            if ($codeTravail->cumule_banque) {
+                $valeur = $config->quota ?? 0;
+            } else {
+                $valeur = $config->reste ?? 0;
+            }
+
+            $banqueTemps[] = [
+                'type' => $codeTravail->code,
+                'libelle' => $codeTravail->libelle,
+                'valeur' => $valeur,
+                'code_travail' => $codeTravail,
+                'configuration' => $config,
+                'utilise_quota' => $codeTravail->cumule_banque,
+                'est_collectif' => true // Pour debug
+            ];
+        }
+
+        // Trier par libellé pour un affichage cohérent
+        usort($banqueTemps, function ($a, $b) {
+            return strcmp($a['libelle'], $b['libelle']);
+        });
+
+        $this->banqueDeTemps = $banqueTemps;
     }
 
     /**
@@ -636,8 +626,8 @@ class RhFeuilleDeTempsReguliereShow extends Component
 
         if (!$config) {
             // Créer une nouvelle configuration si elle n'existe pas
-            $codeCaiss = CodeTravail::where('code', 'CAISS')
-                ->orWhere('code', 'LIKE', '%CAISS%')
+            $codeCaiss = CodeTravail::where('est_banque', true)
+                ->where('cumule_banque', true)
                 ->first();
 
             if ($codeCaiss) {
@@ -645,7 +635,7 @@ class RhFeuilleDeTempsReguliereShow extends Component
 
                 if ($anneeFinanciere) {
                     Configuration::create([
-                        'libelle' => 'Banque de temps',
+                        'libelle' => $codeCaiss->libelle,
                         'quota' => $versBanqueTemps, // Utiliser la valeur déjà calculée
                         'consomme' => 0,
                         'reste' => $versBanqueTemps,
@@ -656,13 +646,16 @@ class RhFeuilleDeTempsReguliereShow extends Component
                             ($versBanqueTemps > 0 ? '+' : '') . $versBanqueTemps . 'h - ' . now()->format('d/m/Y')
                     ]);
                 }
+            } else {
+                // Log d'erreur si aucun code de banque cumulative n'est trouvé
+                \Log::warning("Aucun code de travail avec cumule_banque=true trouvé pour la banque de temps");
             }
         } else {
-            // Mettre à jour la colonne quota
+            // Mettre à jour SEULEMENT la colonne quota
             $nouveauQuota = $config->quota + $versBanqueTemps;
 
             $config->update([
-                'quota' => $nouveauQuota,
+                'quota' => $nouveauQuota, // Mise à jour seulement du quota
                 'commentaire' => ($config->commentaire ?? '') . "\nAjustement semaine {$this->semaine->numero_semaine}: " .
                     "Vers banque " . ($versBanqueTemps > 0 ? '+' : '') . $versBanqueTemps . 'h - ' . now()->format('d/m/Y')
             ]);
@@ -670,7 +663,7 @@ class RhFeuilleDeTempsReguliereShow extends Component
     }
 
     /**
-     * Obtenir la configuration de la banque de temps (code CAISS)
+     * Obtenir la configuration de la banque de temps (code avec cumule_banque = true)
      */
     private function getConfigurationBanqueTemps()
     {
@@ -680,12 +673,13 @@ class RhFeuilleDeTempsReguliereShow extends Component
             return null;
         }
 
-        // Rechercher la configuration pour le code CAISS de cet employé
+        // Rechercher la configuration avec cumule_banque = true (généralement CAISS)
         $config = Configuration::with('codeTravail')
             ->where('employe_id', $this->employe->id)
             ->where('annee_budgetaire_id', $anneeFinanciere->id)
             ->whereHas('codeTravail', function ($query) {
-                $query->where('code', 'CAISS');
+                $query->where('est_banque', true)
+                    ->where('cumule_banque', true); // Code qui cumule les heures
             })
             ->first();
 
