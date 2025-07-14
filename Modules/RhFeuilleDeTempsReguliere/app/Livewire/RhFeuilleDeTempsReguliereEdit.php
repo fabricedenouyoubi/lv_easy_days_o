@@ -38,7 +38,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     // Banque de temps
     public $banqueDeTemps = [];
     // Heures que l'employé doit à l'entreprise
-    public $heuresManquantes = 0; 
+    public $heuresManquantes = 0;
 
     // Totaux calculés
     public $totaux = [
@@ -150,66 +150,63 @@ class RhFeuilleDeTempsReguliereEdit extends Component
         return $totalHeures;
     }
 
-   /**
- * Calculer les heures supplémentaires selon la logique canadienne
- */
-private function calculerHeuresSupplementaires()
-{
-    $heuresTravaillees = $this->calculerHeuresTravaillees();
-    $heuresDefinies = $this->heuresDefiniesEmploye;
+    /**
+     * Calculer les heures supplémentaires selon la logique canadienne
+     */
+    private function calculerHeuresSupplementaires()
+    {
+        $heuresTravaillees = $this->calculerHeuresTravaillees();
+        $heuresDefinies = $this->heuresDefiniesEmploye;
 
-    // Réinitialiser les valeurs
-    $this->heuresSupNormales = 0;
-    $this->heuresSupMajorees = 0;
-    $this->totalHeuresSupAjustees = 0;
+        // Réinitialiser les valeurs
+        $this->heuresSupNormales = 0;
+        $this->heuresSupMajorees = 0;
+        $this->totalHeuresSupAjustees = 0;
 
-    // Debug data
-    $this->debugCalculs = [
-        'heures_travaillees' => $heuresTravaillees,
-        'heures_definies' => $heuresDefinies,
-        'heures_sup_normales' => 0,
-        'heures_sup_majorees' => 0,
-        'total_heures_sup_ajustees' => 0,
-        'heures_sup_a_payer' => $this->parseUserInputToDecimal($this->heureSupplementaireAPayer),
-        'vers_banque_temps' => 0,
-        'ajustement_banque' => 0,
-        'heures_manquantes' => 0, // Nouveau champ
-    ];
+        // Debug data
+        $this->debugCalculs = [
+            'heures_travaillees' => $heuresTravaillees,
+            'heures_definies' => $heuresDefinies,
+            'heures_sup_normales' => 0,
+            'heures_sup_majorees' => 0,
+            'total_heures_sup_ajustees' => 0,
+            'heures_sup_a_payer' => $this->parseUserInputToDecimal($this->heureSupplementaireAPayer),
+            'vers_banque_temps' => 0,
+            'ajustement_banque' => 0,
+            'heures_manquantes' => 0, // Nouveau champ
+        ];
 
-    if ($heuresTravaillees < $heuresDefinies) {
-        // CAS 1: Heures manquantes - l'employé doit des heures à l'entreprise
-        $heuresManquantes = $heuresDefinies - $heuresTravaillees;
-        $this->debugCalculs['heures_manquantes'] = $heuresManquantes;
-        $this->debugCalculs['message'] = "Heures manquantes: {$heuresDefinies}h - {$heuresTravaillees}h = {$heuresManquantes}h (employé doit à l'entreprise)";
-        
-    } else if ($heuresTravaillees == $heuresDefinies) {
-        // CAS 2: Heures exactes - pas de surplus ni de manque
-        $this->debugCalculs['message'] = "Heures exactes (= heures définies)";
-        
-    } else if ($heuresTravaillees <= 40) {
-        // CAS 3: Heures sup. normales seulement
-        $this->heuresSupNormales = $heuresTravaillees - $heuresDefinies;
-        $this->totalHeuresSupAjustees = $this->heuresSupNormales;
+        if ($heuresTravaillees < $heuresDefinies) {
+            // CAS 1: Heures manquantes - l'employé doit des heures à l'entreprise
+            $heuresManquantes = $heuresDefinies - $heuresTravaillees;
+            $this->debugCalculs['heures_manquantes'] = $heuresManquantes;
+            $this->debugCalculs['message'] = "Heures manquantes: {$heuresDefinies}h - {$heuresTravaillees}h = {$heuresManquantes}h (employé doit à l'entreprise)";
+        } else if ($heuresTravaillees == $heuresDefinies) {
+            // CAS 2: Heures exactes - pas de surplus ni de manque
+            $this->debugCalculs['message'] = "Heures exactes";
+        } else if ($heuresTravaillees <= 40) {
+            // CAS 3: Heures sup. normales seulement
+            $this->heuresSupNormales = $heuresTravaillees - $heuresDefinies;
+            $this->totalHeuresSupAjustees = $this->heuresSupNormales;
 
-        $this->debugCalculs['heures_sup_normales'] = $this->heuresSupNormales;
-        $this->debugCalculs['total_heures_sup_ajustees'] = $this->totalHeuresSupAjustees;
-        $this->debugCalculs['message'] = "Heures sup. normales: {$heuresTravaillees}h - {$heuresDefinies}h = {$this->heuresSupNormales}h";
-        
-    } else {
-        // CAS 4: Heures sup. normales + majorées
-        $this->heuresSupNormales = 40 - $heuresDefinies;
-        $this->heuresSupMajorees = ($heuresTravaillees - 40) * 1.5;
-        $this->totalHeuresSupAjustees = $this->heuresSupNormales + $this->heuresSupMajorees;
+            $this->debugCalculs['heures_sup_normales'] = $this->heuresSupNormales;
+            $this->debugCalculs['total_heures_sup_ajustees'] = $this->totalHeuresSupAjustees;
+            $this->debugCalculs['message'] = "Heures sup. normales: {$heuresTravaillees}h - {$heuresDefinies}h = {$this->heuresSupNormales}h";
+        } else {
+            // CAS 4: Heures sup. normales + majorées
+            $this->heuresSupNormales = 40 - $heuresDefinies;
+            $this->heuresSupMajorees = ($heuresTravaillees - 40) * 1.5;
+            $this->totalHeuresSupAjustees = $this->heuresSupNormales + $this->heuresSupMajorees;
 
-        $this->debugCalculs['heures_sup_normales'] = $this->heuresSupNormales;
-        $this->debugCalculs['heures_sup_majorees'] = $this->heuresSupMajorees;
-        $this->debugCalculs['total_heures_sup_ajustees'] = $this->totalHeuresSupAjustees;
-        $this->debugCalculs['message'] = "Heures sup. normales: 40h - {$heuresDefinies}h = {$this->heuresSupNormales}h | Heures sup. majorées: ({$heuresTravaillees}h - 40h) × 1.5 = {$this->heuresSupMajorees}h";
+            $this->debugCalculs['heures_sup_normales'] = $this->heuresSupNormales;
+            $this->debugCalculs['heures_sup_majorees'] = $this->heuresSupMajorees;
+            $this->debugCalculs['total_heures_sup_ajustees'] = $this->totalHeuresSupAjustees;
+            $this->debugCalculs['message'] = "Heures sup. normales: 40h - {$heuresDefinies}h = {$this->heuresSupNormales}h | Heures sup. majorées: ({$heuresTravaillees}h - 40h) × 1.5 = {$this->heuresSupMajorees}h";
+        }
+
+        // Calculer l'ajustement de la banque de temps
+        $this->calculerAjustementBanqueTemps();
     }
-
-    // Calculer l'ajustement de la banque de temps
-    $this->calculerAjustementBanqueTemps();
-}
 
     /**
      * Calculer l'ajustement de la banque de temps
@@ -217,9 +214,16 @@ private function calculerHeuresSupplementaires()
     private function calculerAjustementBanqueTemps()
     {
         $heuresSupAPayer = $this->parseUserInputToDecimal($this->heureSupplementaireAPayer);
+        $heuresManquantes = $this->debugCalculs['heures_manquantes'] ?? 0;
 
-        // Vers banque de temps = heures sup. ajustées - heures sup. à payer
-        $this->versBanqueTemps = $this->totalHeuresSupAjustees - $heuresSupAPayer;
+        // Soutraire aussi l'heure manquante
+        if ($heuresManquantes > 0) {
+            // CAS 1: Heures manquantes - soustraction de la banque
+            $this->versBanqueTemps = $this->totalHeuresSupAjustees - $heuresSupAPayer - $heuresManquantes;
+        } else {
+            // CAS 2: Heures supplémentaires - calcul normal
+            $this->versBanqueTemps = $this->totalHeuresSupAjustees - $heuresSupAPayer;
+        }
 
         // Ajustement final = différence hebdomadaire - heures sup. à payer
         $differenceHebdomadaire = $this->heuresTravaillees - $this->heuresDefiniesEmploye;
@@ -413,8 +417,39 @@ private function calculerHeuresSupplementaires()
      */
     private function calculerJoursFeries()
     {
-        // Logique simple - à enrichir selon vos besoins
-        $this->joursFeries = []; // Pas de jours fériés pour l'instant
+        // Récupérer l'année financière active
+        $anneeFinanciere = AnneeFinanciere::where('actif', true)->first();
+
+        if (!$anneeFinanciere) {
+            $this->joursFeries = [];
+            return;
+        }
+
+        // Récupérer les dates de jours fériés depuis les configurations
+        $datesFeries = Configuration::where('annee_budgetaire_id', $anneeFinanciere->id)
+            ->whereNotNull('date')
+            ->pluck('date')
+            ->map(function ($date) {
+                return \Carbon\Carbon::parse($date)->format('Y-m-d');
+            })
+            ->toArray();
+
+        // Vérifier quelles dates de la semaine sont des jours fériés
+        $this->joursFeries = [];
+        foreach ($this->datesSemaine as $index => $dateInfo) {
+            $dateFormatee = $dateInfo['date']->format('Y-m-d');
+            if (in_array($dateFormatee, $datesFeries)) {
+                $this->joursFeries[] = $index; // Stocker l'index du jour férié
+            }
+        }
+    }
+
+    /**
+     * Vérifier si un jour est férié
+     */
+    public function estJourFerie($jourIndex)
+    {
+        return in_array($jourIndex, $this->joursFeries);
     }
 
     /**
@@ -442,10 +477,10 @@ private function calculerHeuresSupplementaires()
                     'total_heure_supp_ajuster' => $this->totalHeuresSupAjustees,
                     'total_heure_sup_a_payer' => $this->parseUserInputToDecimal($this->heureSupplementaireAPayer)
                 ]);
-                
             });
 
             session()->flash('success', 'Feuille de temps enregistrée avec succès.');
+            return redirect()->route('feuille-temps.list');
         } catch (\Throwable $th) {
             session()->flash('error', 'Erreur lors de l\'enregistrement: ' . $th->getMessage());
         }
@@ -560,7 +595,7 @@ private function calculerHeuresSupplementaires()
     }
 
     /**
-     * Calculer la banque de temps dynamique
+     * Calculer la banque de temps dynamique (version complète avec collectif)
      */
     private function calculerBanqueDeTemps()
     {
@@ -574,76 +609,80 @@ private function calculerHeuresSupplementaires()
             return;
         }
 
-        // Définir les codes à rechercher pour la banque de temps
-        $codesRecherches = [
-            'vacances' => ['VAC', 'VACATION', 'VACANCE', 'CONGE'],
-            'banque_temps' => ['CAISS', 'BANQUE', 'BANK', 'BT'],
-            'heure_csn' => ['CSN', 'HCSN', 'CSN_H']
-        ];
-
-        foreach ($codesRecherches as $type => $patterns) {
-            $configuration = $this->rechercherConfigurationParCode($patterns, $anneeFinanciere->id);
-
-            if ($configuration) {
-                $banqueTemps[] = [
-                    'type' => $type,
-                    'libelle' => $this->getLibelleBanqueTemps($type, $configuration->codeTravail->libelle),
-                    'valeur' => $configuration->reste ?? 0,
-                    'code_travail' => $configuration->codeTravail
-                ];
-            }
-        }
-
-        $this->banqueDeTemps = $banqueTemps;
-    }
-
-    /**
-     * Version corrigée - reste collectif partagé
-     */
-    private function rechercherConfigurationParCode($patterns, $anneeBudgetaireId)
-    {
-        // Recherche individuelle
-        $configIndividuelle = Configuration::with('codeTravail')
+        // 1. RECHERCHE INDIVIDUELLE : Configurations spécifiques à cet employé
+        $configurationsIndividuelles = Configuration::with('codeTravail')
             ->where('employe_id', $this->employe->id)
-            ->where('annee_budgetaire_id', $anneeBudgetaireId)
-            ->whereHas('codeTravail', function ($query) use ($patterns) {
-                $query->where(function ($subQuery) use ($patterns) {
-                    foreach ($patterns as $pattern) {
-                        $subQuery->orWhere('code', 'LIKE', "%{$pattern}%")
-                            ->orWhere('libelle', 'LIKE', "%{$pattern}%");
-                    }
-                });
+            ->where('annee_budgetaire_id', $anneeFinanciere->id)
+            ->whereHas('codeTravail', function ($query) {
+                $query->where('est_banque', true);
             })
-            ->first();
+            ->get();
 
-        if ($configIndividuelle) {
-            return $configIndividuelle;
-        }
+        // Créer un tableau des codes déjà trouvés en individuel
+        $codesIndividuels = $configurationsIndividuelles->pluck('code_travail_id')->toArray();
 
-        // Recherche collective avec reste partagé
-        $configCollective = Configuration::with(['codeTravail', 'employes'])
+        // 2. RECHERCHE COLLECTIVE : Configurations collectives (employe_id = NULL)
+        $configurationsCollectives = Configuration::with(['codeTravail', 'employes'])
             ->whereNull('employe_id')
             ->whereNull('date')
-            ->where('annee_budgetaire_id', $anneeBudgetaireId)
-            ->whereHas('codeTravail', function ($query) use ($patterns) {
-                $query->where(function ($subQuery) use ($patterns) {
-                    foreach ($patterns as $pattern) {
-                        $subQuery->orWhere('code', 'LIKE', "%{$pattern}%")
-                            ->orWhere('libelle', 'LIKE', "%{$pattern}%");
-                    }
-                });
+            ->where('annee_budgetaire_id', $anneeFinanciere->id)
+            ->whereHas('codeTravail', function ($query) {
+                $query->where('est_banque', true);
             })
             ->whereHas('employes', function ($query) {
                 $query->where('employe_id', $this->employe->id);
             })
-            ->first();
+            ->whereNotIn('code_travail_id', $codesIndividuels) // Exclure ceux déjà trouvés en individuel
+            ->get();
 
-        if ($configCollective) {
-            // Retourner la configuration avec son reste
-            return $configCollective;
+        // 3. TRAITEMENT DES CONFIGURATIONS INDIVIDUELLES
+        foreach ($configurationsIndividuelles as $config) {
+            $codeTravail = $config->codeTravail;
+
+            if ($codeTravail->cumule_banque) {
+                $valeur = $config->quota ?? 0;
+            } else {
+                $valeur = $config->reste ?? 0;
+            }
+
+            $banqueTemps[] = [
+                'type' => $codeTravail->code,
+                'libelle' => $codeTravail->libelle,
+                'valeur' => $valeur,
+                'code_travail' => $codeTravail,
+                'configuration' => $config,
+                'utilise_quota' => $codeTravail->cumule_banque,
+                'est_collectif' => false // Pour debug
+            ];
         }
 
-        return null;
+        // 4. TRAITEMENT DES CONFIGURATIONS COLLECTIVES
+        foreach ($configurationsCollectives as $config) {
+            $codeTravail = $config->codeTravail;
+
+            if ($codeTravail->cumule_banque) {
+                $valeur = $config->quota ?? 0;
+            } else {
+                $valeur = $config->reste ?? 0;
+            }
+
+            $banqueTemps[] = [
+                'type' => $codeTravail->code,
+                'libelle' => $codeTravail->libelle,
+                'valeur' => $valeur,
+                'code_travail' => $codeTravail,
+                'configuration' => $config,
+                'utilise_quota' => $codeTravail->cumule_banque,
+                'est_collectif' => true // Pour debug
+            ];
+        }
+
+        // Trier par libellé pour un affichage cohérent
+        usort($banqueTemps, function ($a, $b) {
+            return strcmp($a['libelle'], $b['libelle']);
+        });
+
+        $this->banqueDeTemps = $banqueTemps;
     }
 
     /**
@@ -656,19 +695,6 @@ private function calculerHeuresSupplementaires()
         $soldeActuel = $banqueActuelle ? $banqueActuelle['valeur'] : 0;
 
         return $soldeActuel + $this->ajustementBanque;
-    }
-
-    /**
-     * Obtenir le libellé formaté pour la banque de temps
-     */
-    private function getLibelleBanqueTemps($type, $libelleBrut)
-    {
-        return match ($type) {
-            'vacances' => 'Vacances',
-            'banque_temps' => 'Banque de temps',
-            'heure_csn' => 'Heure CSN',
-            default => $libelleBrut
-        };
     }
 
     /**

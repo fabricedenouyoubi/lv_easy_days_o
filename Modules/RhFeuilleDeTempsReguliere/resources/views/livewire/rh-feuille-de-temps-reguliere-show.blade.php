@@ -146,9 +146,12 @@
                                     <thead class="table-light">
                                         <tr>
                                             <th>Code de travail</th>
-                                            @foreach($datesSemaine as $dateInfo)
-                                            <th class="text-center">
+                                            @foreach($datesSemaine as $index => $dateInfo)
+                                            <th class="text-center {{ $this->estJourFerie($index) ? 'bg-danger bg-opacity-25' : '' }}">
                                                 {{ $dateInfo['jour_nom'] }}
+                                                @if($this->estJourFerie($index))
+                                                <i class="mdi mdi-calendar-remove text-danger ms-1" title="Jour férié"></i>
+                                                @endif
                                                 <br>
                                                 <small class="text-muted">
                                                     {{ $dateInfo['date']->format('d/m') }}
@@ -169,8 +172,8 @@
                                                     {{ $ligne['code_travail']->libelle }}
                                                 </div>
                                             </td>
-                                            @foreach($ligne['jours'] as $jour)
-                                            <td class="text-center">
+                                            @foreach($ligne['jours'] as $indexJour => $jour)
+                                            <td class="text-center {{ $this->estJourFerie($indexJour) ? 'bg-danger bg-opacity-25' : '' }}">
                                                 @if($jour['duree'] > 0)
                                                 <span class="badge bg-primary rounded-pill fw-bold">
                                                     {{ $jour['duree'] }}h
@@ -390,7 +393,7 @@
                 @if($totalHeuresSupAjustees == 0 && $heuresManquantes == 0)
                 <div class="text-center py-2">
                     <i class="mdi mdi-clock-check text-success mb-1" style="font-size: 20px;"></i>
-                    <p class="text-muted small mb-0">Heures exactes (= heures définies)</p>
+                    <p class="text-muted small mb-0">Heures exactes</p>
                 </div>
                 @elseif($totalHeuresSupAjustees == 0)
                 <div class="text-center py-2">
@@ -416,11 +419,6 @@
                 </div>
                 <div class="modal-body">
                     <p>Êtes-vous sûr de vouloir soumettre cette feuille de temps ?</p>
-                    <div class="mb-3">
-                        <label class="form-label">Commentaire (optionnel)</label>
-                        <textarea wire:model="commentaire" class="form-control" rows="3"
-                            placeholder="Ajouter un commentaire..."></textarea>
-                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" wire:click="toggleSubmitModal" class="btn btn-secondary">Annuler</button>
@@ -442,11 +440,6 @@
                 </div>
                 <div class="modal-body">
                     <p>Êtes-vous sûr de vouloir rappeler cette feuille de temps pour modification ?</p>
-                    <div class="mb-3">
-                        <label class="form-label">Motif (optionnel)</label>
-                        <textarea wire:model="commentaire" class="form-control" rows="3"
-                            placeholder="Raison du rappel..."></textarea>
-                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" wire:click="toggleRecallModal" class="btn btn-secondary">Annuler</button>
@@ -468,11 +461,11 @@
                 </div>
                 <div class="modal-body">
                     <p>Êtes-vous sûr de vouloir valider cette feuille de temps ?</p>
-                    <div class="mb-3">
+                    <!--<div class="mb-3">
                         <label class="form-label">Commentaire (optionnel)</label>
                         <textarea wire:model="commentaire" class="form-control" rows="3"
                             placeholder="Commentaire de validation..."></textarea>
-                    </div>
+                    </div>-->
                 </div>
                 <div class="modal-footer">
                     <button type="button" wire:click="toggleApproveModal" class="btn btn-secondary">Annuler</button>

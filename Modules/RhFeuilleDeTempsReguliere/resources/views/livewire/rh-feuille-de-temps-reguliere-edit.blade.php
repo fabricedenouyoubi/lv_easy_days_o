@@ -130,9 +130,12 @@
                                                     <th style="min-width: 200px;">Code de travail</th>
 
 
-                                                    @foreach($datesSemaine as $dateInfo)
-                                                    <th class="text-center">
+                                                    @foreach($datesSemaine as $index => $dateInfo)
+                                                    <th class="text-center {{ $this->estJourFerie($index) ? 'bg-danger bg-opacity-25' : '' }}">
                                                         {{ $dateInfo['jour_nom'] }}
+                                                        @if($this->estJourFerie($index))
+                                                        <i class="mdi mdi-calendar-remove text-danger ms-1" title="Jour férié"></i>
+                                                        @endif
                                                         <br>
                                                         <small class="text-muted">
                                                             {{ $dateInfo['date']->format('d/m') }}
@@ -155,7 +158,7 @@
                                                     </td>
 
                                                     @for($jour = 0; $jour <= 6; $jour++)
-                                                        <td class="text-center {{ $datesSemaine[$jour]['is_dimanche'] ? 'bg-warning bg-opacity-10' : '' }}">
+                                                        <td class="text-center {{ $datesSemaine[$jour]['is_dimanche'] ? 'bg-warning bg-opacity-10' : '' }} {{ $this->estJourFerie($jour) ? 'bg-danger bg-opacity-25' : '' }}">
                                                         @if($this->peutModifierLigne($ligneIndex))
                                                         <input type="text"
                                                             wire:model.lazy="lignesTravail.{{ $ligneIndex }}.duree_{{ $jour }}"
@@ -232,7 +235,7 @@
                                                         </td>
 
                                                         @for($jour = 0; $jour <= 6; $jour++)
-                                                            <td class="text-center {{ $datesSemaine[$jour]['is_dimanche'] ? 'bg-warning bg-opacity-10' : '' }}">
+                                                            <td class="text-center {{ $datesSemaine[$jour]['is_dimanche'] ? 'bg-warning bg-opacity-10' : '' }} {{ $this->estJourFerie($jour) ? 'bg-danger bg-opacity-25' : '' }}">
                                                             @if(floatval($ligne["duree_{$jour}"] ?? 0) > 0)
                                                             <span class="text-muted">-</span>
                                                             @endif
@@ -396,7 +399,7 @@
                         @if($totalHeuresSupAjustees == 0 && $heuresManquantes == 0)
                         <div class="text-center py-2">
                             <i class="mdi mdi-clock-check text-success mb-1" style="font-size: 20px;"></i>
-                            <p class="text-muted small mb-0">Heures exactes (= heures définies)</p>
+                            <p class="text-muted small mb-0">Heures exactes</p>
                         </div>
                         @elseif($totalHeuresSupAjustees == 0)
                         <div class="text-center py-2">

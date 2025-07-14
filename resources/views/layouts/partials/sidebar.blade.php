@@ -106,7 +106,7 @@
                             <span class="menu-item" data-key="t-configurations">Configurations</span>
                         </a>
                         <ul class="sub-menu" aria-expanded="false">
-                            <li><a href="#" onclick="return false;" data-key="t-feuilles-temps">Feuilles de temps</a>
+                            <li><a href="{{ route('budget.details-annee-courante') }}" data-key="t-feuilles-temps">Feuilles de temps</a></li>
                             </li>
                             <li><a href="{{ route('rhfeuilledetempsconfig.codes-travail.codetravails') }}"
                                     data-key="t-code-travail">Code de travail</a></li>

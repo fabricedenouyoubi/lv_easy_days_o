@@ -43,6 +43,34 @@
             </div>
         </div>
 
+        <!-- Champ Est Banque -->
+        <div class="mb-4">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" wire:model="estBanque" id="estBanque">
+                <label class="form-check-label" for="estBanque">
+                    <strong>Entre dans la banque de temps</strong>
+                </label>
+            </div>
+            <div class="form-text">
+                <i class="fas fa-info-circle me-1"></i>
+                Ce code entre dans la banque de temps d'un employé
+            </div>
+        </div>
+
+        <!-- Champ Cumule Banque -->
+        <div class="mb-4">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" wire:model="cumuleBanque" id="cumuleBanque">
+                <label class="form-check-label" for="cumuleBanque">
+                    <strong>Marque un solde d'employé</strong>
+                </label>
+            </div>
+            <div class="form-text">
+                <i class="fas fa-info-circle me-1"></i>
+                Ce code marque un solde d'employé
+            </div>
+        </div>
+
         {{-- Catégorie d'appartenance --}}
         <div class="mb-4">
             <label for="categorie_id" class="form-label">
