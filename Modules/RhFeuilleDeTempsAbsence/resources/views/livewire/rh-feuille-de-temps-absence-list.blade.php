@@ -62,7 +62,9 @@
                                                 </td>
                                                 <td>
                                                     @php
-                                                        $statutFormate = $this->getStatutFormate($demande_absence->statut);
+                                                        $statutFormate = $this->getStatutFormate(
+                                                            $demande_absence->statut,
+                                                        );
                                                     @endphp
                                                     <span class="badge {{ $statutFormate['class'] }}">
                                                         <i class="{{ $statutFormate['icon'] }}"></i>
@@ -156,31 +158,30 @@
 
         </div>
         <div class="col-12 col-lg-3">
+            <!-- Banque de temps -->
             <x-table-card title="Banque de temps" icon="fas fa-piggy-bank">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="text-muted">Banque de temps</span>
-                    <span class="badge bg-success px-3 py-2 rounded-pill">
-                        0h
-                    </span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="text-muted">Vacances</span>
-                    <span class="badge bg-success px-3 py-2 rounded-pill">
-                        0h
-                    </span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="text-muted">Heure CSN</span>
-                    <span class="badge bg-success px-3 py-2 rounded-pill">
-                        0h
-                    </span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-3 border-top pt-3">
-                    <span class="text-muted">Total des heures en banque</span>
-                    <span class="badge bg-dark px-3 py-2 rounded-pill">
-                        0h
-                    </span>
-                </div>
+                @if (count($banqueDeTemps) > 0)
+                    @foreach ($banqueDeTemps as $item)
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted">{{ $item['libelle'] }}</span>
+                            <span class="badge bg-success px-3 py-2 rounded-pill">
+                                {{ number_format($item['valeur'], 0) }}h
+                            </span>
+                        </div>
+                    @endforeach
+
+                    <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                        <span class="text-muted">Total en banque</span>
+                        <span class="badge bg-dark px-3 py-2 rounded-pill">
+                            {{ number_format($this->totalBanqueTemps, 0) }}h
+                        </span>
+                    </div>
+                @else
+                    <div class="text-center py-3">
+                        <i class="fas fa-piggy-bank text-muted mb-2" style="font-size: 24px;"></i>
+                        <p class="text-muted small mb-0">Aucune banque de temps configurée</p>
+                    </div>
+                @endif
             </x-table-card>
         </div>
     </div>

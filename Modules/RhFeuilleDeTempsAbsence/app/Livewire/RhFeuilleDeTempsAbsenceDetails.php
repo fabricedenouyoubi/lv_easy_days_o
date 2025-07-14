@@ -8,11 +8,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Modules\Budget\Models\AnneeFinanciere;
 use Modules\Budget\Models\SemaineAnnee;
 use Modules\RhFeuilleDeTempsAbsence\Models\DemandeAbsence;
 use Modules\RhFeuilleDeTempsAbsence\Models\Operation;
 use Modules\RhFeuilleDeTempsAbsence\Traits\AbsenceResource;
 use Modules\RhFeuilleDeTempsAbsence\Workflows\DemandeAbsenceWorkflow;
+use Modules\RhFeuilleDeTempsConfig\Models\Comportement\Configuration;
 use Workflow\WorkflowStub;
 
 class RhFeuilleDeTempsAbsenceDetails extends Component
@@ -32,6 +34,11 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     public $showRejeterModal = false;
 
     public $jours_non_ouvrable;
+
+    public $banqueTemps = [];
+    public $employe;
+    // Banque de temps
+    public $banqueDeTemps = [];
 
 
     public function messages()
@@ -59,9 +66,15 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
 
     public function mount()
     {
-        $this->demandeAbsence = DemandeAbsence::with('employe', 'codeTravail','operations','operations.anneeSemaine', 'anneeFinanciere')->findOrFail($this->demandeAbsenceId);
+        $this->demandeAbsence = DemandeAbsence::with('employe', 'codeTravail', 'operations', 'operations.anneeSemaine', 'anneeFinanciere')->findOrFail($this->demandeAbsenceId);
         $this->workflow_log = $this->demandeAbsence->workflow_log;
         $this->nombreJourAbsence = $this->nombreDeJoursEntre($this->demandeAbsence->date_debut, $this->demandeAbsence->date_fin, $this->demandeAbsence->annee_financiere_id);
+
+        // Récupérer l'employé connecté
+        $this->employe = Auth::user()->employe;
+
+        // Calculer la banque de temps
+        $this->calculerBanqueDeTemps();
     }
 
     //--- afficher et caher le formulaire d'ajout d'une absence
@@ -374,6 +387,117 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
             session()->flash('error', 'Une erreur est survenue lors du rejet de la demande d\'absence.', $th->getMessage());
         }
     }
+
+
+    /**
+     * Calculer la banque de temps dynamique
+     */
+    private function calculerBanqueDeTemps()
+    {
+        $banqueTemps = [];
+
+        // Récupérer l'année financière active
+        $anneeFinanciere = AnneeFinanciere::where('actif', true)->first();
+
+        if (!$anneeFinanciere || !$this->employe) {
+            $this->banqueDeTemps = [];
+            return;
+        }
+
+        // Définir les codes à rechercher pour la banque de temps
+        $codesRecherches = [
+            'vacances' => ['VAC', 'VACATION', 'VACANCE', 'CONGE'],
+            'banque_temps' => ['CAISS', 'BANQUE', 'BANK', 'BT'],
+            'heure_csn' => ['CSN', 'HCSN', 'CSN_H']
+        ];
+
+        foreach ($codesRecherches as $type => $patterns) {
+            $configuration = $this->rechercherConfigurationParCode($patterns, $anneeFinanciere->id);
+
+            if ($configuration) {
+                $banqueTemps[] = [
+                    'type' => $type,
+                    'libelle' => $this->getLibelleBanqueTemps($type, $configuration->codeTravail->libelle),
+                    'valeur' => $configuration->reste ?? 0,
+                    'code_travail' => $configuration->codeTravail
+                ];
+            }
+        }
+
+        $this->banqueDeTemps = $banqueTemps;
+    }
+
+
+    /**
+     * Version corrigée - reste collectif partagé
+     */
+    private function rechercherConfigurationParCode($patterns, $anneeBudgetaireId)
+    {
+        // Recherche individuelle
+        $configIndividuelle = Configuration::with('codeTravail')
+            ->where('employe_id', $this->employe->id)
+            ->where('annee_budgetaire_id', $anneeBudgetaireId)
+            ->whereHas('codeTravail', function ($query) use ($patterns) {
+                $query->where(function ($subQuery) use ($patterns) {
+                    foreach ($patterns as $pattern) {
+                        $subQuery->orWhere('code', 'LIKE', "%{$pattern}%")
+                            ->orWhere('libelle', 'LIKE', "%{$pattern}%");
+                    }
+                });
+            })
+            ->first();
+
+        if ($configIndividuelle) {
+            return $configIndividuelle;
+        }
+
+        // Recherche collective avec reste partagé
+        $configCollective = Configuration::with(['codeTravail', 'employes'])
+            ->whereNull('employe_id')
+            ->whereNull('date')
+            ->where('annee_budgetaire_id', $anneeBudgetaireId)
+            ->whereHas('codeTravail', function ($query) use ($patterns) {
+                $query->where(function ($subQuery) use ($patterns) {
+                    foreach ($patterns as $pattern) {
+                        $subQuery->orWhere('code', 'LIKE', "%{$pattern}%")
+                            ->orWhere('libelle', 'LIKE', "%{$pattern}%");
+                    }
+                });
+            })
+            ->whereHas('employes', function ($query) {
+                $query->where('employe_id', $this->employe->id);
+            })
+            ->first();
+
+        if ($configCollective) {
+            // Retourner la configuration avec son reste
+            return $configCollective;
+        }
+
+        return null;
+    }
+
+    /**
+     * Obtenir le libellé formaté pour la banque de temps
+     */
+    private function getLibelleBanqueTemps($type, $libelleBrut)
+    {
+        return match ($type) {
+            'vacances' => 'Vacances',
+            'banque_temps' => 'Banque de temps',
+            'heure_csn' => 'Heure CSN',
+            default => $libelleBrut
+        };
+    }
+
+    /**
+     * Calculer le total de la banque de temps
+     */
+    public function getTotalBanqueTempsProperty()
+    {
+        return collect($this->banqueDeTemps)->sum('valeur');
+    }
+
 
     public function render()
     {
