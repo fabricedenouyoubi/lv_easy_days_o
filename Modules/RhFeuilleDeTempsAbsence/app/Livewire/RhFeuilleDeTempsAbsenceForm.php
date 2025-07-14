@@ -102,15 +102,6 @@ class RhFeuilleDeTempsAbsenceForm extends Component
 
         try {
 
-            //--- Vérification de l'existances des semaines de l'annee avec validation de la demande
-            $nbrSemaine = SemaineAnnee::where('annee_financiere_id', $this->annee_financiere_id)
-                ->count();
-
-            if ($nbrSemaine == 0) {
-                session()->flash('error', "Aucune semaine trouvée pour l'année en cours");
-                return ;
-            }
-
             $comment = $this->employeId ? 'La demande est en cours de redaction par ' . $user_connect?->name : 'La demande est en cours de redaction';
             if (!$this->demande_absence_id) {
 
