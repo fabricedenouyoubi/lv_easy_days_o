@@ -85,54 +85,69 @@
                                 </h6>
 
                                 <div class="d-flex align-items-center gap-2">
-                                    <!-- Boutons d'action déplacés dans le header -->
+                                    <!-- Boutons d'action avec permissions basées sur l'état du workflow -->
                                     <div class="d-flex gap-2">
                                         <a href="{{ route('feuille-temps.list') }}" class="btn btn-outline-secondary btn-sm">
                                             <i class="mdi mdi-arrow-left me-1"></i>
                                             Retour
                                         </a>
-                                        <!-- Actions selon les permissions -->
-                                        @if($canEdit)
-                                        <a href="{{ route('feuille-temps.edit', ['semaineId' => $semaineId, 'operationId' => $operationId]) }}"
-                                            class="btn btn-sm btn-outline-warning">
-                                            <i class="mdi mdi-square-edit-outline me-1"></i>
-                                            Modifier
-                                        </a>
+                                        
+                                        {{-- Permissions pour l'employé propriétaire --}}
+                                        @if ($operation->employe_id === auth()->user()->employe?->id)
+                                            {{-- Modifier : états brouillon, en_cours, rejete --}}
+                                            @if (in_array($operation->workflow_state, ['brouillon', 'en_cours', 'rejete']))
+                                                <a href="{{ route('feuille-temps.edit', ['semaineId' => $semaineId, 'operationId' => $operationId]) }}"
+                                                    class="btn btn-sm btn-outline-warning">
+                                                    <i class="mdi mdi-square-edit-outline me-1"></i>
+                                                    Modifier
+                                                </a>
+                                            @endif
+
+                                            {{-- Soumettre : états brouillon, en_cours, rejete --}}
+                                            @if (in_array($operation->workflow_state, ['brouillon', 'en_cours', 'rejete']))
+                                                <button wire:click="toggleSubmitModal" class="btn btn-sm btn-outline-primary">
+                                                    <i class="mdi mdi-send-circle-outline me-1"></i>
+                                                    Soumettre
+                                                </button>
+                                            @endif
+
+                                            {{-- Rappeler : état soumis --}}
+                                            @if ($operation->workflow_state === 'soumis')
+                                                <button wire:click="toggleRecallModal" class="btn btn-sm btn-outline-warning">
+                                                    <i class="mdi mdi-backup-restore me-1"></i>
+                                                    Rappeler
+                                                </button>
+                                            @endif
                                         @endif
 
-                                        @if($canSubmit)
-                                        <button wire:click="toggleSubmitModal" class="btn btn-sm btn-outline-primary">
-                                            <i class="mdi mdi-send-circle-outline me-1"></i>
-                                            Soumettre
-                                        </button>
+                                        {{-- Permissions pour le gestionnaire direct --}}
+                                        @if ($operation->employe->gestionnaire_id === auth()->user()->employe?->id)
+                                            {{-- Valider : état soumis --}}
+                                            @if ($operation->workflow_state === 'soumis')
+                                                <button wire:click="toggleApproveModal" class="btn btn-sm btn-outline-success">
+                                                    <i class="mdi mdi-checkbox-marked-circle-outline me-1"></i>
+                                                    Valider
+                                                </button>
+                                            @endif
+
+                                            {{-- Rejeter : état soumis --}}
+                                            @if ($operation->workflow_state === 'soumis')
+                                                <button wire:click="toggleRejectModal" class="btn btn-sm btn-outline-danger">
+                                                    <i class="mdi mdi-close-circle-outline me-1"></i>
+                                                    Rejeter
+                                                </button>
+                                            @endif
                                         @endif
 
-                                        @if($canRecall)
-                                        <button wire:click="toggleRecallModal" class="btn btn-sm btn-outline-warning">
-                                            <i class="mdi mdi-backup-restore me-1"></i>
-                                            Rappeler
-                                        </button>
-                                        @endif
-
-                                        @if($canApprove)
-                                        <button wire:click="toggleApproveModal" class="btn btn-sm btn-outline-success">
-                                            <i class="mdi mdi-checkbox-marked-circle-outline me-1"></i>
-                                            Valider
-                                        </button>
-                                        @endif
-
-                                        @if($canReject)
-                                        <button wire:click="toggleRejectModal" class="btn btn-sm btn-outline-danger">
-                                            <i class="mdi mdi-close-circle-outline me-1"></i>
-                                            Rejeter
-                                        </button>
-                                        @endif
-
-                                        @if($canReturn)
-                                        <button wire:click="toggleReturnModal" class="btn btn-sm btn-outline-warning">
-                                            <i class="mdi mdi-reply me-1"></i>
-                                            Retourner
-                                        </button>
+                                        {{-- Permissions pour l'administrateur --}}
+                                        @if (auth()->user()->hasRole('ADMIN'))
+                                            {{-- Retourner : états valide, rejete --}}
+                                            @if (in_array($operation->workflow_state, ['valide', 'rejete']))
+                                                <button wire:click="toggleReturnModal" class="btn btn-sm btn-outline-warning">
+                                                    <i class="mdi mdi-reply me-1"></i>
+                                                    Retourner
+                                                </button>
+                                            @endif
                                         @endif
                                     </div>
                                 </div>
@@ -461,11 +476,6 @@
                 </div>
                 <div class="modal-body">
                     <p>Êtes-vous sûr de vouloir valider cette feuille de temps ?</p>
-                    <!--<div class="mb-3">
-                        <label class="form-label">Commentaire (optionnel)</label>
-                        <textarea wire:model="commentaire" class="form-control" rows="3"
-                            placeholder="Commentaire de validation..."></textarea>
-                    </div>-->
                 </div>
                 <div class="modal-footer">
                     <button type="button" wire:click="toggleApproveModal" class="btn btn-secondary">Annuler</button>

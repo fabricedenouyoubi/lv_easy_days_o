@@ -5,11 +5,14 @@ namespace Modules\RhFeuilleDeTempsReguliere\Livewire;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Modules\Budget\Models\AnneeFinanciere;
 use Modules\Budget\Models\SemaineAnnee;
 use Modules\RhFeuilleDeTempsAbsence\Models\Operation;
 use Modules\RhFeuilleDeTempsConfig\Models\CodeTravail;
 use Modules\RhFeuilleDeTempsConfig\Models\Comportement\Configuration;
+use Modules\RhFeuilleDeTempsReguliere\Workflows\FeuilleTempsWorkflow;
+use Workflow\WorkflowStub;
 
 class RhFeuilleDeTempsReguliereShow extends Component
 {
@@ -21,14 +24,6 @@ class RhFeuilleDeTempsReguliereShow extends Component
     public $lignesTravail = [];
     public $workflowHistory = [];
 
-    // Permissions utilisateur
-    public $canEdit = false;
-    public $canSubmit = false;
-    public $canRecall = false;
-    public $canApprove = false;
-    public $canReject = false;
-    public $canReturn = false;
-
     // Modal states
     public $showSubmitModal = false;
     public $showRecallModal = false;
@@ -38,6 +33,7 @@ class RhFeuilleDeTempsReguliereShow extends Component
 
     public $motifRejet = '';
     public $commentaire = '';
+    
     // Banque de temps
     public $banqueDeTemps = [];
     // Heures que l'employé doit à l'entreprise
@@ -57,7 +53,6 @@ class RhFeuilleDeTempsReguliereShow extends Component
         'motifRejet' => 'required|string|min:5',
         'commentaire' => 'nullable|string|max:500'
     ];
-
 
     // Nouvelles propriétés pour les calculs d'heures supplémentaires
     public $heuresDefiniesEmploye = 0; // Heures hebdomadaires de l'employé
@@ -125,25 +120,6 @@ class RhFeuilleDeTempsReguliereShow extends Component
         if (!$isOwner && !$isDirectManager && !$isAdmin) {
             abort(403, 'Accès non autorisé à cette feuille de temps');
         }
-
-        // Définir les permissions d'action selon les nouvelles règles
-        $this->canEdit = $isOwner && $this->operation->canTransition('enregistrer');
-        $this->canSubmit = $isOwner && $this->operation->canTransition('soumettre');
-        $this->canRecall = $isOwner && $this->operation->canTransition('rappeler');
-
-        // NOUVELLE RÈGLE: Seul le gestionnaire direct peut valider/rejeter
-        // L'admin ne peut plus valider/rejeter sauf s'il est le gestionnaire direct
-        $this->canApprove = $isDirectManager && $this->operation->canTransition('valider');
-        $this->canReject = $isDirectManager && $this->operation->canTransition('rejeter');
-
-        // NOUVELLE RÈGLE: Pour le rappel d'une feuille validée, seul l'admin peut le faire
-        $currentState = $this->operation->getCurrentState();
-        if ($currentState === 'valide') {
-            $this->canReturn = $isAdmin && $this->operation->canTransition('retourner');
-        } else {
-            // Pour les autres états, admin uniquement
-            $this->canReturn = $isAdmin && $this->operation->canTransition('retourner');
-        }
     }
 
     /**
@@ -172,7 +148,7 @@ class RhFeuilleDeTempsReguliereShow extends Component
     }
 
     /**
-     * Transitions workflow
+     * Transitions workflow avec WorkflowStub
      */
     public function toggleSubmitModal()
     {
@@ -204,19 +180,35 @@ class RhFeuilleDeTempsReguliereShow extends Component
      */
     public function soumettre()
     {
+        $user_connect = Auth::user();
         try {
-            $this->operation->applyTransition('soumettre', [
-                'comment' => $this->commentaire ?: 'Feuille de temps soumise'
-            ]);
+            $comment = 'Feuille de temps soumise par ' . $user_connect->name;
 
-            $this->showSubmitModal = false;
-            $this->commentaire = '';
-            session()->flash('success', 'Feuille de temps soumise avec succès.');
+            //--- Workflow ---
+            $workflow = WorkflowStub::make(FeuilleTempsWorkflow::class);
+            $workflow->start($this->operation, 'soumettre', ['comment' => $comment]);
 
-            // Recharger pour mettre à jour les permissions
-            $this->mount();
+            while ($workflow->running());
+
+            if ($workflow->failed()) {
+                Log::channel('daily')->error(
+                    "Erreur lors du lancement du workflow de soumission de la feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " par l'utilisateur " . $user_connect->name,
+                    ['operation' => $this->operation->id]
+                );
+                session()->flash('error', 'Une erreur est survenue lors du lancement du workflow de soumission.');
+            } else {
+                Log::channel('daily')->info("La feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " vient d'être soumise par l'utilisateur " . $user_connect->name, ['operation' => $this->operation->id]);
+                session()->flash('success', 'Feuille de temps soumise avec succès.');
+                $this->showSubmitModal = false;
+                $this->commentaire = '';
+                $this->mount();
+            }
         } catch (\Throwable $th) {
-            session()->flash('error', 'Erreur lors de la soumission: ' . $th->getMessage());
+            Log::channel('daily')->error(
+                "Erreur lors de la soumission de la feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " par l'utilisateur " . $user_connect->name,
+                ['message' => $th->getMessage(), 'operation' => $this->operation->id]
+            );
+            session()->flash('error', 'Une erreur est survenue lors de la soumission de la feuille de temps.');
         }
     }
 
@@ -225,18 +217,35 @@ class RhFeuilleDeTempsReguliereShow extends Component
      */
     public function rappeler()
     {
+        $user_connect = Auth::user();
         try {
-            $this->operation->applyTransition('rappeler', [
-                'comment' => $this->commentaire ?: 'Feuille de temps rappelée pour modification'
-            ]);
+            $comment = 'Feuille de temps rappelée par ' . $user_connect->name;
 
-            $this->showRecallModal = false;
-            $this->commentaire = '';
-            session()->flash('success', 'Feuille de temps rappelée avec succès.');
+            //--- Workflow ---
+            $workflow = WorkflowStub::make(FeuilleTempsWorkflow::class);
+            $workflow->start($this->operation, 'rappeler', ['comment' => $comment]);
 
-            $this->mount();
+            while ($workflow->running());
+
+            if ($workflow->failed()) {
+                Log::channel('daily')->error(
+                    "Erreur lors du lancement du workflow de rappel de la feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " par l'utilisateur " . $user_connect->name,
+                    ['operation' => $this->operation->id]
+                );
+                session()->flash('error', 'Une erreur est survenue lors du lancement du workflow de rappel.');
+            } else {
+                Log::channel('daily')->info("La feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " vient d'être rappelée par l'utilisateur " . $user_connect->name, ['operation' => $this->operation->id]);
+                session()->flash('success', 'Feuille de temps rappelée avec succès.');
+                $this->showRecallModal = false;
+                $this->commentaire = '';
+                $this->mount();
+            }
         } catch (\Throwable $th) {
-            session()->flash('error', 'Erreur lors du rappel: ' . $th->getMessage());
+            Log::channel('daily')->error(
+                "Erreur lors du rappel de la feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " par l'utilisateur " . $user_connect->name,
+                ['message' => $th->getMessage(), 'operation' => $this->operation->id]
+            );
+            session()->flash('error', 'Une erreur est survenue lors du rappel de la feuille de temps.');
         }
     }
 
@@ -245,21 +254,38 @@ class RhFeuilleDeTempsReguliereShow extends Component
      */
     public function approuver()
     {
+        $user_connect = Auth::user();
         try {
-            $this->operation->applyTransition('valider', [
-                'comment' => $this->commentaire ?: 'Feuille de temps validée par ' . Auth::user()->name
-            ]);
+            $comment = 'Feuille de temps validée par ' . $user_connect->name;
 
-            // Mettre à jour la banque de temps avec "vers banque de temps"
-            $this->mettreAJourBanqueTemps();
+            //--- Workflow ---
+            $workflow = WorkflowStub::make(FeuilleTempsWorkflow::class);
+            $workflow->start($this->operation, 'valider', ['comment' => $comment]);
 
-            $this->showApproveModal = false;
-            $this->commentaire = '';
-            session()->flash('success', 'Feuille de temps validée avec succès.');
+            while ($workflow->running());
 
-            $this->mount();
+            if ($workflow->failed()) {
+                Log::channel('daily')->error(
+                    "Erreur lors du lancement du workflow de validation de la feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " par l'utilisateur " . $user_connect->name,
+                    ['operation' => $this->operation->id]
+                );
+                session()->flash('error', 'Une erreur est survenue lors du lancement du workflow de validation.');
+            } else {
+                // Mettre à jour la banque de temps avec "vers banque de temps"
+                $this->mettreAJourBanqueTemps();
+
+                Log::channel('daily')->info("La feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " vient d'être validée par l'utilisateur " . $user_connect->name, ['operation' => $this->operation->id]);
+                session()->flash('success', 'Feuille de temps validée avec succès.');
+                $this->showApproveModal = false;
+                $this->commentaire = '';
+                $this->mount();
+            }
         } catch (\Throwable $th) {
-            session()->flash('error', 'Erreur lors de la validation: ' . $th->getMessage());
+            Log::channel('daily')->error(
+                "Erreur lors de la validation de la feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " par l'utilisateur " . $user_connect->name,
+                ['message' => $th->getMessage(), 'operation' => $this->operation->id]
+            );
+            session()->flash('error', 'Une erreur est survenue lors de la validation de la feuille de temps.');
         }
     }
 
@@ -269,20 +295,39 @@ class RhFeuilleDeTempsReguliereShow extends Component
     public function rejeter()
     {
         $this->validate(['motifRejet' => 'required|string|min:5']);
+        $user_connect = Auth::user();
 
         try {
-            $this->operation->applyTransition('rejeter', [
-                'motif_rejet' => $this->motifRejet,
-                'comment' => 'Feuille de temps rejetée par ' . Auth::user()->name . '. Motif: ' . $this->motifRejet
+            $comment = 'Feuille de temps rejetée par ' . $user_connect->name . '. Motif: ' . $this->motifRejet;
+
+            //--- Workflow ---
+            $workflow = WorkflowStub::make(FeuilleTempsWorkflow::class);
+            $workflow->start($this->operation, 'rejeter', [
+                'comment' => $comment,
+                'motif_rejet' => $this->motifRejet
             ]);
 
-            $this->showRejectModal = false;
-            $this->motifRejet = '';
-            session()->flash('success', 'Feuille de temps rejetée avec succès.');
+            while ($workflow->running());
 
-            $this->mount();
+            if ($workflow->failed()) {
+                Log::channel('daily')->error(
+                    "Erreur lors du lancement du workflow de rejet de la feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " par l'utilisateur " . $user_connect->name,
+                    ['operation' => $this->operation->id]
+                );
+                session()->flash('error', 'Une erreur est survenue lors du lancement du workflow de rejet.');
+            } else {
+                Log::channel('daily')->info("La feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " vient d'être rejetée par l'utilisateur " . $user_connect->name, ['operation' => $this->operation->id]);
+                session()->flash('success', 'Feuille de temps rejetée avec succès.');
+                $this->showRejectModal = false;
+                $this->motifRejet = '';
+                $this->mount();
+            }
         } catch (\Throwable $th) {
-            session()->flash('error', 'Erreur lors du rejet: ' . $th->getMessage());
+            Log::channel('daily')->error(
+                "Erreur lors du rejet de la feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " par l'utilisateur " . $user_connect->name,
+                ['message' => $th->getMessage(), 'operation' => $this->operation->id]
+            );
+            session()->flash('error', 'Une erreur est survenue lors du rejet de la feuille de temps.');
         }
     }
 
@@ -292,20 +337,39 @@ class RhFeuilleDeTempsReguliereShow extends Component
     public function retourner()
     {
         $this->validate(['motifRejet' => 'required|string|min:5']);
+        $user_connect = Auth::user();
 
         try {
-            $this->operation->applyTransition('retourner', [
-                'motif_rejet' => $this->motifRejet,
-                'comment' => 'Feuille de temps retournée par ' . Auth::user()->name . '. Motif: ' . $this->motifRejet
+            $comment = 'Feuille de temps retournée par ' . $user_connect->name . '. Motif: ' . $this->motifRejet;
+
+            //--- Workflow ---
+            $workflow = WorkflowStub::make(FeuilleTempsWorkflow::class);
+            $workflow->start($this->operation, 'retourner', [
+                'comment' => $comment,
+                'motif_rejet' => $this->motifRejet
             ]);
 
-            $this->showReturnModal = false;
-            $this->motifRejet = '';
-            session()->flash('success', 'Feuille de temps retournée avec succès.');
+            while ($workflow->running());
 
-            $this->mount();
+            if ($workflow->failed()) {
+                Log::channel('daily')->error(
+                    "Erreur lors du lancement du workflow de retour de la feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " par l'utilisateur " . $user_connect->name,
+                    ['operation' => $this->operation->id]
+                );
+                session()->flash('error', 'Une erreur est survenue lors du lancement du workflow de retour.');
+            } else {
+                Log::channel('daily')->info("La feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " vient d'être retournée par l'utilisateur " . $user_connect->name, ['operation' => $this->operation->id]);
+                session()->flash('success', 'Feuille de temps retournée avec succès.');
+                $this->showReturnModal = false;
+                $this->motifRejet = '';
+                $this->mount();
+            }
         } catch (\Throwable $th) {
-            session()->flash('error', 'Erreur lors du retour: ' . $th->getMessage());
+            Log::channel('daily')->error(
+                "Erreur lors du retour de la feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " par l'utilisateur " . $user_connect->name,
+                ['message' => $th->getMessage(), 'operation' => $this->operation->id]
+            );
+            session()->flash('error', 'Une erreur est survenue lors du retour de la feuille de temps.');
         }
     }
 
@@ -348,8 +412,8 @@ class RhFeuilleDeTempsReguliereShow extends Component
         };
     }
 
-
-
+    // Garder toutes les autres méthodes existantes sans modification...
+    
     /**
      * Calculer la banque de temps dynamique (version complète avec collectif)
      */
@@ -485,6 +549,7 @@ class RhFeuilleDeTempsReguliereShow extends Component
         $this->totauxrecapitulatif = $recapitulatif;
         $this->totalGeneral = $totalGeneral;
     }
+
     /**
      * Calculer les dates de la semaine pour affichage
      */
