@@ -11,7 +11,6 @@ use Modules\RhFeuilleDeTempsConfig\Models\CodeTravail;
 use Modules\RhFeuilleDeTempsReguliere\Models\LigneTravail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Modules\RhFeuilleDeTempsAbsence\Traits\HasWorkflow;
 
 class DemandeAbsence extends Model
@@ -212,8 +211,8 @@ class DemandeAbsence extends Model
                     'annee_semaine_id' => $semaine->id,
                     'employe_id' => $this->employe_id,
                     'total_heure' => $this->calculerHeuresPourSemaine($semaine),
-                    'workflow_state' => 'valide', // Directement validé car c'est une absence
-                    'statut' => 'Validé'
+                    'workflow_state' => 'valide', // Directement valide car c'est une absence
+                    'statut' => 'valide'
                 ]);
             }
         }
@@ -277,12 +276,12 @@ class DemandeAbsence extends Model
 
     public function scopeEnAttente($query)
     {
-        return $query->where('statut', 'Soumis');
+        return $query->where('statut', 'soumis');
     }
 
     public function scopeApprouve($query)
     {
-        return $query->where('statut', 'Validé');
+        return $query->where('statut', 'valide');
     }
 
     /**
@@ -294,7 +293,7 @@ class DemandeAbsence extends Model
      */
     public function getCurrentState(): string
     {
-        return $this->statut ?? 'Brouillon';
+        return $this->statut ?? 'brouillon';
     }
 
     /**
@@ -310,7 +309,7 @@ class DemandeAbsence extends Model
             'to_state' => $to,
             'comment' => $comment ?? '',
             'title' => "{$from} → {$to}",
-            'user' => Auth::user()?->name,
+            'user' => Auth::user()->name ?? '',
             'motif' => $motif
         ];
 
@@ -318,22 +317,6 @@ class DemandeAbsence extends Model
         $logs[] = json_encode($log);
 
         $this->update(['workflow_log' => implode("\n", $logs)]);
-    }
-
-
-    /**
-     *  Recuperer le journal du workflow
-     */
-    public function get_workflow_log()
-    {
-        // $logs = json_decode($this->workflow_log, true);
-        $logsArray = collect(explode("\n", $this->workflow_log))
-            ->filter() // élimine les lignes vides
-            ->map(fn($line) => json_decode(trim($line), true))
-            ->filter()  // élimine les lignes non valides (nulls)
-            ->reverse() // Tri du plus récent au plus ancien
-            ->values(); // Pour réindexer proprement;
-        return $logsArray;
     }
 
     /**
@@ -355,11 +338,11 @@ class DemandeAbsence extends Model
 
         // Définir les transitions autorisées selon l'état actuel
         $allowedTransitions = [
-            'Brouillon' => ['enregistrer', 'soumettre'],
-            'En cours' => ['enregistrer', 'soumettre'],
-            'Soumis' => ['rappeler', 'valider', 'rejeter'],
-            'Validé' => ['retourner'],
-            'Rejeté' => ['enregistrer', 'soumettre', 'retourner'],
+            'brouillon' => ['enregistrer', 'soumettre'],
+            'en_cours' => ['enregistrer', 'soumettre'],
+            'soumis' => ['rappeler', 'valider', 'rejeter'],
+            'valide' => ['retourner'],
+            'rejete' => ['enregistrer', 'soumettre', 'retourner'],
         ];
 
         return isset($allowedTransitions[$currentState]) &&
@@ -379,12 +362,12 @@ class DemandeAbsence extends Model
 
         // Définir les nouveaux états selon la transition
         $newStates = [
-            'enregistrer' => 'En cours',
-            'soumettre' => 'Soumis',
-            'rappeler' => 'En cours',
-            'valider' => 'Validé',
-            'rejeter' => 'Rejeté',
-            'retourner' => 'Soumis',
+            'enregistrer' => 'en_cours',
+            'soumettre' => 'soumis',
+            'rappeler' => 'en_cours',
+            'valider' => 'valide',
+            'rejeter' => 'rejete',
+            'retourner' => 'soumis',
         ];
 
         if (!isset($newStates[$transition])) {

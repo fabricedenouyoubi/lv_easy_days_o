@@ -50,14 +50,6 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
         ];
     }
 
-    public $statuts = [
-        'Brouillon',
-        'En cours',
-        'Soumis',
-        'Validé',
-        'Rejeté'
-    ];
-
     protected $paginationTheme = 'bootstrap';
     protected $listeners = [
         'demandeAbsenceModifie' => 'demandeAbsenceModifie',
@@ -491,10 +483,11 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
 
     public function render()
     {
+        //dd($this->demandeAbsence->getWorkflowHistory());
         return view(
             'rhfeuilledetempsabsence::livewire.rh-feuille-de-temps-absence-details',
             [
-                'logs' => $this->demandeAbsence->get_workflow_log()
+                'logs' => $this->demandeAbsence->getWorkflowHistory()
             ]
         );
     }

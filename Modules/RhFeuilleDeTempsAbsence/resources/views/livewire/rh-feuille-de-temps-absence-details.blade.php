@@ -20,7 +20,7 @@
                                 text="Retour à la liste" href="{{ route('absence.list') }}" />
                         </div>
                         @if (
-                            $demandeAbsence->statut == 'En cours' &&
+                            $demandeAbsence->statut == 'en_cours' &&
                                 ($demandeAbsence->employe_id == auth()->user()->employe?->id ||
                                     $demandeAbsence->admin_id == auth()->user()->id))
                             {{-- Bounton Nodifier --}}
@@ -36,7 +36,7 @@
                         @endif
 
 
-                        @if ($demandeAbsence->statut == 'Soumis')
+                        @if ($demandeAbsence->statut == 'soumis')
                             @if ($demandeAbsence->employe_id == auth()->user()->employe?->id || $demandeAbsence->admin_id == auth()->user()->id)
                                 {{-- Bounton Rappeller --}}
                                 <div class="col-auto">
@@ -58,8 +58,8 @@
                                 </div>
                             @endif
                         @endif
-                        {{-- Admininistrateur retrourne les demande d'absence validée et rejetée --}}
-                        @if (($demandeAbsence->statut == 'Validé' || $demandeAbsence->statut == 'Rejeté') && auth()->user()->hasRole('ADMIN'))
+                        {{-- Admininistrateur retrourne les demande d'absence validée et rejetee --}}
+                        @if (($demandeAbsence->statut == 'valide' || $demandeAbsence->statut == 'rejete') && auth()->user()->hasRole('ADMIN'))
                             {{-- Bounton Retourner --}}
                             <div class="col-auto">
                                 <x-action-button type="warning" size="sm" icon="fas fa-reply" text="Retrourner"
@@ -189,8 +189,8 @@
                             <strong>{{ $log['title'] }}</strong>
                         </div>
                         <div class="col-12">
-                            <small class="text-muted">{{ $log['date'] }} à {{ $log['time'] }} par
-                                {{ $log['user'] }}</small>
+                            <small class="text-muted">{{ $log['date'] }} à {{ $log['time'] }}
+                                {{ $log['user'] ? 'par '.$log['user'] : ''}} </small>
                         </div>
                         <div class="col-12">
                             <span>{{ $log['comment'] }}</span>.
@@ -208,8 +208,8 @@
         <div class="col col-lg-3">
             {{-- Statut de la demande --}}
             <x-table-card title="Statut actuel" icon="fas fa-battery-half">
-                {{-- statut en cours --}}
-                @if ($demandeAbsence->statut == 'En cours')
+                {{-- statut en_cours --}}
+                @if ($demandeAbsence->statut == 'en_cours')
                     <div class="row">
                         <div class="d-flex justify-content-center mb-2">
                             <i class="fas fa-spinner fs-1"></i>
@@ -231,7 +231,7 @@
                     </div>
                 @endif
                 {{-- Statut soumis --}}
-                @if ($demandeAbsence->statut == 'Soumis')
+                @if ($demandeAbsence->statut == 'soumis')
                     <div class="row">
                         <div class="d-flex justify-content-center mb-2">
                             <i class="fas fa-stopwatch fs-1"></i>
@@ -255,7 +255,7 @@
                 @endif
 
                 {{-- Statut approuvée --}}
-                @if ($demandeAbsence->statut == 'Validé')
+                @if ($demandeAbsence->statut == 'valide')
                     <div class="row">
                         <div class="d-flex justify-content-center mb-2">
                             <i class="fas fa-check-circle fs-1"></i>
@@ -279,7 +279,7 @@
                 @endif
 
                 {{-- Statut rejetée --}}
-                @if ($demandeAbsence->statut == 'Rejeté')
+                @if ($demandeAbsence->statut == 'rejete')
                     <div class="row">
                         <div class="d-flex justify-content-center mb-2">
                             <i class="fas fa-times-circle fs-1"></i>

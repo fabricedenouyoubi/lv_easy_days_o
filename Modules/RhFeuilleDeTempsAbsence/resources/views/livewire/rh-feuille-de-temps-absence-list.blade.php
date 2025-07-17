@@ -105,8 +105,8 @@
                                         <tr>
                                             <th>Employé(e)</th>
                                             <th>Type d'absence</th>
-                                            <th>Date de début de l'absence</th>
-                                            <th>Date de début de l'absence</th>
+                                            <th>Date de début</th>
+                                            <th>Date de fin</th>
                                             <th>Statut de la demande</th>
                                         </tr>
                                     </thead>
@@ -126,7 +126,14 @@
                                                     <span>{{ $demande_absence->date_fin }}</span>
                                                 </td>
                                                 <td>
-                                                    <span class="badge bg-info">{{ $demande_absence->statut }}
+                                                    @php
+                                                        $statutFormate = $this->getStatutFormate(
+                                                            $demande_absence->statut,
+                                                        );
+                                                    @endphp
+                                                    <span class="badge {{ $statutFormate['class'] }}">
+                                                        <i class="{{ $statutFormate['icon'] }}"></i>
+                                                        {{ $statutFormate['text'] }}
                                                     </span>
                                                 </td>
                                             </tr>

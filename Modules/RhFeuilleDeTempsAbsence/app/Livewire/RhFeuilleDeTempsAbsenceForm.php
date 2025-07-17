@@ -29,14 +29,6 @@ class RhFeuilleDeTempsAbsenceForm extends Component
     public $annee_financiere_id;
     public $employeId;
 
-    public $statuts = [
-        'Brouillon',
-        'En cours',
-        'Soumis',
-        'Validé',
-        'Rejeté'
-    ];
-
     public function mount()
     {
         try {
