@@ -126,7 +126,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
         $user_connect = Auth::user();
         try {
 
-            $comment = 'La demande a été soumise par ' . Auth::user()->name;
+            $comment = 'La demande a été soumise par : ' . Auth::user()->name;
 
             //--- Workflow ---
             $workflow = WorkflowStub::make(DemandeAbsenceWorkflow::class);
@@ -165,7 +165,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     {
         $user_connect = Auth::user();
         try {
-            $comment = 'La demande a été rappelée par ' . Auth::user()->name;
+            $comment = 'La demande a été rappelée par : ' . Auth::user()->name;
 
             //--- Workflow ---
             $workflow = WorkflowStub::make(DemandeAbsenceWorkflow::class);
@@ -252,7 +252,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
                 ]);
             }
 
-            $comment = 'La demande est approuvée par ' . Auth::user()->name;
+            $comment = 'La demande est approuvée par : ' . Auth::user()->name;
 
             //--- Workflow ---
             $workflow = WorkflowStub::make(DemandeAbsenceWorkflow::class);
@@ -298,7 +298,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
                 $this->demandeAbsence->operations()->delete();
             }
 
-            $comment = 'La demande a été retournée par ' . Auth::user()->name;
+            $comment = 'La demande a été retournée par : ' . Auth::user()->name;
 
             //--- Workflow ---
             $workflow = WorkflowStub::make(DemandeAbsenceWorkflow::class);
