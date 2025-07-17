@@ -299,7 +299,7 @@ class DemandeAbsence extends Model
     /**
      * Logger une transition de workflow
      */
-    public function logTransition(string $from, string $to, ?string $comment = null, $motif = null): void
+    public function logTransition(string $from, string $to, ?string $comment = null, $motif = null , $user = null): void
     {
         $log = [
             'timestamp' => now()->format('Y-m-d H:i'),
@@ -309,7 +309,7 @@ class DemandeAbsence extends Model
             'to_state' => $to,
             'comment' => $comment ?? '',
             'title' => "{$from} → {$to}",
-            'user' => Auth::user()->name ?? '',
+            'user' => $user ?? '',
             'motif' => $motif
         ];
 
@@ -382,7 +382,7 @@ class DemandeAbsence extends Model
         ];
 
         // Logger la transition
-        $this->logTransition($currentState, $newState, $options['comment'] ?? null, $options['motif'] ?? null);
+        $this->logTransition($currentState, $newState, $options['comment'] ?? null, $options['motif'] ?? null, $options['user'] ?? null);
 
         // Mettre à jour l'état
         $this->update($updateData);

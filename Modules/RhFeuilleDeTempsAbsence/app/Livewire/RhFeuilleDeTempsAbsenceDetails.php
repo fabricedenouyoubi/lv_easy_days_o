@@ -126,11 +126,11 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
         $user_connect = Auth::user();
         try {
 
-            $comment = 'La demande a été soumise par : ' . Auth::user()->name;
+            $comment = 'La demande a été soumise par';
 
             //--- Workflow ---
             $workflow = WorkflowStub::make(DemandeAbsenceWorkflow::class);
-            $workflow->start($this->demandeAbsence, 'soumettre', ['comment' => $comment]);
+            $workflow->start($this->demandeAbsence, 'soumettre', ['comment' => $comment, 'user' =>Auth::user()->name]);
 
             while ($workflow->running());
 
@@ -165,11 +165,11 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     {
         $user_connect = Auth::user();
         try {
-            $comment = 'La demande a été rappelée par : ' . Auth::user()->name;
+            $comment = 'La demande a été rappelée';
 
             //--- Workflow ---
             $workflow = WorkflowStub::make(DemandeAbsenceWorkflow::class);
-            $workflow->start($this->demandeAbsence, 'rappeler', ['comment' => $comment, 'motif' => $this->motif]);
+            $workflow->start($this->demandeAbsence, 'rappeler', ['comment' => $comment, 'motif' => $this->motif, 'user' =>Auth::user()->name]);
 
             while ($workflow->running());
 
@@ -252,11 +252,11 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
                 ]);
             }
 
-            $comment = 'La demande est approuvée par : ' . Auth::user()->name;
+            $comment = 'La demande est approuvée';
 
             //--- Workflow ---
             $workflow = WorkflowStub::make(DemandeAbsenceWorkflow::class);
-            $workflow->start($this->demandeAbsence, 'valider', ['comment' => $comment]);
+            $workflow->start($this->demandeAbsence, 'valider', ['comment' => $comment, 'user' =>Auth::user()->name]);
 
             while ($workflow->running());
 
@@ -298,11 +298,11 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
                 $this->demandeAbsence->operations()->delete();
             }
 
-            $comment = 'La demande a été retournée par : ' . Auth::user()->name;
+            $comment = 'La demande a été retournée';
 
             //--- Workflow ---
             $workflow = WorkflowStub::make(DemandeAbsenceWorkflow::class);
-            $workflow->start($this->demandeAbsence, 'retourner', ['comment' => $comment, 'motif' => $this->motif]);
+            $workflow->start($this->demandeAbsence, 'retourner', ['comment' => $comment, 'motif' => $this->motif, 'user' =>Auth::user()->name]);
 
             while ($workflow->running());
 
@@ -344,11 +344,11 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
             //--- Suppresion des opérations et liaison avec la feuille de temps
             $this->demandeAbsence->operations()->delete();
 
-            $comment = 'La demande a été rejetée par : ' . Auth::user()->name;
+            $comment = 'La demande a été rejetée';
 
             //--- Workflow ---
             $workflow = WorkflowStub::make(DemandeAbsenceWorkflow::class);
-            $workflow->start($this->demandeAbsence, 'rejeter', ['comment' => $comment, 'motif' => $this->motif]);
+            $workflow->start($this->demandeAbsence, 'rejeter', ['comment' => $comment, 'motif' => $this->motif, 'user' =>Auth::user()->name]);
 
             while ($workflow->running());
 
