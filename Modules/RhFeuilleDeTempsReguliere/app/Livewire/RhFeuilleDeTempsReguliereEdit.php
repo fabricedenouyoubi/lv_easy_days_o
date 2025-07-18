@@ -481,7 +481,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
             $comment = 'Feuille de temps mise à jour par ' . $user_connect->name;
 
             $workflow = WorkflowStub::make(FeuilleTempsWorkflow::class);
-            $workflow->start($this->operation, 'enregistrer', ['comment' => $comment]);
+            $workflow->start($this->operation, 'enregistrer', ['comment' => $comment, 'user' => $user_connect->name]);
 
             while ($workflow->running());
 
@@ -534,7 +534,7 @@ class RhFeuilleDeTempsReguliereEdit extends Component
             $comment = 'Feuille de temps soumise par ' . $user_connect->name;
 
             $workflow = WorkflowStub::make(FeuilleTempsWorkflow::class);
-            $workflow->start($this->operation, 'soumettre', ['comment' => $comment]);
+            $workflow->start($this->operation, 'soumettre', ['comment' => $comment, 'user' => $user_connect->name]);
 
             while ($workflow->running());
 

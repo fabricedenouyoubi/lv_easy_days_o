@@ -77,7 +77,7 @@ class Operation extends Model
     /**
      * Logger une transition de workflow
      */
-    public function logTransition(string $from, string $to, ?string $comment = null): void
+    public function logTransition(string $from, string $to, ?string $comment = null, $user = null): void
     {
         $log = [
             'timestamp' => now()->format('Y-m-d H:i'),
@@ -87,7 +87,7 @@ class Operation extends Model
             'to_state' => $to,
             'comment' => $comment ?? '',
             'title' => "{$from} → {$to}",
-            'user' => Auth::user()->name ?? 'System'
+            'user' => $user ?? '',
         ];
 
         $logs = $this->workflow_log ? explode("\n", $this->workflow_log) : [];
@@ -258,7 +258,7 @@ class Operation extends Model
         }
 
         // Logger la transition
-        $this->logTransition($currentState, $newState, $options['comment'] ?? null);
+        $this->logTransition($currentState, $newState, $options['comment'] ?? null, $options['user'] ?? null);
 
         // Mettre à jour l'état
         $this->update($updateData);

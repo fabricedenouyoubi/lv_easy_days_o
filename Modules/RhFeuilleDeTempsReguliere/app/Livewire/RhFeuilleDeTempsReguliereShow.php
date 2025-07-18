@@ -186,7 +186,7 @@ class RhFeuilleDeTempsReguliereShow extends Component
 
             //--- Workflow ---
             $workflow = WorkflowStub::make(FeuilleTempsWorkflow::class);
-            $workflow->start($this->operation, 'soumettre', ['comment' => $comment]);
+            $workflow->start($this->operation, 'soumettre', ['comment' => $comment, 'user' => $user_connect->name]);
 
             while ($workflow->running());
 
@@ -223,7 +223,7 @@ class RhFeuilleDeTempsReguliereShow extends Component
 
             //--- Workflow ---
             $workflow = WorkflowStub::make(FeuilleTempsWorkflow::class);
-            $workflow->start($this->operation, 'rappeler', ['comment' => $comment]);
+            $workflow->start($this->operation, 'rappeler', ['comment' => $comment, 'user' => $user_connect->name]);
 
             while ($workflow->running());
 
@@ -260,7 +260,7 @@ class RhFeuilleDeTempsReguliereShow extends Component
 
             //--- Workflow ---
             $workflow = WorkflowStub::make(FeuilleTempsWorkflow::class);
-            $workflow->start($this->operation, 'valider', ['comment' => $comment]);
+            $workflow->start($this->operation, 'valider', ['comment' => $comment, 'user' => $user_connect->name]);
 
             while ($workflow->running());
 
@@ -304,7 +304,7 @@ class RhFeuilleDeTempsReguliereShow extends Component
             $workflow = WorkflowStub::make(FeuilleTempsWorkflow::class);
             $workflow->start($this->operation, 'rejeter', [
                 'comment' => $comment,
-                'motif_rejet' => $this->motifRejet
+                'motif_rejet' => $this->motifRejet, 'user' => $user_connect->name
             ]);
 
             while ($workflow->running());
@@ -346,7 +346,7 @@ class RhFeuilleDeTempsReguliereShow extends Component
             $workflow = WorkflowStub::make(FeuilleTempsWorkflow::class);
             $workflow->start($this->operation, 'retourner', [
                 'comment' => $comment,
-                'motif_rejet' => $this->motifRejet
+                'motif_rejet' => $this->motifRejet, 'user' => $user_connect->name
             ]);
 
             while ($workflow->running());
