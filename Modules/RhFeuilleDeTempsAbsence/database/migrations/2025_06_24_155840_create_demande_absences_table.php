@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('demande_absences', function (Blueprint $table) {
             $table->id();
             $table->text('workflow_log')->nullable();
-            $table->enum('statut', ['Brouillon', 'En cours', 'Soumis', 'Validé', 'Rejeté'])->default('Brouillon');
+            $table->enum('statut', ['brouillon', 'en_cours', 'soumis', 'valide', 'rejete'])->default('brouillon');
             $table->dateTime('date_debut')->nullable();
             $table->dateTime('date_fin')->nullable();
             $table->double('heure_par_jour')->default(8);
