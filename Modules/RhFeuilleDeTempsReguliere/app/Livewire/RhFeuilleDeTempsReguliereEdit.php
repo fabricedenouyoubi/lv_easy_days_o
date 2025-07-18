@@ -5,12 +5,15 @@ namespace Modules\RhFeuilleDeTempsReguliere\Livewire;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Modules\Budget\Models\AnneeFinanciere;
 use Modules\Budget\Models\SemaineAnnee;
 use Modules\RhFeuilleDeTempsAbsence\Models\Operation;
 use Modules\RhFeuilleDeTempsReguliere\Models\LigneTravail;
 use Modules\RhFeuilleDeTempsConfig\Models\CodeTravail;
 use Modules\RhFeuilleDeTempsConfig\Models\Comportement\Configuration;
+use Modules\RhFeuilleDeTempsReguliere\Workflows\FeuilleTempsWorkflow;
+use Workflow\WorkflowStub;
 
 class RhFeuilleDeTempsReguliereEdit extends Component
 {
@@ -458,16 +461,10 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     public function enregistrer()
     {
         $this->validate();
+        $user_connect = Auth::user();
 
         try {
-            DB::transaction(function () {
-                // Appliquer la transition workflow si nécessaire
-                if ($this->operation->canTransition('enregistrer')) {
-                    $this->operation->applyTransition('enregistrer', [
-                        'comment' => 'Feuille de temps mise à jour par ' . Auth::user()->name
-                    ]);
-                }
-
+            DB::transaction(function () use ($user_connect) {
                 // Sauvegarder les lignes de travail
                 $this->sauvegarderLignesTravail();
 
@@ -477,11 +474,33 @@ class RhFeuilleDeTempsReguliereEdit extends Component
                     'total_heure_supp_ajuster' => $this->totalHeuresSupAjustees,
                     'total_heure_sup_a_payer' => $this->parseUserInputToDecimal($this->heureSupplementaireAPayer)
                 ]);
+
+                $comment = 'Feuille de temps mise à jour par ' . $user_connect->name;
+
+                //--- Workflow ---
+                $workflow = WorkflowStub::make(FeuilleTempsWorkflow::class);
+                $workflow->start($this->operation, 'enregistrer', ['comment' => $comment]);
+
+                while ($workflow->running());
+
+                if ($workflow->failed()) {
+                    Log::channel('daily')->error(
+                        "Erreur lors du lancement du workflow d'enregistrement de la feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " par l'utilisateur " . $user_connect->name,
+                        ['operation' => $this->operation->id]
+                    );
+                    throw new \Exception('Erreur lors du lancement du workflow d\'enregistrement.');
+                } else {
+                    Log::channel('daily')->info("La feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " vient d'être enregistrée par l'utilisateur " . $user_connect->name, ['operation' => $this->operation->id]);
+                }
             });
 
             session()->flash('success', 'Feuille de temps enregistrée avec succès.');
             return redirect()->route('feuille-temps.list');
         } catch (\Throwable $th) {
+            Log::channel('daily')->error(
+                "Erreur lors de l'enregistrement de la feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " par l'utilisateur " . $user_connect->name,
+                ['message' => $th->getMessage(), 'operation' => $this->operation->id]
+            );
             session()->flash('error', 'Erreur lors de l\'enregistrement: ' . $th->getMessage());
         }
     }
@@ -492,35 +511,50 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     public function soumettre()
     {
         $this->validate();
+        $user_connect = Auth::user();
 
         try {
-            DB::transaction(function () {
+            DB::transaction(function () use ($user_connect) {
                 // Sauvegarder d'abord
                 $this->sauvegarderLignesTravail();
 
-                // Mise a jour totaux
+                // Mise à jour totaux
                 $this->operation->update([
                     'total_heure' => $this->totalGeneral,
                     'total_heure_supp_ajuster' => $this->totalHeuresSupAjustees,
                     'total_heure_sup_a_payer' => $this->parseUserInputToDecimal($this->heureSupplementaireAPayer)
                 ]);
 
-                // Puis soumettre
-                if ($this->operation->canTransition('soumettre')) {
-                    $this->operation->applyTransition('soumettre', [
-                        'comment' => 'Feuille de temps soumise par ' . Auth::user()->name
-                    ]);
+                $comment = 'Feuille de temps soumise par ' . $user_connect->name;
+
+                //--- Workflow ---
+                $workflow = WorkflowStub::make(FeuilleTempsWorkflow::class);
+                $workflow->start($this->operation, 'soumettre', ['comment' => $comment]);
+
+                while ($workflow->running());
+
+                if ($workflow->failed()) {
+                    Log::channel('daily')->error(
+                        "Erreur lors du lancement du workflow de soumission de la feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " par l'utilisateur " . $user_connect->name,
+                        ['operation' => $this->operation->id]
+                    );
+                    throw new \Exception('Erreur lors du lancement du workflow de soumission.');
                 } else {
-                    throw new \Exception('Impossible de soumettre cette feuille de temps');
+                    Log::channel('daily')->info("La feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " vient d'être soumise par l'utilisateur " . $user_connect->name, ['operation' => $this->operation->id]);
                 }
             });
 
             session()->flash('success', 'Feuille de temps soumise avec succès.');
             return redirect()->route('feuille-temps.list');
         } catch (\Throwable $th) {
+            Log::channel('daily')->error(
+                "Erreur lors de la soumission de la feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " par l'utilisateur " . $user_connect->name,
+                ['message' => $th->getMessage(), 'operation' => $this->operation->id]
+            );
             session()->flash('error', 'Erreur lors de la soumission: ' . $th->getMessage());
         }
     }
+
     /**
      * Sauvegarder les lignes de travail
      */
@@ -564,14 +598,6 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     public function peutModifierLigne($index)
     {
         return !($this->lignesTravail[$index]['auto_rempli'] ?? false);
-    }
-
-    /**
-     * Vérifier si la feuille peut être modifiée
-     */
-    public function peutModifier()
-    {
-        return $this->operation->isEditable();
     }
 
     /**

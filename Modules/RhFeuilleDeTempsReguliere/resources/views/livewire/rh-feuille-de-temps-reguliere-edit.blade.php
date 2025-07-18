@@ -86,7 +86,8 @@
                             </div>
 
                             <!-- Lignes de travail -->
-                            @if($this->peutModifier())
+                            {{-- Vérifier si l'employé peut modifier (propriétaire + état modifiable) --}}
+                            @if ($operation->employe_id === auth()->user()->employe?->id && in_array($operation->workflow_state, ['brouillon', 'en_cours', 'rejete']))
                             <div class="card border-0 shadow-sm mb-4">
                                 <div class="card-header bg-light py-3">
                                     <div class="d-flex justify-content-between align-items-center">
@@ -96,28 +97,27 @@
                                         </h6>
 
                                         <div class="d-flex align-items-center gap-2">
-                                            <!-- Boutons d'action déplacés dans le header -->
-                                            @if($this->peutModifier())
+                                            <!-- Boutons d'action avec permissions -->
                                             <div class="d-flex gap-2">
                                                 <a href="{{ route('feuille-temps.list') }}" class="btn btn-outline-secondary btn-sm">
                                                     <i class="mdi mdi-arrow-left me-1"></i>
                                                     Retour
                                                 </a>
+                                                
+                                                {{-- Enregistrer : toujours disponible en mode édition --}}
                                                 <button type="submit" class="btn btn-outline-primary btn-sm">
                                                     <i class="mdi mdi-content-save-outline me-1"></i>
                                                     Enregistrer
                                                 </button>
-                                                <button type="button" wire:click="soumettre" class="btn btn-primary btn-sm">
-                                                    <i class="mdi mdi-send-outline me-1"></i>
-                                                    Soumettre
-                                                </button>
+                                                
+                                                {{-- Soumettre : états brouillon, en_cours, rejete --}}
+                                                @if (in_array($operation->workflow_state, ['brouillon', 'en_cours', 'rejete']))
+                                                    <button type="button" wire:click="soumettre" class="btn btn-primary btn-sm">
+                                                        <i class="mdi mdi-send-outline me-1"></i>
+                                                        Soumettre
+                                                    </button>
+                                                @endif
                                             </div>
-                                            @else
-                                            <a href="{{ route('feuille-temps.list') }}" class="btn btn-outline-secondary btn-sm">
-                                                <i class="mdi mdi-arrow-left me-1"></i>
-                                                Retour
-                                            </a>
-                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -128,7 +128,6 @@
                                             <thead class="table-light">
                                                 <tr>
                                                     <th style="min-width: 200px;">Code de travail</th>
-
 
                                                     @foreach($datesSemaine as $index => $dateInfo)
                                                     <th class="text-center {{ $this->estJourFerie($index) ? 'bg-danger bg-opacity-25' : '' }}">
@@ -187,15 +186,27 @@
                             <div class="alert alert-info">
                                 <i class="mdi mdi-information me-2"></i>
                                 Cette feuille de temps est en lecture seule (statut: {{ $operation->workflow_state }}).
+                                <a href="{{ route('feuille-temps.show', ['semaineId' => $semaineId, 'operationId' => $operationId]) }}" class="btn btn-sm btn-outline-primary ms-2">
+                                    <i class="mdi mdi-eye me-1"></i>
+                                    Voir les détails
+                                </a>
                             </div>
 
                             <!-- Affichage en lecture seule -->
                             <div class="card border-0 shadow-sm mb-4">
                                 <div class="card-header bg-light py-3">
-                                    <h6 class="mb-0">
-                                        <i class="mdi mdi-format-list-bulleted text-primary me-2"></i>
-                                        Lignes de travail (Lecture seule)
-                                    </h6>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">
+                                            <i class="mdi mdi-format-list-bulleted text-primary me-2"></i>
+                                            Lignes de travail (Lecture seule)
+                                        </h6>
+                                        <div class="d-flex gap-2">
+                                            <a href="{{ route('feuille-temps.list') }}" class="btn btn-outline-secondary btn-sm">
+                                                <i class="mdi mdi-arrow-left me-1"></i>
+                                                Retour
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="card-body p-0">
                                     <div class="table-responsive">
@@ -216,7 +227,7 @@
                                                 @php
                                                 $hasHours = false;
                                                 for($j = 0; $j <= 6; $j++) {
-                                                    if(floatval($ligne["duree_{$j}"] ?? 0)> 0) {
+                                                    if(floatval($ligne["duree_{$j}"] ?? 0) > 0) {
                                                     $hasHours = true;
                                                     break;
                                                     }
@@ -237,6 +248,8 @@
                                                         @for($jour = 0; $jour <= 6; $jour++)
                                                             <td class="text-center {{ $datesSemaine[$jour]['is_dimanche'] ? 'bg-warning bg-opacity-10' : '' }} {{ $this->estJourFerie($jour) ? 'bg-danger bg-opacity-25' : '' }}">
                                                             @if(floatval($ligne["duree_{$jour}"] ?? 0) > 0)
+                                                            <span class="badge bg-primary">{{ $ligne["duree_{$jour}"] }}h</span>
+                                                            @else
                                                             <span class="text-muted">-</span>
                                                             @endif
                                                             </td>
@@ -306,10 +319,11 @@
                             </span>
                         </div>
 
-                        <!-- Heures supplémentaires à payer (MODIFIABLE) -->
+                        <!-- Heures supplémentaires à payer (MODIFIABLE selon permissions) -->
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <span class="text-muted small">Heure Supp. à payer</span>
-                            @if($this->peutModifier())
+                            {{-- Modifiable seulement si propriétaire + état modifiable --}}
+                            @if ($operation->employe_id === auth()->user()->employe?->id && in_array($operation->workflow_state, ['brouillon', 'en_cours', 'rejete']))
                             <input type="text"
                                 wire:model.lazy="heureSupplementaireAPayer"
                                 class="form-control form-control-sm text-center"
@@ -333,8 +347,7 @@
                         </div>
                     </x-table-card>
 
-                    <!-- MODIFIER la section "Détails Heures Sup." pour inclure les heures manquantes -->
-
+                    <!-- Détails Heures Sup. -->
                     <x-table-card title="Détails Heures Sup." icon="mdi mdi-clock-plus-outline">
                         <div class="row g-2 mb-3">
                             <div class="col-6">
@@ -409,12 +422,12 @@
                         @endif
                     </x-table-card>
 
-
                 </div>
             </div>
     </form>
 
-    @if($this->peutModifier())
+    {{-- Script JavaScript pour la gestion des champs de saisie (seulement en mode édition) --}}
+    @if ($operation->employe_id === auth()->user()->employe?->id && in_array($operation->workflow_state, ['brouillon', 'en_cours', 'rejete']))
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Gestion des champs de saisie d'heures
@@ -471,9 +484,9 @@
                     let numValue = parseFloat(value);
 
                     // Limiter à 12 heures maximum
-                    if (numValue > 12) {
+                    /* if (numValue > 12) {
                         numValue = 12;
-                    }
+                    } */
 
                     // Formater avec 2 décimales et zéros de tête
                     this.value = numValue.toFixed(2).padStart(5, '0');
