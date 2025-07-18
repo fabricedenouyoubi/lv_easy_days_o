@@ -87,36 +87,43 @@
                                 <div class="d-flex align-items-center gap-2">
                                     <!-- Boutons d'action avec permissions basées sur l'état du workflow -->
                                     <div class="d-flex gap-2">
-                                        <a href="{{ route('feuille-temps.list') }}" class="btn btn-outline-secondary btn-sm">
-                                            <i class="mdi mdi-arrow-left me-1"></i>
-                                            Retour
-                                        </a>
+                                        <x-action-button 
+                                            type="secondary" 
+                                            icon="mdi mdi-arrow-left" 
+                                            size="sm"
+                                            text="Retour à la liste" 
+                                            href="{{ route('feuille-temps.list') }}" />
                                         
                                         {{-- Permissions pour l'employé propriétaire --}}
                                         @if ($operation->employe_id === auth()->user()->employe?->id)
                                             {{-- Modifier : états brouillon, en_cours, rejete --}}
                                             @if (in_array($operation->workflow_state, ['brouillon', 'en_cours', 'rejete']))
-                                                <a href="{{ route('feuille-temps.edit', ['semaineId' => $semaineId, 'operationId' => $operationId]) }}"
-                                                    class="btn btn-sm btn-outline-warning">
-                                                    <i class="mdi mdi-square-edit-outline me-1"></i>
-                                                    Modifier
-                                                </a>
+                                                <x-action-button 
+                                                    type="warning" 
+                                                    icon="mdi mdi-square-edit-outline" 
+                                                    size="sm"
+                                                    text="Modifier" 
+                                                    href="{{ route('feuille-temps.edit', ['semaineId' => $semaineId, 'operationId' => $operationId]) }}" />
                                             @endif
 
                                             {{-- Soumettre : états brouillon, en_cours, rejete --}}
                                             @if (in_array($operation->workflow_state, ['brouillon', 'en_cours', 'rejete']))
-                                                <button wire:click="toggleSubmitModal" class="btn btn-sm btn-outline-primary">
-                                                    <i class="mdi mdi-send-circle-outline me-1"></i>
-                                                    Soumettre
-                                                </button>
+                                                <x-action-button 
+                                                    type="primary" 
+                                                    icon="mdi mdi-send-circle-outline" 
+                                                    size="sm"
+                                                    text="Soumettre" 
+                                                    wireClick="toggleSubmitModal" />
                                             @endif
 
                                             {{-- Rappeler : état soumis --}}
                                             @if ($operation->workflow_state === 'soumis')
-                                                <button wire:click="toggleRecallModal" class="btn btn-sm btn-outline-warning">
-                                                    <i class="mdi mdi-backup-restore me-1"></i>
-                                                    Rappeler
-                                                </button>
+                                                <x-action-button 
+                                                    type="warning" 
+                                                    icon="mdi mdi-backup-restore" 
+                                                    size="sm"
+                                                    text="Rappeler" 
+                                                    wireClick="toggleRecallModal" />
                                             @endif
                                         @endif
 
@@ -124,18 +131,22 @@
                                         @if ($operation->employe->gestionnaire_id === auth()->user()->employe?->id)
                                             {{-- Valider : état soumis --}}
                                             @if ($operation->workflow_state === 'soumis')
-                                                <button wire:click="toggleApproveModal" class="btn btn-sm btn-outline-success">
-                                                    <i class="mdi mdi-checkbox-marked-circle-outline me-1"></i>
-                                                    Valider
-                                                </button>
+                                                <x-action-button 
+                                                    type="success" 
+                                                    icon="mdi mdi-checkbox-marked-circle-outline" 
+                                                    size="sm"
+                                                    text="Valider" 
+                                                    wireClick="toggleApproveModal" />
                                             @endif
 
                                             {{-- Rejeter : état soumis --}}
                                             @if ($operation->workflow_state === 'soumis')
-                                                <button wire:click="toggleRejectModal" class="btn btn-sm btn-outline-danger">
-                                                    <i class="mdi mdi-close-circle-outline me-1"></i>
-                                                    Rejeter
-                                                </button>
+                                                <x-action-button 
+                                                    type="danger" 
+                                                    icon="mdi mdi-close-circle-outline" 
+                                                    size="sm"
+                                                    text="Rejeter" 
+                                                    wireClick="toggleRejectModal" />
                                             @endif
                                         @endif
 
@@ -143,10 +154,12 @@
                                         @if (auth()->user()->hasRole('ADMIN'))
                                             {{-- Retourner : états valide, rejete --}}
                                             @if (in_array($operation->workflow_state, ['valide', 'rejete']))
-                                                <button wire:click="toggleReturnModal" class="btn btn-sm btn-outline-warning">
-                                                    <i class="mdi mdi-reply me-1"></i>
-                                                    Retourner
-                                                </button>
+                                                <x-action-button 
+                                                    type="warning" 
+                                                    icon="mdi mdi-reply" 
+                                                    size="sm"
+                                                    text="Retourner" 
+                                                    wireClick="toggleReturnModal" />
                                             @endif
                                         @endif
                                     </div>
@@ -436,8 +449,20 @@
                     <p>Êtes-vous sûr de vouloir soumettre cette feuille de temps ?</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" wire:click="toggleSubmitModal" class="btn btn-secondary">Annuler</button>
-                    <button type="button" wire:click="soumettre" class="btn btn-primary">Confirmer la soumission</button>
+                    <x-action-button 
+                        type="secondary" 
+                        icon="fas fa-times" 
+                        size="md"
+                        text="Annuler" 
+                        wireClick="toggleSubmitModal" />
+                    <x-action-button 
+                        type="primary" 
+                        icon="fas fa-paper-plane" 
+                        size="md"
+                        text="Confirmer la soumission" 
+                        wireClick="soumettre"
+                        loading="true"
+                        loading-target="soumettre" />
                 </div>
             </div>
         </div>
@@ -457,8 +482,20 @@
                     <p>Êtes-vous sûr de vouloir rappeler cette feuille de temps pour modification ?</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" wire:click="toggleRecallModal" class="btn btn-secondary">Annuler</button>
-                    <button type="button" wire:click="rappeler" class="btn btn-warning">Confirmer le rappel</button>
+                    <x-action-button 
+                        type="secondary" 
+                        icon="fas fa-times" 
+                        size="md"
+                        text="Annuler" 
+                        wireClick="toggleRecallModal" />
+                    <x-action-button 
+                        type="warning" 
+                        icon="fas fa-undo-alt" 
+                        size="md"
+                        text="Confirmer le rappel" 
+                        wireClick="rappeler"
+                        loading="true"
+                        loading-target="rappeler" />
                 </div>
             </div>
         </div>
@@ -478,8 +515,20 @@
                     <p>Êtes-vous sûr de vouloir valider cette feuille de temps ?</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" wire:click="toggleApproveModal" class="btn btn-secondary">Annuler</button>
-                    <button type="button" wire:click="approuver" class="btn btn-success">Confirmer la validation</button>
+                    <x-action-button 
+                        type="secondary" 
+                        icon="fas fa-times" 
+                        size="md"
+                        text="Annuler" 
+                        wireClick="toggleApproveModal" />
+                    <x-action-button 
+                        type="success" 
+                        icon="fas fa-check-circle" 
+                        size="md"
+                        text="Confirmer la validation" 
+                        wireClick="approuver"
+                        loading="true"
+                        loading-target="approuver" />
                 </div>
             </div>
         </div>
@@ -507,8 +556,20 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" wire:click="toggleRejectModal" class="btn btn-secondary">Annuler</button>
-                    <button type="button" wire:click="rejeter" class="btn btn-danger">Confirmer le rejet</button>
+                    <x-action-button 
+                        type="secondary" 
+                        icon="fas fa-times" 
+                        size="md"
+                        text="Annuler" 
+                        wireClick="toggleRejectModal" />
+                    <x-action-button 
+                        type="danger" 
+                        icon="fas fa-times-circle" 
+                        size="md"
+                        text="Confirmer le rejet" 
+                        wireClick="rejeter"
+                        loading="true"
+                        loading-target="rejeter" />
                 </div>
             </div>
         </div>
@@ -536,8 +597,20 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" wire:click="toggleReturnModal" class="btn btn-secondary">Annuler</button>
-                    <button type="button" wire:click="retourner" class="btn btn-warning">Confirmer le retour</button>
+                    <x-action-button 
+                        type="secondary" 
+                        icon="fas fa-times" 
+                        size="md"
+                        text="Annuler" 
+                        wireClick="toggleReturnModal" />
+                    <x-action-button 
+                        type="warning" 
+                        icon="fas fa-reply" 
+                        size="md"
+                        text="Confirmer le retour" 
+                        wireClick="retourner"
+                        loading="true"
+                        loading-target="retourner" />
                 </div>
             </div>
         </div>

@@ -99,23 +99,33 @@
                                         <div class="d-flex align-items-center gap-2">
                                             <!-- Boutons d'action avec permissions -->
                                             <div class="d-flex gap-2">
-                                                <a href="{{ route('feuille-temps.list') }}" class="btn btn-outline-secondary btn-sm">
-                                                    <i class="mdi mdi-arrow-left me-1"></i>
-                                                    Retour
-                                                </a>
+                                                <x-action-button 
+                                                    type="secondary" 
+                                                    icon="mdi mdi-arrow-left" 
+                                                    size="sm"
+                                                    text="Retour à la liste" 
+                                                    href="{{ route('feuille-temps.list') }}" />
                                                 
                                                 {{-- Enregistrer : toujours disponible en mode édition --}}
-                                                <button type="submit" class="btn btn-outline-primary btn-sm">
-                                                    <i class="mdi mdi-content-save-outline me-1"></i>
-                                                    Enregistrer
-                                                </button>
+                                                <x-action-button 
+                                                    type="primary" 
+                                                    icon="mdi mdi-content-save-outline" 
+                                                    size="sm"
+                                                    text="Enregistrer" 
+                                                    typeButton="submit"
+                                                    loading="true"
+                                                    loading-target="enregistrer" />
                                                 
                                                 {{-- Soumettre : états brouillon, en_cours, rejete --}}
                                                 @if (in_array($operation->workflow_state, ['brouillon', 'en_cours', 'rejete']))
-                                                    <button type="button" wire:click="soumettre" class="btn btn-primary btn-sm">
-                                                        <i class="mdi mdi-send-outline me-1"></i>
-                                                        Soumettre
-                                                    </button>
+                                                    <x-action-button 
+                                                        type="success" 
+                                                        icon="mdi mdi-send-outline" 
+                                                        size="sm"
+                                                        text="Soumettre" 
+                                                        wireClick="soumettre"
+                                                        loading="true"
+                                                        loading-target="soumettre" />
                                                 @endif
                                             </div>
                                         </div>
@@ -186,10 +196,13 @@
                             <div class="alert alert-info">
                                 <i class="mdi mdi-information me-2"></i>
                                 Cette feuille de temps est en lecture seule (statut: {{ $operation->workflow_state }}).
-                                <a href="{{ route('feuille-temps.show', ['semaineId' => $semaineId, 'operationId' => $operationId]) }}" class="btn btn-sm btn-outline-primary ms-2">
-                                    <i class="mdi mdi-eye me-1"></i>
-                                    Voir les détails
-                                </a>
+                                <x-action-button 
+                                    type="primary" 
+                                    icon="mdi mdi-eye" 
+                                    size="sm"
+                                    text="Voir les détails" 
+                                    href="{{ route('feuille-temps.show', ['semaineId' => $semaineId, 'operationId' => $operationId]) }}" 
+                                    class="ms-2" />
                             </div>
 
                             <!-- Affichage en lecture seule -->
@@ -201,10 +214,12 @@
                                             Lignes de travail (Lecture seule)
                                         </h6>
                                         <div class="d-flex gap-2">
-                                            <a href="{{ route('feuille-temps.list') }}" class="btn btn-outline-secondary btn-sm">
-                                                <i class="mdi mdi-arrow-left me-1"></i>
-                                                Retour
-                                            </a>
+                                            <x-action-button 
+                                                type="secondary" 
+                                                icon="mdi mdi-arrow-left" 
+                                                size="sm"
+                                                text="Retour à la liste" 
+                                                href="{{ route('feuille-temps.list') }}" />
                                         </div>
                                     </div>
                                 </div>

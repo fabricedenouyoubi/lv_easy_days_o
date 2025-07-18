@@ -464,7 +464,8 @@ class RhFeuilleDeTempsReguliereEdit extends Component
         $user_connect = Auth::user();
 
         try {
-            DB::transaction(function () use ($user_connect) {
+            // 1. PREMIÈRE ÉTAPE : Sauvegarder les données en transaction
+            DB::transaction(function () {
                 // Sauvegarder les lignes de travail
                 $this->sauvegarderLignesTravail();
 
@@ -474,28 +475,30 @@ class RhFeuilleDeTempsReguliereEdit extends Component
                     'total_heure_supp_ajuster' => $this->totalHeuresSupAjustees,
                     'total_heure_sup_a_payer' => $this->parseUserInputToDecimal($this->heureSupplementaireAPayer)
                 ]);
-
-                $comment = 'Feuille de temps mise à jour par ' . $user_connect->name;
-
-                //--- Workflow ---
-                $workflow = WorkflowStub::make(FeuilleTempsWorkflow::class);
-                $workflow->start($this->operation, 'enregistrer', ['comment' => $comment]);
-
-                while ($workflow->running());
-
-                if ($workflow->failed()) {
-                    Log::channel('daily')->error(
-                        "Erreur lors du lancement du workflow d'enregistrement de la feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " par l'utilisateur " . $user_connect->name,
-                        ['operation' => $this->operation->id]
-                    );
-                    throw new \Exception('Erreur lors du lancement du workflow d\'enregistrement.');
-                } else {
-                    Log::channel('daily')->info("La feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " vient d'être enregistrée par l'utilisateur " . $user_connect->name, ['operation' => $this->operation->id]);
-                }
             });
+
+            // 2. DEUXIÈME ÉTAPE : Lancer le workflow 
+            $comment = 'Feuille de temps mise à jour par ' . $user_connect->name;
+
+            $workflow = WorkflowStub::make(FeuilleTempsWorkflow::class);
+            $workflow->start($this->operation, 'enregistrer', ['comment' => $comment]);
+
+            while ($workflow->running());
+
+            if ($workflow->failed()) {
+                Log::channel('daily')->error(
+                    "Erreur lors du lancement du workflow d'enregistrement de la feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " par l'utilisateur " . $user_connect->name,
+                    ['operation' => $this->operation->id]
+                );
+                session()->flash('error', 'Erreur lors du lancement du workflow d\'enregistrement.');
+                return;
+            } else {
+                Log::channel('daily')->info("La feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " vient d'être enregistrée par l'utilisateur " . $user_connect->name, ['operation' => $this->operation->id]);
+            }
 
             session()->flash('success', 'Feuille de temps enregistrée avec succès.');
             return redirect()->route('feuille-temps.list');
+
         } catch (\Throwable $th) {
             Log::channel('daily')->error(
                 "Erreur lors de l'enregistrement de la feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " par l'utilisateur " . $user_connect->name,
@@ -508,13 +511,14 @@ class RhFeuilleDeTempsReguliereEdit extends Component
     /**
      * Soumettre la feuille (transition workflow: soumettre)
      */
-    public function soumettre()
+  public function soumettre()
     {
         $this->validate();
         $user_connect = Auth::user();
 
         try {
-            DB::transaction(function () use ($user_connect) {
+            // 1. PREMIÈRE ÉTAPE : Sauvegarder les données en transaction
+            DB::transaction(function () {
                 // Sauvegarder d'abord
                 $this->sauvegarderLignesTravail();
 
@@ -524,28 +528,30 @@ class RhFeuilleDeTempsReguliereEdit extends Component
                     'total_heure_supp_ajuster' => $this->totalHeuresSupAjustees,
                     'total_heure_sup_a_payer' => $this->parseUserInputToDecimal($this->heureSupplementaireAPayer)
                 ]);
-
-                $comment = 'Feuille de temps soumise par ' . $user_connect->name;
-
-                //--- Workflow ---
-                $workflow = WorkflowStub::make(FeuilleTempsWorkflow::class);
-                $workflow->start($this->operation, 'soumettre', ['comment' => $comment]);
-
-                while ($workflow->running());
-
-                if ($workflow->failed()) {
-                    Log::channel('daily')->error(
-                        "Erreur lors du lancement du workflow de soumission de la feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " par l'utilisateur " . $user_connect->name,
-                        ['operation' => $this->operation->id]
-                    );
-                    throw new \Exception('Erreur lors du lancement du workflow de soumission.');
-                } else {
-                    Log::channel('daily')->info("La feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " vient d'être soumise par l'utilisateur " . $user_connect->name, ['operation' => $this->operation->id]);
-                }
             });
+
+            // 2. DEUXIÈME ÉTAPE : Lancer le workflow
+            $comment = 'Feuille de temps soumise par ' . $user_connect->name;
+
+            $workflow = WorkflowStub::make(FeuilleTempsWorkflow::class);
+            $workflow->start($this->operation, 'soumettre', ['comment' => $comment]);
+
+            while ($workflow->running());
+
+            if ($workflow->failed()) {
+                Log::channel('daily')->error(
+                    "Erreur lors du lancement du workflow de soumission de la feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " par l'utilisateur " . $user_connect->name,
+                    ['operation' => $this->operation->id]
+                );
+                session()->flash('error', 'Erreur lors du lancement du workflow de soumission.');
+                return;
+            } else {
+                Log::channel('daily')->info("La feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " vient d'être soumise par l'utilisateur " . $user_connect->name, ['operation' => $this->operation->id]);
+            }
 
             session()->flash('success', 'Feuille de temps soumise avec succès.');
             return redirect()->route('feuille-temps.list');
+
         } catch (\Throwable $th) {
             Log::channel('daily')->error(
                 "Erreur lors de la soumission de la feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " par l'utilisateur " . $user_connect->name,
