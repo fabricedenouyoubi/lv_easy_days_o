@@ -40,7 +40,7 @@
                                 <h4 class="mb-1">{{ $employe->prenom }} {{ $employe->nom }}</h4>
                                 <p class="text-muted mb-0">
                                     <i class="mdi mdi-clock-outline me-1"></i>
-                                    Semaine normale : 35h
+                                    Semaine normale : {{ $informationsEmploye['semaine_normale'] }}
                                 </p>
                             </div>
                         </div>
@@ -64,6 +64,7 @@
                                 @php
                                 $statut = $this->getStatutFormate($semaine);
                                 $actions = $this->getActionsDisponibles($semaine);
+                                $operation = $semaine->operation_data;
                                 @endphp
                                 <tr>
                                     <td>
@@ -117,6 +118,11 @@
                             </div>
                             <h5>Aucune feuille de temps active</h5>
                             <p class="text-muted">Il n'y a pas de feuilles de temps actives pour cette période.</p>
+                            
+                            {{-- Bouton pour créer la première feuille si c'est l'employé propriétaire --}}
+                            @if($employe->id === auth()->user()->employe?->id && $feuilles_temps->total() === 0)
+                                <p class="text-muted">Commencez par créer votre première feuille de temps.</p>
+                            @endif
                         </div>
                         @endif
                     </div>

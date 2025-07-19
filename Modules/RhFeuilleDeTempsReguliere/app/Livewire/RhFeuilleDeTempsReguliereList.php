@@ -5,11 +5,14 @@ namespace Modules\RhFeuilleDeTempsReguliere\Livewire;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Modules\Budget\Models\AnneeFinanciere;
 use Modules\Budget\Models\SemaineAnnee;
 use Modules\RhFeuilleDeTempsAbsence\Models\Operation;
 use Modules\RhFeuilleDeTempsConfig\Models\CodeTravail;
 use Modules\RhFeuilleDeTempsConfig\Models\Comportement\Configuration;
+use Modules\RhFeuilleDeTempsReguliere\Workflows\FeuilleTempsWorkflow;
+use Workflow\WorkflowStub;
 use Carbon\Carbon;
 
 class RhFeuilleDeTempsReguliereList extends Component
@@ -85,20 +88,78 @@ class RhFeuilleDeTempsReguliereList extends Component
     }
 
     /**
-     * Créer une nouvelle feuille de temps (opération)
+     * Créer une nouvelle feuille de temps (opération) avec workflow
      */
     public function creerFeuilleTemps($semaineId)
     {
+        $user_connect = Auth::user();
+        
         try {
-            // Créer l'opération avec état brouillon
-            $operation = Operation::getOrCreateOperation($this->employe->id, $semaineId);
+            // Données pour créer l'opération
+            $insertData = [
+                'employe_id' => $this->employe->id,
+                'annee_semaine_id' => $semaineId,
+                'workflow_state' => 'brouillon',
+                'statut' => 'Brouillon',
+                'total_heure' => 0,
+                'total_heure_regulier' => 0,
+                'total_heure_supp' => 0,
+            ];
 
-            // Rediriger vers le formulaire d'édition
-            return redirect()->route('feuille-temps.edit', [
-                'semaineId' => $semaineId,
-                'operationId' => $operation->id
-            ]);
+            $comment = 'Feuille de temps créée par ' . $user_connect->name;
+
+            // Vérifier si l'opération existe déjà
+            $operationExistante = Operation::where('employe_id', $this->employe->id)
+                ->where('annee_semaine_id', $semaineId)
+                ->first();
+
+            if ($operationExistante) {
+                // Rediriger vers l'opération existante
+                return redirect()->route('feuille-temps.edit', [
+                    'semaineId' => $semaineId,
+                    'operationId' => $operationExistante->id
+                ]);
+            }
+
+            //--- Workflow ---
+            $workflow = WorkflowStub::make(FeuilleTempsWorkflow::class);
+            $operation = null; // Nouvelle opération
+            $workflow->start($operation, 'enregistrer', ['comment' => $comment], $insertData);
+
+            while ($workflow->running());
+
+            if ($workflow->failed()) {
+                Log::channel('daily')->error(
+                    "Erreur lors du lancement du workflow de création de feuille de temps pour l'employé " . $this->employe->nom . " " . $this->employe->prenom . " par l'utilisateur " . $user_connect->name,
+                    ['semaine' => $semaineId]
+                );
+                session()->flash('error', 'Une erreur est survenue lors du lancement du workflow de création.');
+                return;
+            }
+
+            // Récupérer l'opération créée
+            $nouvelleOperation = Operation::where('employe_id', $this->employe->id)
+                ->where('annee_semaine_id', $semaineId)
+                ->latest()
+                ->first();
+
+            if ($nouvelleOperation) {
+                Log::channel('daily')->info("Feuille de temps créée pour l'employé " . $this->employe->nom . " " . $this->employe->prenom . " par l'utilisateur " . $user_connect->name, ['operation' => $nouvelleOperation->id]);
+
+                // Rediriger vers le formulaire d'édition
+                return redirect()->route('feuille-temps.edit', [
+                    'semaineId' => $semaineId,
+                    'operationId' => $nouvelleOperation->id
+                ]);
+            } else {
+                session()->flash('error', 'Erreur lors de la création de la feuille de temps.');
+            }
+
         } catch (\Throwable $th) {
+            Log::channel('daily')->error(
+                "Erreur lors de la création de feuille de temps pour l'employé " . $this->employe->nom . " " . $this->employe->prenom . " par l'utilisateur " . $user_connect->name,
+                ['message' => $th->getMessage(), 'semaine' => $semaineId]
+            );
             session()->flash('error', 'Erreur lors de la création: ' . $th->getMessage());
         }
     }
@@ -202,16 +263,16 @@ class RhFeuilleDeTempsReguliereList extends Component
             $statutInfo = $this->getStatutFormate($semaine);
             $colorType = $this->getTypeFromClass($statutInfo['class']);
 
-            // Opération existe = actions selon l'état
+            // Opération existe = actions selon l'état du workflow
             switch ($operation['workflow_state']) {
                 case 'brouillon':
                 case 'en_cours':
                 case 'rejete':
                     $actions[] = [
                         'type' => $colorType,
-                        'text' => 'Consulter',
+                        'text' => 'Modifier',
                         'icon' => 'fas fa-edit',
-                        'route' => 'feuille-temps.show',
+                        'route' => 'feuille-temps.edit',
                         'params' => ['semaineId' => $semaine->id, 'operationId' => $operation['id']]
                     ];
                     break;
@@ -378,6 +439,7 @@ class RhFeuilleDeTempsReguliereList extends Component
 
         return $debut . ' - ' . $fin;
     }
+
     public function render()
     {
         return view('rhfeuilledetempsreguliere::livewire.rh-feuille-de-temps-reguliere-list', [
