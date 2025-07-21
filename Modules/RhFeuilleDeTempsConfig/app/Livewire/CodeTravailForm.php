@@ -15,6 +15,7 @@ class CodeTravailForm extends Component
     public $estAjustable = true;
     public $estBanque = false;
     public $cumuleBanque = false;
+    public $estDeductible = false;
 
     protected $listeners = ['editCodeTravail'];
 
@@ -32,6 +33,7 @@ class CodeTravailForm extends Component
             'estAjustable' => 'boolean',
             'estBanque' => 'boolean',
             'cumuleBanque' => 'boolean',
+            'estDeductible' => 'boolean',
         ];
 
         // Si on modifie, exclure l'ID actuel de la validation d'unicité
@@ -83,6 +85,7 @@ class CodeTravailForm extends Component
             $this->estAjustable = $codeTravail->est_ajustable;
             $this->estBanque = $codeTravail->est_banque;
             $this->cumuleBanque = $codeTravail->cumule_banque;
+            $this->estDeductible = $codeTravail->est_deductible;
         }
     }
 
@@ -98,6 +101,7 @@ class CodeTravailForm extends Component
                 'est_ajustable' => $this->estAjustable,
                 'est_banque' => $this->estBanque,
                 'cumule_banque' => $this->cumuleBanque,
+                'est_deductible' => $this->estDeductible,
             ];
 
             if ($this->codeTravailId) {

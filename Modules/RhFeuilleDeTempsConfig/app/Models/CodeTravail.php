@@ -21,6 +21,7 @@ class CodeTravail extends Model
         'est_ajustable',
         'est_banque',
         'cumule_banque',
+        'est_deductible',
     ];
 
     /**
@@ -110,6 +111,14 @@ class CodeTravail extends Model
     public function scopeCumuleBanque($query, $cumuleBanque = true)
     {
         return $query->where('cumule_banque', $cumuleBanque);
+    }
+
+    /**
+     * Scope pour filtrer les codes déductibles
+     */
+    public function scopeEstDeductible($query, $estDeductible = true)
+    {
+        return $query->where('est_deductible', $estDeductible);
     }
     /**
      * Relation avec Configuration

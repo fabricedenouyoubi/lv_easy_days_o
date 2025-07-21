@@ -71,6 +71,21 @@
             </div>
         </div>
 
+        <!-- Champ Est Déductible -->
+        <div class="mb-4">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" wire:model="estDeductible" id="estDeductible">
+                <label class="form-check-label" for="estDeductible">
+                    <strong>Code déductible</strong>
+                </label>
+            </div>
+            <div class="form-text">
+                <i class="fas fa-info-circle me-1"></i>
+                Ce code diminue au fur et à mesure que l'employé l'utilise dans sa feuille de temps
+            </div>
+        </div>
+
+
         {{-- Catégorie d'appartenance --}}
         <div class="mb-4">
             <label for="categorie_id" class="form-label">

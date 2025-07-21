@@ -19,6 +19,7 @@ return new class extends Migration
             $table->boolean('est_ajustable')->default(true)->comment('Indique si ce code doit être inclus dans le calcul du total des heures');
             $table->boolean('est_banque')->default(false)->comment('Indique si ce code entre dans la banque de temps d\'un employé');
             $table->boolean('cumule_banque')->default(false)->comment('Indique si ce code marque un solde d\'employé');
+            $table->boolean('est_deductible')->default(false)->comment('Indique si ce code diminue au fur et à mesure que l\'employé l\'utilise');
             $table->timestamps();           
             // Index pour améliorer les performances
             $table->index(['categorie_id']);

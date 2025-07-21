@@ -25,6 +25,7 @@ class CodeTravailSeeder extends Seeder
                 'est_ajustable' => true,
                 'est_banque' => false,     
                 'cumule_banque' => false,
+                'est_deductible' => false,
             ],
             [
                 'code' => 'HESUP',
@@ -33,6 +34,7 @@ class CodeTravailSeeder extends Seeder
                 'est_ajustable' => true,
                 'est_banque' => false,     
                 'cumule_banque' => false,
+                'est_deductible' => false,
             ],
             [
                 'code' => 'TDD',
@@ -41,6 +43,7 @@ class CodeTravailSeeder extends Seeder
                 'est_ajustable' => false,
                 'est_banque' => false,     
                 'cumule_banque' => false,
+                'est_deductible' => false,
             ],
 
             // Codes pour "Rapport"
@@ -51,6 +54,7 @@ class CodeTravailSeeder extends Seeder
                 'est_ajustable' => true,
                 'est_banque' => false,     
                 'cumule_banque' => false,
+                'est_deductible' => false,
             ],
             [
                 'code' => 'CATDF',
@@ -59,6 +63,7 @@ class CodeTravailSeeder extends Seeder
                 'est_ajustable' => true,
                 'est_banque' => false,     
                 'cumule_banque' => false,
+                'est_deductible' => false,
             ],
 
             // Codes pour "Absence"
@@ -69,6 +74,7 @@ class CodeTravailSeeder extends Seeder
                 'est_ajustable' => true,
                 'est_banque' => true,     
                 'cumule_banque' => false,
+                'est_deductible' => true,
             ],
 
             // Codes pour "Caisse"
@@ -79,6 +85,7 @@ class CodeTravailSeeder extends Seeder
                 'est_ajustable' => true,
                 'est_banque' => true,     
                 'cumule_banque' => true,
+                'est_deductible' => false,
             ],
 
             // Codes pour "Congé"
@@ -89,6 +96,7 @@ class CodeTravailSeeder extends Seeder
                 'est_ajustable' => true,
                 'est_banque' => false,     
                 'cumule_banque' => false,
+                'est_deductible' => true,
             ],
 
             // Codes pour "Activité"
@@ -99,6 +107,7 @@ class CodeTravailSeeder extends Seeder
                 'est_ajustable' => true,
                 'est_banque' => true,     
                 'cumule_banque' => false,
+                'est_deductible' => true,
             ],
 
             // Codes pour "Fermé"
@@ -109,6 +118,7 @@ class CodeTravailSeeder extends Seeder
                 'est_ajustable' => true,
                 'est_banque' => false,     
                 'cumule_banque' => false,
+                'est_deductible' => false,
             ],
             [
                 'code' => 'HEDIV',
@@ -117,6 +127,7 @@ class CodeTravailSeeder extends Seeder
                 'est_ajustable' => true,
                 'est_banque' => false,     
                 'cumule_banque' => false,
+                'est_deductible' => false,
             ],
         ];
 
