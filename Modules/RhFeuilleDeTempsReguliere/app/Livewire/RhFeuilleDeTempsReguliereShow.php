@@ -33,7 +33,7 @@ class RhFeuilleDeTempsReguliereShow extends Component
 
     public $motifRejet = '';
     public $commentaire = '';
-    
+
     // Banque de temps
     public $banqueDeTemps = [];
     // Heures que l'employé doit à l'entreprise
@@ -274,6 +274,9 @@ class RhFeuilleDeTempsReguliereShow extends Component
                 // Mettre à jour la banque de temps avec "vers banque de temps"
                 $this->mettreAJourBanqueTemps();
 
+                // Traiter les codes déductibles
+                $this->traiterCodesDeductiblesValidation();
+
                 Log::channel('daily')->info("La feuille de temps de l'employé " . $this->employe->nom . " " . $this->employe->prenom . " vient d'être validée par l'utilisateur " . $user_connect->name, ['operation' => $this->operation->id]);
                 session()->flash('success', 'Feuille de temps validée avec succès.');
                 $this->showApproveModal = false;
@@ -304,7 +307,8 @@ class RhFeuilleDeTempsReguliereShow extends Component
             $workflow = WorkflowStub::make(FeuilleTempsWorkflow::class);
             $workflow->start($this->operation, 'rejeter', [
                 'comment' => $comment,
-                'motif_rejet' => $this->motifRejet, 'user' => $user_connect->name
+                'motif_rejet' => $this->motifRejet,
+                'user' => $user_connect->name
             ]);
 
             while ($workflow->running());
@@ -346,7 +350,8 @@ class RhFeuilleDeTempsReguliereShow extends Component
             $workflow = WorkflowStub::make(FeuilleTempsWorkflow::class);
             $workflow->start($this->operation, 'retourner', [
                 'comment' => $comment,
-                'motif_rejet' => $this->motifRejet, 'user' => $user_connect->name
+                'motif_rejet' => $this->motifRejet,
+                'user' => $user_connect->name
             ]);
 
             while ($workflow->running());
@@ -413,7 +418,7 @@ class RhFeuilleDeTempsReguliereShow extends Component
     }
 
     // Garder toutes les autres méthodes existantes sans modification...
-    
+
     /**
      * Calculer la banque de temps dynamique (version complète avec collectif)
      */
@@ -789,6 +794,195 @@ class RhFeuilleDeTempsReguliereShow extends Component
     public function estJourFerie($jourIndex)
     {
         return in_array($jourIndex, $this->joursFeries);
+    }
+
+    private function traiterCodesDeductiblesValidation()
+    {
+        try {
+            Log::channel('daily')->info("Début traitement codes déductibles pour validation", [
+                'operation_id' => $this->operation->id,
+                'employe_id' => $this->employe->id
+            ]);
+
+            // Récupérer l'année financière active
+            $anneeFinanciere = AnneeFinanciere::where('actif', true)->first();
+            if (!$anneeFinanciere) {
+                Log::channel('daily')->error("Année financière active non trouvée");
+                return false;
+            }
+
+            $totalTraite = 0;
+            $erreursValidation = [];
+
+            // Parcourir toutes les lignes de travail de cette opération
+            foreach ($this->operation->lignesTravail as $ligneTravail) {
+                $codeTravail = $ligneTravail->codeTravail;
+
+                // Vérifier si le code de travail est déductible
+                if ($codeTravail && $codeTravail->est_deductible) {
+                    $totalHeuresLigne = $ligneTravail->getTotalHeures();
+
+                    if ($totalHeuresLigne > 0) {
+                        Log::channel('daily')->info("Traitement code déductible", [
+                            'code_travail_id' => $codeTravail->id,
+                            'code' => $codeTravail->code,
+                            'total_heures' => $totalHeuresLigne
+                        ]);
+
+                        // 1. RECHERCHE INDIVIDUELLE : Configuration spécifique à cet employé
+                        $configuration = Configuration::where('employe_id', $this->employe->id)
+                            ->where('annee_budgetaire_id', $anneeFinanciere->id)
+                            ->where('code_travail_id', $codeTravail->id)
+                            ->first();
+
+                        if ($configuration) {
+                            // CAS INDIVIDUEL
+                            $this->traiterConfigurationIndividuelle($configuration, $totalHeuresLigne, $codeTravail, $erreursValidation);
+                        } else {
+                            // 2. RECHERCHE COLLECTIVE : Configuration collective (employe_id = NULL)
+                            $configurationCollective = Configuration::whereNull('employe_id')
+                                ->where('annee_budgetaire_id', $anneeFinanciere->id)
+                                ->where('code_travail_id', $codeTravail->id)
+                                ->whereHas('employes', function ($query) {
+                                    $query->where('employe_id', $this->employe->id);
+                                })
+                                ->first();
+
+                            if ($configurationCollective) {
+                                // CAS COLLECTIF
+                                $this->traiterConfigurationCollective($configurationCollective, $totalHeuresLigne, $codeTravail, $erreursValidation);
+                            } else {
+                                Log::channel('daily')->warning("Configuration non trouvée pour code déductible", [
+                                    'code_travail_id' => $codeTravail->id,
+                                    'employe_id' => $this->employe->id
+                                ]);
+                            }
+                        }
+
+                        $totalTraite += $totalHeuresLigne;
+                    }
+                }
+            }
+
+            // Vérifier s'il y a des erreurs de validation
+            if (!empty($erreursValidation)) {
+                $messageErreur = "Solde insuffisant pour :\n";
+                foreach ($erreursValidation as $erreur) {
+                    $messageErreur .= "- {$erreur['libelle']} : {$erreur['demande']}h demandées, {$erreur['disponible']}h disponibles\n";
+                }
+
+                Log::channel('daily')->error("Erreurs de validation codes déductibles", [
+                    'erreurs' => $erreursValidation
+                ]);
+
+                throw new \Exception($messageErreur);
+            }
+
+            Log::channel('daily')->info("Traitement codes déductibles terminé", [
+                'total_heures_traitees' => $totalTraite
+            ]);
+
+            return true;
+        } catch (\Throwable $th) {
+            Log::channel('daily')->error("Erreur lors du traitement des codes déductibles", [
+                'operation_id' => $this->operation->id,
+                'message' => $th->getMessage()
+            ]);
+            throw $th;
+        }
+    }
+
+    /**
+     * Traiter une configuration individuelle
+     */
+    private function traiterConfigurationIndividuelle($configuration, $totalHeuresLigne, $codeTravail, &$erreursValidation)
+    {
+        $resteActuel = $configuration->reste ?? 0;
+
+        if ($totalHeuresLigne > $resteActuel) {
+            $erreursValidation[] = [
+                'code' => $codeTravail->code,
+                'libelle' => $codeTravail->libelle,
+                'demande' => $totalHeuresLigne,
+                'disponible' => $resteActuel
+            ];
+            return;
+        }
+
+        // Mettre à jour consommé et reste
+        $nouveauConsomme = ($configuration->consomme ?? 0) + $totalHeuresLigne;
+        $nouveauReste = $resteActuel - $totalHeuresLigne;
+
+        $configuration->update([
+            'consomme' => $nouveauConsomme,
+            'reste' => $nouveauReste,
+            'commentaire' => ($configuration->commentaire ?? '') .
+                "\nValidation semaine {$this->semaine->numero_semaine}: -{$totalHeuresLigne}h - " .
+                now()->format('d/m/Y H:i')
+        ]);
+
+        Log::channel('daily')->info("Configuration individuelle mise à jour", [
+            'configuration_id' => $configuration->id,
+            'code_travail' => $codeTravail->code,
+            'heures_consommees' => $totalHeuresLigne,
+            'nouveau_consomme' => $nouveauConsomme,
+            'nouveau_reste' => $nouveauReste
+        ]);
+    }
+
+    /**
+     * Traiter une configuration collective
+     */
+    private function traiterConfigurationCollective($configurationCollective, $totalHeuresLigne, $codeTravail, &$erreursValidation)
+    {
+        // Pour le collectif, calculer le reste disponible pour cet employé
+        $consommeIndividuel = DB::table('configuration_employe')
+            ->where('configuration_id', $configurationCollective->id)
+            ->where('employe_id', $this->employe->id)
+            ->value('consomme_individuel') ?? 0;
+
+        $resteDisponible = ($configurationCollective->quota ?? 0) - $consommeIndividuel;
+
+        if ($totalHeuresLigne > $resteDisponible) {
+            $erreursValidation[] = [
+                'code' => $codeTravail->code,
+                'libelle' => $codeTravail->libelle . ' (collectif)',
+                'demande' => $totalHeuresLigne,
+                'disponible' => $resteDisponible
+            ];
+            return;
+        }
+
+        // Mettre à jour le consommé individuel dans la table configuration_employe
+        DB::table('configuration_employe')
+            ->where('configuration_id', $configurationCollective->id)
+            ->where('employe_id', $this->employe->id)
+            ->update([
+                'consomme_individuel' => $consommeIndividuel + $totalHeuresLigne,
+                'updated_at' => now()
+            ]);
+
+        // Mettre à jour le total consommé dans la configuration collective
+        $totalConsommeCollectif = DB::table('configuration_employe')
+            ->where('configuration_id', $configurationCollective->id)
+            ->sum('consomme_individuel');
+
+        $configurationCollective->update([
+            'consomme' => $totalConsommeCollectif,
+            'reste' => ($configurationCollective->quota ?? 0) - $totalConsommeCollectif,
+            'commentaire' => ($configurationCollective->commentaire ?? '') .
+                "\nValidation semaine {$this->semaine->numero_semaine}: -{$totalHeuresLigne}h employé {$this->employe->nom} - " .
+                now()->format('d/m/Y H:i')
+        ]);
+
+        Log::channel('daily')->info("Configuration collective mise à jour", [
+            'configuration_id' => $configurationCollective->id,
+            'code_travail' => $codeTravail->code,
+            'heures_consommees' => $totalHeuresLigne,
+            'nouveau_consomme_individuel' => $consommeIndividuel + $totalHeuresLigne,
+            'total_consomme_collectif' => $totalConsommeCollectif,
+            'reste_disponible_apres' => $resteDisponible - $totalHeuresLigne
+        ]);
     }
 
     public function render()
