@@ -25,7 +25,7 @@ class DemandeAbsenceActivity extends Activity
             ]);
 
         } catch (\Throwable $th) {
-            Log::channel('daily')->error('Erreur lors du lancement du workflow' . $th->getMessage(), ['insertData' => $insertData, 'demandeAbsence' => $demande->id]);
+            Log::channel('daily')->error('Erreur lors du lancement du workflow' . $th->getMessage(), ['insertData' => $insertData, 'demandeAbsence' => $demande?->id]);
         }
 
         return;

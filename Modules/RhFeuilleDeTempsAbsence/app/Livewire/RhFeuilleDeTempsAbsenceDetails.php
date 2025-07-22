@@ -130,7 +130,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
 
             //--- Workflow ---
             $workflow = WorkflowStub::make(DemandeAbsenceWorkflow::class);
-            $workflow->start($this->demandeAbsence, 'soumettre', ['comment' => $comment, 'user' =>Auth::user()->name]);
+            $workflow->start($this->demandeAbsence, 'soumettre', ['comment' => $comment, 'user' => Auth::user()->name]);
 
             while ($workflow->running());
 
@@ -169,7 +169,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
 
             //--- Workflow ---
             $workflow = WorkflowStub::make(DemandeAbsenceWorkflow::class);
-            $workflow->start($this->demandeAbsence, 'rappeler', ['comment' => $comment, 'motif' => $this->motif, 'user' =>Auth::user()->name]);
+            $workflow->start($this->demandeAbsence, 'rappeler', ['comment' => $comment, 'motif' => $this->motif, 'user' => Auth::user()->name]);
 
             while ($workflow->running());
 
@@ -206,7 +206,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
         $user_connect = Auth::user();
         try {
 
-            //--- Selection des semaines de l'année ---
+            /* //--- Selection des semaines de l'année ---
             $semaines = SemaineAnnee::where('annee_financiere_id', $this->demandeAbsence->annee_financiere_id)
                 ->where('fin', '>=', $this->demandeAbsence->date_debut)
                 ->where('debut', '<=', $this->demandeAbsence->date_fin)
@@ -223,8 +223,8 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
                 $dateDebut = Carbon::parse($this->demandeAbsence->date_debut)->toDateString();
                 $semaineDebut = Carbon::parse($semaine->debut)->toDateString();
 
-                /* On prend la date de début la plus tardive entre la demande d'absence et la semaine courante
-                Cela permet de ne pas dépasser les limites de la semaine lors du calcul  */
+                // On prend la date de début la plus tardive entre la demande d'absence et la semaine courante
+                //Cela permet de ne pas dépasser les limites de la semaine lors du calcul
                 $dateDebut = max($dateDebut, $semaineDebut);
 
                 $dateFin = Carbon::parse($this->demandeAbsence->date_fin)->toDateString();
@@ -250,13 +250,12 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
                     'workflow_state' => 'valide',
                     'statut' => 'valide'
                 ]);
-            }
+            } */
 
             $comment = 'La demande est approuvée';
-
             //--- Workflow ---
             $workflow = WorkflowStub::make(DemandeAbsenceWorkflow::class);
-            $workflow->start($this->demandeAbsence, 'valider', ['comment' => $comment, 'user' =>Auth::user()->name]);
+            $workflow->start($this->demandeAbsence, 'valider', ['comment' => $comment, 'user' => Auth::user()->name]);
 
             while ($workflow->running());
 
@@ -302,7 +301,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
 
             //--- Workflow ---
             $workflow = WorkflowStub::make(DemandeAbsenceWorkflow::class);
-            $workflow->start($this->demandeAbsence, 'retourner', ['comment' => $comment, 'motif' => $this->motif, 'user' =>Auth::user()->name]);
+            $workflow->start($this->demandeAbsence, 'retourner', ['comment' => $comment, 'motif' => $this->motif, 'user' => Auth::user()->name]);
 
             while ($workflow->running());
 
@@ -348,7 +347,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
 
             //--- Workflow ---
             $workflow = WorkflowStub::make(DemandeAbsenceWorkflow::class);
-            $workflow->start($this->demandeAbsence, 'rejeter', ['comment' => $comment, 'motif' => $this->motif, 'user' =>Auth::user()->name]);
+            $workflow->start($this->demandeAbsence, 'rejeter', ['comment' => $comment, 'motif' => $this->motif, 'user' => Auth::user()->name]);
 
             while ($workflow->running());
 
