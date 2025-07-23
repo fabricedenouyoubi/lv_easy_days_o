@@ -15,6 +15,7 @@ use Modules\RhFeuilleDeTempsAbsence\Models\Operation;
 use Modules\RhFeuilleDeTempsAbsence\Traits\AbsenceResource;
 use Modules\RhFeuilleDeTempsAbsence\Workflows\DemandeAbsenceWorkflow;
 use Modules\RhFeuilleDeTempsConfig\Models\Comportement\Configuration;
+use Modules\RhFeuilleDeTempsReguliere\Models\LigneTravail;
 use Workflow\WorkflowStub;
 
 class RhFeuilleDeTempsAbsenceDetails extends Component
@@ -267,6 +268,20 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
                 );
                 session()->flash('error', 'Une erreur est survenue lors du lancement du workflow de la validation de la demande d\'absence.');
             } else {
+
+
+                try {
+                    $this->remplirFeuillesDeTempsAutomatiquement();
+                    Log::channel('daily')->info("Feuilles de temps remplies automatiquement après validation de l'absence");
+                } catch (\Throwable $fillError) {
+                    Log::channel('daily')->error("Erreur lors du remplissage automatique des feuilles de temps", [
+                        'demande_absence_id' => $this->demandeAbsence->id,
+                        'message' => $fillError->getMessage()
+                    ]);
+                    // Ne pas faire échouer la validation, juste logger l'erreur
+                    session()->flash('warning', 'Demande validée, mais erreur lors du remplissage automatique des feuilles de temps.');
+                }
+
                 //--- Journalisation
                 Log::channel('daily')->info("La demande d'absence de l'employé " . $this->demandeAbsence->employe?->nom . " " . $this->demandeAbsence->employe?->prenom  . " vient d'être validée par l' utilisateur " . $user_connect->name, ['demande' => $this->demandeAbsence->id]);
                 session()->flash('success', 'Demande d\'absence validée avec succès.');
@@ -295,6 +310,17 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
 
             if ($this->demandeAbsence->operations()->count() > 0) {
                 $this->demandeAbsence->operations()->delete();
+            }
+
+            // NOUVEAU : Supprimer les lignes auto-remplies
+            try {
+                $this->supprimerLignesAutoRempliesAbsence();
+                Log::channel('daily')->info("Lignes auto-remplies supprimées lors du retour de l'absence");
+            } catch (\Throwable $deleteError) {
+                Log::channel('daily')->error("Erreur lors de la suppression des lignes auto-remplies", [
+                    'demande_absence_id' => $this->demandeAbsence->id,
+                    'message' => $deleteError->getMessage()
+                ]);
             }
 
             $comment = 'La demande a été retournée';
@@ -479,7 +505,349 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
         return collect($this->banqueDeTemps)->sum('valeur');
     }
 
+    /**
+     * Remplir automatiquement les feuilles de temps lors de la validation d'une absence
+     */
+    private function remplirFeuillesDeTempsAutomatiquement()
+    {
+        try {
+            Log::channel('daily')->info("Début du remplissage automatique des feuilles de temps", [
+                'demande_absence_id' => $this->demandeAbsence->id,
+                'employe_id' => $this->demandeAbsence->employe_id,
+                'date_debut' => $this->demandeAbsence->date_debut,
+                'date_fin' => $this->demandeAbsence->date_fin
+            ]);
 
+            // 1. Récupérer les semaines concernées par l'absence
+            $semainesConcernees = $this->getSemainesConcerneesPourAbsence();
+
+            if ($semainesConcernees->isEmpty()) {
+                Log::channel('daily')->warning("Aucune semaine trouvée pour la période d'absence");
+                return;
+            }
+
+            // 2. Récupérer les jours non ouvrables (fériés)
+            $joursNonOuvrables = $this->recupererJoursNonOuvrables();
+
+            // 3. Pour chaque semaine, créer ou mettre à jour l'opération et les lignes
+            foreach ($semainesConcernees as $semaine) {
+                $this->traiterSemainePourAbsence($semaine, $joursNonOuvrables);
+            }
+
+            Log::channel('daily')->info("Remplissage automatique terminé avec succès", [
+                'nombre_semaines_traitees' => $semainesConcernees->count()
+            ]);
+        } catch (\Throwable $th) {
+            Log::channel('daily')->error("Erreur lors du remplissage automatique des feuilles de temps", [
+                'demande_absence_id' => $this->demandeAbsence->id,
+                'message' => $th->getMessage(),
+                'trace' => $th->getTraceAsString()
+            ]);
+            throw $th;
+        }
+    }
+
+    /**
+     * Récupérer les semaines concernées par la période d'absence
+     */
+    private function getSemainesConcerneesPourAbsence()
+    {
+        return SemaineAnnee::where('annee_financiere_id', $this->demandeAbsence->annee_financiere_id)
+            ->where('fin', '>=', $this->demandeAbsence->date_debut->toDateString())
+            ->where('debut', '<=', $this->demandeAbsence->date_fin->toDateString())
+            ->orderBy('numero_semaine')
+            ->get();
+    }
+
+    /**
+     * Récupérer les jours non ouvrables (jours fériés) pour l'année financière
+     */
+    private function recupererJoursNonOuvrables()
+    {
+        return Configuration::where('annee_budgetaire_id', $this->demandeAbsence->annee_financiere_id)
+            ->whereNotNull('date')
+            ->pluck('date')
+            ->map(function ($date) {
+                return Carbon::parse($date)->format('Y-m-d');
+            })
+            ->toArray();
+    }
+
+    /**
+     * Traiter une semaine spécifique pour l'absence
+     */
+    private function traiterSemainePourAbsence(SemaineAnnee $semaine, array $joursNonOuvrables)
+    {
+        try {
+            Log::channel('daily')->info("Traitement de la semaine", [
+                'semaine_id' => $semaine->id,
+                'numero_semaine' => $semaine->numero_semaine,
+                'debut' => $semaine->debut,
+                'fin' => $semaine->fin
+            ]);
+
+            // 1. Obtenir ou créer l'opération pour cette semaine
+            $operation = $this->obtenirOuCreerOperation($semaine);
+
+            // 2. Calculer les dates effectives d'absence pour cette semaine
+            $datesEffectives = $this->calculerDatesEffectivesPourSemaine($semaine);
+
+            // 3. Calculer les heures d'absence pour cette semaine
+            $heuresAbsence = $this->calculerHeuresAbsencePourSemaine($datesEffectives, $joursNonOuvrables);
+
+            if ($heuresAbsence > 0) {
+                // 4. Créer ou mettre à jour la ligne de travail pour l'absence
+                $this->creerOuMettreAJourLigneTravailAbsence($operation, $datesEffectives, $joursNonOuvrables);
+
+                // 5. Mettre à jour les totaux de l'opération
+                $this->mettreAJourTotauxOperation($operation);
+
+                Log::channel('daily')->info("Semaine traitée avec succès", [
+                    'semaine_id' => $semaine->id,
+                    'heures_absence' => $heuresAbsence,
+                    'operation_id' => $operation->id
+                ]);
+            } else {
+                Log::channel('daily')->info("Aucune heure d'absence pour cette semaine", [
+                    'semaine_id' => $semaine->id
+                ]);
+            }
+        } catch (\Throwable $th) {
+            Log::channel('daily')->error("Erreur lors du traitement de la semaine", [
+                'semaine_id' => $semaine->id,
+                'message' => $th->getMessage()
+            ]);
+            throw $th;
+        }
+    }
+
+    /**
+     * Obtenir ou créer une opération pour la semaine et l'employé
+     */
+    private function obtenirOuCreerOperation(SemaineAnnee $semaine)
+    {
+        return Operation::firstOrCreate(
+            [
+                'employe_id' => $this->demandeAbsence->employe_id,
+                'annee_semaine_id' => $semaine->id,
+            ],
+            [
+                'workflow_state' => 'valide',
+                'statut' => 'valide',
+                'total_heure' => 0,
+                'total_heure_regulier' => 0,
+                'total_heure_supp' => 0,
+                'total_heure_deplacement' => 0,
+                'total_heure_formation' => 0,
+                'total_heure_csn' => 0,
+                'total_heure_caisse' => 0,
+                'total_heure_conge_mobile' => 0,
+            ]
+        );
+    }
+
+    /**
+     * Calculer les dates effectives d'absence pour une semaine donnée
+     */
+    private function calculerDatesEffectivesPourSemaine(SemaineAnnee $semaine)
+    {
+        $debutAbsence = $this->demandeAbsence->date_debut->copy();
+        $finAbsence = $this->demandeAbsence->date_fin->copy();
+        $debutSemaine = Carbon::parse($semaine->debut);
+        $finSemaine = Carbon::parse($semaine->fin);
+
+        // Prendre les dates qui se chevauchent entre l'absence et la semaine
+        $dateDebutEffective = $debutAbsence->gt($debutSemaine) ? $debutAbsence : $debutSemaine;
+        $dateFinEffective = $finAbsence->lt($finSemaine) ? $finAbsence : $finSemaine;
+
+        return [
+            'debut' => $dateDebutEffective,
+            'fin' => $dateFinEffective
+        ];
+    }
+
+    /**
+     * Calculer les heures d'absence pour une semaine en excluant les jours non ouvrables
+     */
+    private function calculerHeuresAbsencePourSemaine(array $datesEffectives, array $joursNonOuvrables)
+    {
+        $dateDebut = $datesEffectives['debut'];
+        $dateFin = $datesEffectives['fin'];
+
+        $periode = CarbonPeriod::create($dateDebut, $dateFin);
+        $joursOuvrables = 0;
+
+        foreach ($periode as $date) {
+            $dateFormatee = $date->format('Y-m-d');
+
+            // Exclure les dimanches et les jours fériés
+            if (!$date->isSunday() && !in_array($dateFormatee, $joursNonOuvrables)) {
+                $joursOuvrables++;
+            }
+        }
+
+        return $joursOuvrables * $this->demandeAbsence->heure_par_jour;
+    }
+
+    /**
+     * Créer ou mettre à jour la ligne de travail pour l'absence
+     */
+    private function creerOuMettreAJourLigneTravailAbsence(Operation $operation, array $datesEffectives, array $joursNonOuvrables)
+    {
+        // Vérifier si une ligne existe déjà pour ce code de travail et cette absence
+        $ligneExistante = LigneTravail::where('operation_id', $operation->id)
+            ->where('codes_travail_id', $this->demandeAbsence->codes_travail_id)
+            ->where('demande_absence_id', $this->demandeAbsence->id)
+            ->first();
+
+        if ($ligneExistante) {
+            Log::channel('daily')->info("Mise à jour de la ligne de travail existante", [
+                'ligne_id' => $ligneExistante->id
+            ]);
+            $ligne = $ligneExistante;
+        } else {
+            Log::channel('daily')->info("Création d'une nouvelle ligne de travail");
+            $ligne = new LigneTravail([
+                'operation_id' => $operation->id,
+                'codes_travail_id' => $this->demandeAbsence->codes_travail_id,
+                'auto_rempli' => true,
+                'type_auto_remplissage' => 'absence',
+                'demande_absence_id' => $this->demandeAbsence->id
+            ]);
+        }
+
+        // Réinitialiser toutes les durées à 0
+        for ($jour = 0; $jour <= 6; $jour++) {
+            $ligne->{"duree_{$jour}"} = 0;
+        }
+
+        // Remplir les jours concernés par l'absence
+        $this->remplirJoursAbsenceDansLigne($ligne, $datesEffectives, $joursNonOuvrables);
+
+        $ligne->save();
+
+        Log::channel('daily')->info("Ligne de travail sauvegardée", [
+            'ligne_id' => $ligne->id,
+            'total_heures' => $ligne->getTotalHeures()
+        ]);
+    }
+
+    /**
+     * Remplir les jours d'absence dans la ligne de travail
+     */
+    private function remplirJoursAbsenceDansLigne(LigneTravail $ligne, array $datesEffectives, array $joursNonOuvrables)
+    {
+        $dateDebut = $datesEffectives['debut'];
+        $dateFin = $datesEffectives['fin'];
+
+        $periode = CarbonPeriod::create($dateDebut, $dateFin);
+
+        foreach ($periode as $date) {
+            $dateFormatee = $date->format('Y-m-d');
+
+            // Exclure les dimanches et les jours fériés
+            if (!$date->isSunday() && !in_array($dateFormatee, $joursNonOuvrables)) {
+                // Déterminer le jour de la semaine (0=Lundi, 6=Dimanche)
+                $jourSemaine = $date->dayOfWeek === 0 ? 6 : $date->dayOfWeek - 1;
+
+                // Seulement les jours ouvrables (Lundi à Samedi, sauf dimanche)
+                if ($jourSemaine >= 0 && $jourSemaine <= 5) {
+                    $heuresJour = min($this->demandeAbsence->heure_par_jour, 8); // Max 8h par jour
+                    $ligne->{"duree_{$jourSemaine}"} = $heuresJour;
+
+                    Log::channel('daily')->info("Jour rempli", [
+                        'date' => $dateFormatee,
+                        'jour_semaine' => $jourSemaine,
+                        'heures' => $heuresJour
+                    ]);
+                }
+            } else {
+                Log::channel('daily')->info("Jour exclu (dimanche ou férié)", [
+                    'date' => $dateFormatee,
+                    'is_sunday' => $date->isSunday(),
+                    'is_ferie' => in_array($dateFormatee, $joursNonOuvrables)
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Mettre à jour les totaux de l'opération après ajout des lignes d'absence
+     */
+    private function mettreAJourTotauxOperation(Operation $operation)
+    {
+        // Recalculer le total des heures à partir de toutes les lignes de travail
+        $operation->load('lignesTravail');
+
+        $totalHeures = 0;
+        $totalHeuresAbsence = 0;
+
+        foreach ($operation->lignesTravail as $ligne) {
+            $totalLigne = $ligne->getTotalHeures();
+            $totalHeures += $totalLigne;
+
+            // Si c'est une ligne d'absence auto-remplie
+            if ($ligne->auto_rempli && $ligne->type_auto_remplissage === 'absence') {
+                $totalHeuresAbsence += $totalLigne;
+            }
+        }
+
+        $operation->update([
+            'total_heure' => $totalHeures,
+            // Vous pouvez ajouter d'autres totaux spécifiques selon vos besoins
+        ]);
+
+        Log::channel('daily')->info("Totaux de l'opération mis à jour", [
+            'operation_id' => $operation->id,
+            'total_heure' => $totalHeures,
+            'total_heures_absence' => $totalHeuresAbsence
+        ]);
+    }
+
+    /**
+     * Supprimer les lignes de travail auto-remplies en cas de rejet ou d'annulation
+     */
+    private function supprimerLignesAutoRempliesAbsence()
+    {
+        try {
+            Log::channel('daily')->info("Suppression des lignes auto-remplies pour l'absence", [
+                'demande_absence_id' => $this->demandeAbsence->id
+            ]);
+
+            // Récupérer toutes les lignes auto-remplies pour cette absence
+            $lignesASupprimer = LigneTravail::where('demande_absence_id', $this->demandeAbsence->id)
+                ->where('auto_rempli', true)
+                ->where('type_auto_remplissage', 'absence')
+                ->get();
+
+            $operationsAMettreAJour = [];
+
+            foreach ($lignesASupprimer as $ligne) {
+                $operationsAMettreAJour[] = $ligne->operation_id;
+                $ligne->delete();
+            }
+
+            // Mettre à jour les totaux des opérations concernées
+            $operationsUniques = array_unique($operationsAMettreAJour);
+            foreach ($operationsUniques as $operationId) {
+                $operation = Operation::find($operationId);
+                if ($operation) {
+                    $this->mettreAJourTotauxOperation($operation);
+                }
+            }
+
+            Log::channel('daily')->info("Lignes auto-remplies supprimées", [
+                'nombre_lignes_supprimees' => $lignesASupprimer->count(),
+                'operations_mises_a_jour' => count($operationsUniques)
+            ]);
+        } catch (\Throwable $th) {
+            Log::channel('daily')->error("Erreur lors de la suppression des lignes auto-remplies", [
+                'demande_absence_id' => $this->demandeAbsence->id,
+                'message' => $th->getMessage()
+            ]);
+            throw $th;
+        }
+    }
     public function render()
     {
         //dd($this->demandeAbsence->getWorkflowHistory());

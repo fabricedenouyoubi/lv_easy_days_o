@@ -61,6 +61,7 @@ return new class extends Migration
             // Relations
             $table->foreignId('operation_id')->constrained('operations')->onDelete('cascade');
             $table->foreignId('codes_travail_id')->constrained('codes_travail')->onDelete('cascade');
+            $table->foreignId('demande_absence_id')->nullable()->after('type_auto_remplissage')->constrained('demande_absences')->nullOnDelete();
             
             $table->timestamps();
             
