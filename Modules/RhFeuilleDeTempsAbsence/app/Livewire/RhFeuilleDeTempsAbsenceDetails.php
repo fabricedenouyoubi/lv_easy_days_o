@@ -622,11 +622,16 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     }
 
     /**
-     * Obtenir ou créer une opération pour la semaine et l'employé
+     * Obtenir ou créer une opération pour la semaine et l'employé - VERSION CORRIGÉE
      */
     private function obtenirOuCreerOperation(SemaineAnnee $semaine)
     {
-        return Operation::firstOrCreate(
+        // D'abord, calculer les heures totales pour cette semaine
+        $datesEffectives = $this->calculerDatesEffectivesPourSemaine($semaine);
+        $joursNonOuvrables = $this->recupererJoursNonOuvrables();
+        $heuresAbsence = $this->calculerHeuresAbsencePourSemaine($datesEffectives, $joursNonOuvrables);
+
+        $operation = Operation::firstOrCreate(
             [
                 'employe_id' => $this->demandeAbsence->employe_id,
                 'annee_semaine_id' => $semaine->id,
@@ -634,7 +639,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
             [
                 'workflow_state' => 'valide',
                 'statut' => 'valide',
-                'total_heure' => 0,
+                'total_heure' => $heuresAbsence,
                 'total_heure_regulier' => 0,
                 'total_heure_supp' => 0,
                 'total_heure_deplacement' => 0,
@@ -642,8 +647,28 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
                 'total_heure_csn' => 0,
                 'total_heure_caisse' => 0,
                 'total_heure_conge_mobile' => 0,
+                'demande_absence_id' => $this->demandeAbsence->id,
             ]
         );
+
+        // Si l'opération existait déjà, mettre à jour l'ID de l'absence
+        if (!$operation->wasRecentlyCreated && !$operation->demande_absence_id) {
+            $operation->update([
+                'demande_absence_id' => $this->demandeAbsence->id,
+                'total_heure' => $operation->total_heure + $heuresAbsence
+            ]);
+        }
+
+        Log::channel('daily')->info("Opération créée ou récupérée", [
+            'operation_id' => $operation->id,
+            'semaine_id' => $semaine->id,
+            'employe_id' => $this->demandeAbsence->employe_id,
+            'heures_absence' => $heuresAbsence,
+            'demande_absence_id' => $operation->demande_absence_id,
+            'was_recently_created' => $operation->wasRecentlyCreated
+        ]);
+
+        return $operation;
     }
 
     /**
@@ -690,46 +715,75 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     }
 
     /**
-     * Créer ou mettre à jour la ligne de travail pour l'absence
+     * Créer ou mettre à jour la ligne de travail pour l'absence - VERSION SIMPLIFIÉE
      */
     private function creerOuMettreAJourLigneTravailAbsence(Operation $operation, array $datesEffectives, array $joursNonOuvrables)
     {
-        // Vérifier si une ligne existe déjà pour ce code de travail et cette absence
-        $ligneExistante = LigneTravail::where('operation_id', $operation->id)
-            ->where('codes_travail_id', $this->demandeAbsence->codes_travail_id)
-            ->where('demande_absence_id', $this->demandeAbsence->id)
-            ->first();
-
-        if ($ligneExistante) {
-            Log::channel('daily')->info("Mise à jour de la ligne de travail existante", [
-                'ligne_id' => $ligneExistante->id
-            ]);
-            $ligne = $ligneExistante;
-        } else {
-            Log::channel('daily')->info("Création d'une nouvelle ligne de travail");
-            $ligne = new LigneTravail([
+        try {
+            Log::channel('daily')->info("Début création/mise à jour ligne de travail", [
                 'operation_id' => $operation->id,
                 'codes_travail_id' => $this->demandeAbsence->codes_travail_id,
-                'auto_rempli' => true,
-                'type_auto_remplissage' => 'absence',
                 'demande_absence_id' => $this->demandeAbsence->id
             ]);
+
+            // Vérifier si une ligne existe déjà pour ce code de travail dans cette opération
+            $ligneExistante = LigneTravail::where('operation_id', $operation->id)
+                ->where('codes_travail_id', $this->demandeAbsence->codes_travail_id)
+                ->where('auto_rempli', true)
+                ->where('type_auto_remplissage', 'absence')
+                ->first();
+
+            if ($ligneExistante) {
+                Log::channel('daily')->info("Mise à jour de la ligne de travail existante", [
+                    'ligne_id' => $ligneExistante->id
+                ]);
+                $ligne = $ligneExistante;
+            } else {
+                Log::channel('daily')->info("Création d'une nouvelle ligne de travail");
+                $ligne = new LigneTravail();
+            }
+
+            // Définir tous les attributs 
+            $ligne->operation_id = $operation->id;
+            $ligne->codes_travail_id = $this->demandeAbsence->codes_travail_id;
+            $ligne->auto_rempli = true;
+            $ligne->type_auto_remplissage = 'absence';
+
+            // Réinitialiser toutes les durées à 0
+            for ($jour = 0; $jour <= 6; $jour++) {
+                $ligne->{"duree_{$jour}"} = 0.00;
+            }
+
+            Log::channel('daily')->info("Données de base de la ligne définies", [
+                'operation_id' => $ligne->operation_id,
+                'codes_travail_id' => $ligne->codes_travail_id,
+                'auto_rempli' => $ligne->auto_rempli
+            ]);
+
+            // Remplir les jours concernés par l'absence
+            $this->remplirJoursAbsenceDansLigne($ligne, $datesEffectives, $joursNonOuvrables);
+
+            // Sauvegarder la ligne
+            $saved = $ligne->save();
+
+            if ($saved) {
+                Log::channel('daily')->info("Ligne de travail sauvegardée avec succès", [
+                    'ligne_id' => $ligne->id,
+                    'total_heures' => $ligne->getTotalHeures(),
+                    'operation_id' => $ligne->operation_id
+                ]);
+            } else {
+                Log::channel('daily')->error("Échec de la sauvegarde de la ligne de travail");
+                throw new \Exception("Impossible de sauvegarder la ligne de travail");
+            }
+        } catch (\Throwable $th) {
+            Log::channel('daily')->error("Erreur lors de la création/mise à jour de la ligne de travail", [
+                'operation_id' => $operation->id,
+                'message' => $th->getMessage(),
+                'trace' => $th->getTraceAsString()
+            ]);
+            throw $th;
         }
-
-        // Réinitialiser toutes les durées à 0
-        for ($jour = 0; $jour <= 6; $jour++) {
-            $ligne->{"duree_{$jour}"} = 0;
-        }
-
-        // Remplir les jours concernés par l'absence
-        $this->remplirJoursAbsenceDansLigne($ligne, $datesEffectives, $joursNonOuvrables);
-
-        $ligne->save();
-
-        Log::channel('daily')->info("Ligne de travail sauvegardée", [
-            'ligne_id' => $ligne->id,
-            'total_heures' => $ligne->getTotalHeures()
-        ]);
     }
 
     /**
@@ -805,43 +859,65 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
     }
 
     /**
-     * Supprimer les lignes de travail auto-remplies en cas de rejet ou d'annulation
+     * Supprimer les opérations et lignes auto-remplies en cas de rejet ou d'annulation - VERSION CORRIGÉE
      */
     private function supprimerLignesAutoRempliesAbsence()
     {
         try {
-            Log::channel('daily')->info("Suppression des lignes auto-remplies pour l'absence", [
+            Log::channel('daily')->info("Suppression des opérations et lignes auto-remplies pour l'absence", [
                 'demande_absence_id' => $this->demandeAbsence->id
             ]);
 
-            // Récupérer toutes les lignes auto-remplies pour cette absence
-            $lignesASupprimer = LigneTravail::where('demande_absence_id', $this->demandeAbsence->id)
-                ->where('auto_rempli', true)
-                ->where('type_auto_remplissage', 'absence')
-                ->get();
+            // 1. Récupérer toutes les opérations liées à cette absence
+            $operationsASupprimer = Operation::where('demande_absence_id', $this->demandeAbsence->id)->get();
 
-            $operationsAMettreAJour = [];
+            $operationsIds = [];
+            $lignesSupprimees = 0;
 
-            foreach ($lignesASupprimer as $ligne) {
-                $operationsAMettreAJour[] = $ligne->operation_id;
-                $ligne->delete();
-            }
+            foreach ($operationsASupprimer as $operation) {
+                $operationsIds[] = $operation->id;
 
-            // Mettre à jour les totaux des opérations concernées
-            $operationsUniques = array_unique($operationsAMettreAJour);
-            foreach ($operationsUniques as $operationId) {
-                $operation = Operation::find($operationId);
-                if ($operation) {
+                // 2. Supprimer toutes les lignes auto-remplies de cette opération
+                $lignesASupprimer = LigneTravail::where('operation_id', $operation->id)
+                    ->where('auto_rempli', true)
+                    ->where('type_auto_remplissage', 'absence')
+                    ->get();
+
+                foreach ($lignesASupprimer as $ligne) {
+                    $ligne->delete();
+                    $lignesSupprimees++;
+                }
+
+                // 3. Vérifier s'il reste d'autres lignes dans l'opération
+                $autresLignes = LigneTravail::where('operation_id', $operation->id)->count();
+
+                if ($autresLignes === 0) {
+                    // Si plus de lignes, supprimer complètement l'opération
+                    Log::channel('daily')->info("Suppression complète de l'opération", [
+                        'operation_id' => $operation->id
+                    ]);
+                    $operation->delete();
+                } else {
+                    // Si il reste d'autres lignes, juste enlever la référence à l'absence et recalculer les totaux
+                    Log::channel('daily')->info("Suppression de la référence à l'absence (autres lignes présentes)", [
+                        'operation_id' => $operation->id,
+                        'autres_lignes' => $autresLignes
+                    ]);
+
+                    $operation->update([
+                        'demande_absence_id' => null
+                    ]);
+
                     $this->mettreAJourTotauxOperation($operation);
                 }
             }
 
-            Log::channel('daily')->info("Lignes auto-remplies supprimées", [
-                'nombre_lignes_supprimees' => $lignesASupprimer->count(),
-                'operations_mises_a_jour' => count($operationsUniques)
+            Log::channel('daily')->info("Suppression terminée", [
+                'operations_traitees' => count($operationsIds),
+                'lignes_supprimees' => $lignesSupprimees
             ]);
         } catch (\Throwable $th) {
-            Log::channel('daily')->error("Erreur lors de la suppression des lignes auto-remplies", [
+            Log::channel('daily')->error("Erreur lors de la suppression des opérations et lignes auto-remplies", [
                 'demande_absence_id' => $this->demandeAbsence->id,
                 'message' => $th->getMessage()
             ]);

@@ -52,16 +52,11 @@ return new class extends Migration
             $table->boolean('auto_rempli')->default(false)->after('codes_travail_id');
             
             // Type d'auto-remplissage (absence, ferie, divers)
-            $table->enum('type_auto_remplissage', ['absence', 'ferie', 'divers'])->nullable()->after('auto_rempli');
-            
-            // Référence vers la demande d'absence si applicable
-            // $table->foreignId('demande_absence_id')->nullable()->after('type_auto_remplissage')
-            //       ->constrained('demande_absences')->nullOnDelete();
-            
+            $table->enum('type_auto_remplissage', ['absence', 'ferie', 'divers'])->nullable()->after('auto_rempli');         
             // Relations
             $table->foreignId('operation_id')->constrained('operations')->onDelete('cascade');
             $table->foreignId('codes_travail_id')->constrained('codes_travail')->onDelete('cascade');
-            $table->foreignId('demande_absence_id')->nullable()->after('type_auto_remplissage')->constrained('demande_absences')->nullOnDelete();
+            
             
             $table->timestamps();
             

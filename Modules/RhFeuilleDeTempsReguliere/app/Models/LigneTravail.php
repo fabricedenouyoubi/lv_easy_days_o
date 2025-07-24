@@ -40,7 +40,6 @@ class LigneTravail extends Model
         // Nouveaux champs pour auto-remplissage
         'auto_rempli',
         'type_auto_remplissage',
-        'demande_absence_id',
     ];
 
     /**
@@ -91,17 +90,6 @@ class LigneTravail extends Model
         return $this->belongsTo(CodeTravail::class, 'codes_travail_id');
     }
 
-    /**
-     * Relation avec la demande d'absence (si auto-rempli)
-     */
-    public function demandeAbsence()
-    {
-        return $this->belongsTo(DemandeAbsence::class, 'demande_absence_id');
-    }
-
-    // ================================
-    // MÉTHODES UTILES
-    // ================================
 
     /**
      * Obtenir les jours de la semaine avec leurs données
