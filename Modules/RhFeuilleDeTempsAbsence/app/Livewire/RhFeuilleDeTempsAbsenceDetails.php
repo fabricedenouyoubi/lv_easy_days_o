@@ -308,9 +308,9 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
 
         try {
 
-            if ($this->demandeAbsence->operations()->count() > 0) {
+            /* if ($this->demandeAbsence->operations()->count() > 0) {
                 $this->demandeAbsence->operations()->delete();
-            }
+            } */
 
             // NOUVEAU : Supprimer les lignes auto-remplies
             try {
@@ -367,7 +367,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
 
         try {
             //--- Suppresion des opérations et liaison avec la feuille de temps
-            $this->demandeAbsence->operations()->delete();
+            /* $this->demandeAbsence->operations()->delete();*/
 
             $comment = 'La demande a été rejetée';
 
@@ -743,7 +743,7 @@ class RhFeuilleDeTempsAbsenceDetails extends Component
                 $ligne = new LigneTravail();
             }
 
-            // Définir tous les attributs 
+            // Définir tous les attributs
             $ligne->operation_id = $operation->id;
             $ligne->codes_travail_id = $this->demandeAbsence->codes_travail_id;
             $ligne->auto_rempli = true;
